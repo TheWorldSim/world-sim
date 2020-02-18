@@ -8,7 +8,13 @@ Should be:
 
 Should inspire trust and give us multiple options
 
-Where there is uncertainty, represent the full diversity of scenarios.  Give users the tools to filter by "merit", "likelihood", "impact".  Default should show all filtered by product of these attributes.
+Where there is uncertainty, represent the full diversity of scenarios.  Then give users the tools to filter by "merit", "likelihood", "impact".  Default should show all filtered by product of these attributes.
+
+## Data
+
+The data is not only numbers, and trends but also relationships between values.
+
+The data lives in the [data repo](https://github.com/TheWorldSim/world-sim-data).  Though some of it lives in this code repo at the moment.
 
 
 # Change log
@@ -17,6 +23,9 @@ Where there is uncertainty, represent the full diversity of scenarios.  Give use
 First version
 
 # Dev
+
+## TODO
+Move all data into data repo.
 
 ## Known bugs
 ### Outstanding - medium
