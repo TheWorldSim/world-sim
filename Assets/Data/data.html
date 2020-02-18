@@ -1,0 +1,133 @@
+<html>
+  <head>
+    <style>
+      table {
+        border-collapse: collapse;
+      }
+      th, td {
+        border: thin solid black;
+        margin: 0;
+        padding: 2 4;
+      }
+      .important {
+        background-color: red;
+      }
+      .nice-to-have, .no-idea {
+        background-color: orange;
+      }
+      .double-check {
+        background-color: yellow;
+      }
+      .get-ref {
+        background-color: lightgoldenrodyellow;
+      }
+    </style>
+  </head>
+  <body>
+    <table>
+      <tbody>
+        <tr>
+          <th>Energy Source</th>
+          <th>W per m2</th>
+          <th>$ per W (capex)</th>
+          <th colspan="2">Opex</th>
+          <th>Single unit MW</th>
+          <th>Build time</th>
+        </tr>
+        <tr>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th>$ per W</th>
+          <th>$ per MWh</th>
+          <th></th>
+          <th></th>
+        </tr>
+
+        <tr>
+          <td>BiomassCrops</td>
+          <td>0.5</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+
+        Coal "US$1 billion greenfield 3 x 200MW lignite-fired power station" https://www.linkedin.com/in/shezad-abedi/
+        <tr>
+          <td>GeothermalPlant</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Hydro</td>
+          <td>0.01 (UK lowlands) to 0.24 (UK Highlands)</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td class="double-check"></td>
+          <td class="double-check"></td>
+        </tr>
+        <tr>
+          <td>NuclearPlant</td>
+          <td>1000</td>
+          <td>3.99 (2 to 6)</td>
+          <td></td>
+          <td></td>
+          <td>1000 (50 to 1600)</td>
+          <td>6 (4 to 15) if > 100 MW else 2</td>
+        </tr>
+        <tr>
+          <td>SolarConcentratedThermal</td>
+          <td>14.8</td>
+          <td>10</td>
+          <td></td>
+          <td></td>
+          <td class="no-idea"></td>
+          <td class="no-idea"></td>
+        </tr>
+        <tr>
+          <td>SolarPanel</td>
+          <td>20</td>
+          <td>0.4</td>
+          <td></td>
+          <td></td>
+          <td class="get-ref">0.001</td>
+          <td class="double-check">0.02 (guess)</td>
+        </tr>
+        <tr>
+          <td>SolarPanelIndustrial</td>
+          <td>5</td>
+          <td>0.4</td>
+          <td></td>
+          <td></td>
+          <td class="get-ref">0.1</td>
+          <td class="double-check">0.1 (guess)</td>
+        </tr>
+        <tr>
+          <td>WindFarmOffShore</td>
+          <td>2.5 - 9.05</td>
+          <td>1.468 (to 2)</td>
+          <td>0.04 (2%)</td>
+          <td>0</td>
+          <td class="get-ref">2 (0.1 to 4 MW)</td>
+          <td class="double-check">0.5 (guess)</td>
+        </tr>
+        <tr>
+          <td>WindFarmOnShore</td>
+          <td>2.5 - 9.05</td>
+          <td>0.994 (to 2)</td>
+          <td>0.0199 to 0.04 (2%)</td>
+          <td>0</td>
+          <td class="get-ref">2 (0.1 to 4 MW)</td>
+          <td class="double-check">0.25 (guess)</td>
+        </tr>
+      </tbody>
+    </table>
+  </body>
+</html>
