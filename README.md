@@ -21,19 +21,22 @@ The data lives in the [data repo](https://github.com/TheWorldSim/world-sim-data)
 
 For now all the simulations will live in this repo.
 
-* [Energy Explorer](https://theworldsim.org/sims/energy-explorer) - explore the potential and limits of renewable energy.
+* [Energy Explorer](https://theworldsim.org/sims/energy-explorer/index.html) - explore the potential and limits of renewable energy.
 
 
 # Change log
 
 ## 2020-02-17
-[Energy Explorer v0.0.1](https://theworldsim.org/sims/energy-explorer/v0.0.1) - first version
+[Energy Explorer v0.0.1](https://theworldsim.org/sims/energy-explorer/v0.0.1/index.html) - first version
 
 # Dev
 
-The World Sim is still a prototype and is in alpha.  If you're a researcher in academia, industry, government, NGO or citizen scientist and have data or a simulation you'd like to build then get in touch.  For data please open an [issue here](https://github.com/TheWorldSim/world-sim-data/issues).  For simulation related questions or ideas please open an [issue here](https://github.com/TheWorldSim/world-sim/issues).  Alternatively please [contact us](https://theworldsim.org/#help-us-do).
+The World Sim is still a prototype and is in alpha.  If you're a researcher in academia, industry, government, NGO or citizen scientist and have data to add or a simulation you'd like to build then get in touch.
+
+For data please open an [issue here](https://github.com/TheWorldSim/world-sim-data/issues).  For simulation related questions or ideas please open an [issue here](https://github.com/TheWorldSim/world-sim/issues).  Alternatively please [contact us](https://theworldsim.org/#help-us-do).
 
 ## TODO
+
 Move all data into data repo.
 
 ## Known bugs
@@ -42,8 +45,9 @@ Move all data into data repo.
 ### Outstanding - minor
 
 ### Dealt with via a hack
-The camera near clipping plane has to be set at the start as it forgets 0.01f and sets itself to 0.1f
-The calculation of nearest zoom doesn't work well with tilt... you seem to be able to scroll in indefinitely.
+
+* The camera near clipping plane has to be set at the start as it forgets 0.01f and sets itself to 0.1f
+* The calculation of nearest zoom doesn't work well with tilt... you seem to be able to scroll in indefinitely.
 
 ## running local builds
 
