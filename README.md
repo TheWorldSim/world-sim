@@ -1,6 +1,6 @@
 # World Sim
 
-Data driven simulations
+Simulations about our world based on objective evidence.
 
 Should be:
 * transparent
