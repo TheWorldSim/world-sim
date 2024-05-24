@@ -35,6 +35,12 @@ The World Sim is still a prototype and is in alpha.  If you're a researcher in a
 
 For data please open an [issue here](https://github.com/TheWorldSim/world-sim-data/issues).  For simulation related questions or ideas please open an [issue here](https://github.com/TheWorldSim/world-sim/issues).  Alternatively please [contact us](https://theworldsim.org/#help-us-do).
 
+This repo currently uses submodules, not all of which are yet public.  If you have been given access to them:
+
+    git clone git@github.com:TheWorldSim/world-sim.git
+    cd world-sim
+    git submodule update --init --recursive
+
 ## TODO
 
 Move all data into data repo.
