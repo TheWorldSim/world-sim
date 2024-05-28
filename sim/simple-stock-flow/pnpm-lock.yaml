@@ -2,18 +2,21 @@ lockfileVersion: '6.0'
 
 dependencies:
   preact:
-    specifier: ^10.19.6
+    specifier: 10.19.6
     version: 10.19.6
+  simulation:
+    specifier: 3.0.0
+    version: 3.0.0
 
 devDependencies:
   '@preact/preset-vite':
-    specifier: ^2.8.2
+    specifier: 2.8.2
     version: 2.8.2(@babel/core@7.24.6)(preact@10.19.6)(vite@5.2.0)
   typescript:
-    specifier: ^5.2.2
+    specifier: 5.2.2
     version: 5.2.2
   vite:
-    specifier: ^5.2.0
+    specifier: 5.2.0
     version: 5.2.0
 
 packages:
@@ -1030,6 +1033,10 @@ packages:
     resolution: {integrity: sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==}
     hasBin: true
     dev: true
+
+  /simulation@3.0.0:
+    resolution: {integrity: sha512-74Stoq/Z7vBbGicZcCEbpqx3nAdcVN2h52zW8rDxYszJhBXrnZ4X9u5TbtwFfpH0+174LJGma8zHA2hi1AGiTw==}
+    dev: false
 
   /source-map-js@1.2.0:
     resolution: {integrity: sha512-itJW8lvSA0TXEphiRoawsCksnlf8SyvmFzIhltqAHluXd88pkCd+cXJVHTDwdCr0IzwptSm035IHQktUu1QUMg==}
