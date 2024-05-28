@@ -1,5 +1,5 @@
-import { wcomponent_is_statev2 } from "./data_curator/wcomponent/interfaces/SpecialisedObjects"
-import { WComponentNodeStateV2 } from "./data_curator/wcomponent/interfaces/state"
+import { wcomponent_is_statev2 } from "../data_curator/src/wcomponent/interfaces/SpecialisedObjects"
+import { WComponentNodeStateV2 } from "../data_curator/src/wcomponent/interfaces/state"
 
 import { get_data } from "./get_data"
 

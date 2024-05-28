@@ -1,4 +1,5 @@
-import { WComponent } from "./data_curator/wcomponent/interfaces/SpecialisedObjects"
+import { WComponent } from "../data_curator/src/wcomponent/interfaces/SpecialisedObjects"
+
 
 // For now we manually copied over the data from http://localhost:5173/app/#wcomponents/17edbf36-ad5b-4936-b3c5-7d803741c678/&storage_location=1&subview_id=57721b40-5b26-4587-9cc3-614c6c366cae&view=knowledge&x=1218&y=-1538&zoom=68&sdate=2024-03-24&stime=22:42:19&cdate=2024-05-24&ctime=11:22:59
 const _get_data = (): WComponent[] => [
