@@ -1,3 +1,4 @@
+import { WComponentNodeStateV2ById } from "../data_curator/src/calculations/interfaces"
 import { wcomponent_is_statev2 } from "../data_curator/src/wcomponent/interfaces/SpecialisedObjects"
 import { WComponentNodeStateV2 } from "../data_curator/src/wcomponent/interfaces/state"
 
@@ -12,8 +13,8 @@ function get_state_components (): WComponentNodeStateV2[]
 }
 
 
-export function get_state_component_by_id (id: string): WComponentNodeStateV2 | undefined
+export function get_state_components_by_id (): WComponentNodeStateV2ById
 {
-    const state = get_state_components().find(state => state.id === id)
-    return state
+    const states_by_id = get_state_components().reduce((acc, state) => ({ ...acc, [state.id]: state }), {} as {[id: string]: WComponentNodeStateV2})
+    return states_by_id
 }

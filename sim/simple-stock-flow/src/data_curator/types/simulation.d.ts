@@ -12,6 +12,15 @@ declare module "simulation" {
         name: string
         value: number | string | "True" | "False"
         units?: string
+        note?: string
+    }
+
+    interface ModelStockConfig
+    {
+        name: string
+        initial?: number | string | "True" | "False"
+        units?: string
+        note?: string
     }
 
 
@@ -20,6 +29,7 @@ declare module "simulation" {
         constructor (config: ModelConfig)
 
         Variable (config: ModelVariableConfig): SimulationComponent { }
+        Stock (config: ModelStockConfig): SimulationComponent { }
 
         simulate (): SimulationResult { }
 

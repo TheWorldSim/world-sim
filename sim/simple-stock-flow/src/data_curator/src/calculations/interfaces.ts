@@ -1,4 +1,5 @@
 import { NumberDisplayType } from "../shared/types"
+import { WComponentNodeStateV2 } from "../wcomponent/interfaces/state"
 
 
 /**
@@ -22,4 +23,9 @@ export interface CalculationResult
     value: number | undefined
     units: string
     error?: string
+}
+
+
+export interface WComponentNodeStateV2ById {
+    [id: string]: WComponentNodeStateV2
 }
