@@ -1,97 +1,61 @@
-import {
-    Model,
-    SimulationComponent,
-    // ModelVariableConfig,
-    SimulationResult,
-    TimeUnitsAll,
-} from "simulation"
-import { get_wcomponent_state_value_and_probabilities } from "./data_curator/src/wcomponent_derived/get_wcomponent_state_value_and_probabilities"
-import { wcomponent_is_statev2, WComponentNode, WComponentsById } from "./data_curator/src/wcomponent/interfaces/SpecialisedObjects"
-import { make_model_v2, SimulationResult2, ValueByWComponentId } from "./simulation2/simulation2"
-import { get_data } from "./data/get_data"
+import { wcomponent_is_action, WComponentNode, WComponentsById } from "./data_curator/src/wcomponent/interfaces/SpecialisedObjects"
+import { Model2, SimulationResult2, ValueByWComponentId } from "./simulation2/simulation2"
 // const { Model, ModelVariableConfig } = await import("simulation")
 
-interface ExtendedSimulationComponent extends SimulationComponent
+
+export function make_model_stepper (wcomponents: WComponentNode[])
 {
-    wcomponent_id: string
-}
+    const wcomponent_by_id: WComponentsById = {}
+    wcomponents.forEach(wcomponent => wcomponent_by_id[wcomponent.id] = wcomponent)
 
-const input: WComponentNode[] = get_data()
-
-const wcomponent_by_id: WComponentsById = {}
-input.forEach(wcomponent => wcomponent_by_id[wcomponent.id] = wcomponent)
-
-
-function make_model_stepper (wcomponents: WComponentNode[])
-{
     let time_start = 2020
     const time_step = 1
     const time_step_units = "Years"
 
-    const initial_model_state = build_model_state_from_wcomponents(wcomponents)
-
-    const model = make_model_v2(initial_model_state, time_start, time_step, time_step_units)
+    const model = new Model2({timeStart: time_start, timeLength: time_step, timeUnits: time_step_units}, wcomponents)
 
     return {
+        state_by_id: (wcomponent_id: string) =>
+        {
+            return model.state[wcomponent_id]
+        },
+        // subscribe_to_state_change: (wcomponent_id: string, subscriber: (value: number) => void) =>
+        // {
+        //     console.log(`subscribe ${wcomponent_id}`)
+        //     const wcomponent = wcomponent_by_id[wcomponent_id]
+        //     if (!wcomponent) throw new Error(`No component with id ${wcomponent_id}`)
+        //     if (!wcomponent_is_statev2(wcomponent)) throw new Error(`Component with id ${wcomponent_id} is not a state`)
+
+        //     return model.subscribe_to_state_change(wcomponent_id, subscriber)
+        // },
+        on_state_change: (subscriber: (state: ValueByWComponentId) => void) =>
+        {
+            return model.on_state_change(subscriber)
+        },
         simulate_step: () => {
             console.log(`simulate step ${time_start}`)
             const results = model.simulate()
-            print_values(results)
+            // print_values(results)
 
             time_start += time_step
 
             // const model_step = make_model(model_state, time_start, time_step, time_step_units)
             // model = model_step.model
             // stocks = model_step.stocks
+            return results
         },
-        apply_action: (action_id: string) => {
-            console.log(`apply action ${action_id}`)
-            const action = wcomponents.find(item => item.id === action_id)
-            if (!action) throw new Error(`No action with id ${action_id}`)
+        apply_action: (wcomponent_id: string) => {
+            console.log(`apply action ${wcomponent_id}`)
+            const action = wcomponent_by_id[wcomponent_id]
+            if (!action) throw new Error(`No action with id ${wcomponent_id}`)
+            if (!wcomponent_is_action(action)) throw new Error(`Component with id ${wcomponent_id} is not an action`)
 
-            // const action_calculations = action.calculations || []
-            // action_calculations.forEach(calculation =>
-            // {
-            //     model.Variable({
-            //         name: calculation.name,
-            //         value: calculation.value,
-            //     })
-            // })
-
-            model.update_partial_state({ "17edbf36-ad5b-4936-b3c5-7d803741c678": 100 })
-
-            // const results = model.simulate()
-            // print_values(results, stocks)
+            const action_calculations = action.calculations || []
+            model.apply_calculations(action_calculations)
         },
     }
 }
 
-
-
-function build_model_state_from_wcomponents (wcomponents: WComponentNode[])
-{
-    const created_at_ms = new Date().getTime()
-    const sim_ms = new Date().getTime()
-    const value_by_wcomponent_id: ValueByWComponentId = {}
-
-    wcomponents.forEach(wcomponent =>
-    {
-        if (wcomponent_is_statev2(wcomponent))
-        {
-            const most_probable_initial_values = get_wcomponent_state_value_and_probabilities({ wcomponent, VAP_set_id_to_counterfactual_v2_map: undefined, created_at_ms, sim_ms })
-            const most_probable_initial_value = most_probable_initial_values.most_probable_VAP_set_values[0]
-            let initial_value = most_probable_initial_value && most_probable_initial_value.parsed_value
-            if (initial_value === undefined || typeof initial_value !== "number")
-            {
-                initial_value = 0
-            }
-
-            value_by_wcomponent_id[wcomponent.id] = initial_value
-        }
-    })
-
-    return value_by_wcomponent_id
-}
 
 
 // function make_model (model_state: ValueByWComponentId, time_start: number, time_step: number, time_step_units: TimeUnitsAll)
@@ -127,13 +91,13 @@ function build_model_state_from_wcomponents (wcomponents: WComponentNode[])
 // }
 
 
-function print_values (simulation_result: SimulationResult2)
+function print_values (simulation_result: SimulationResult2, get_wcomponent_by_id: (id: string) => WComponentNode | undefined)
 {
     const values_with_name: {name: string, value: number}[] = []
 
     Object.entries(simulation_result.state).forEach(([wcomponent_id, value]) =>
     {
-        const wcomponent = wcomponent_by_id[wcomponent_id]
+        const wcomponent = get_wcomponent_by_id(wcomponent_id)
         values_with_name.push({ name: wcomponent?.title || `not found ${wcomponent_id}`, value})
     })
 
@@ -141,12 +105,14 @@ function print_values (simulation_result: SimulationResult2)
 }
 
 
-console.log("Simulation about to start...")
-const model_stepper = make_model_stepper(input)
-model_stepper.simulate_step()
-model_stepper.simulate_step()
-model_stepper.apply_action("8ecb8d21-4803-4028-9341-b7cd59b56cda")
-model_stepper.simulate_step()
+// console.log("Simulation about to start...")
+// const model_stepper = make_model_stepper(input)
+// model_stepper.simulate_step()
+// model_stepper.simulate_step()
+// model_stepper.apply_action("8ecb8d21-4803-4028-9341-b7cd59b56cda")
+// model_stepper.simulate_step()
+// model_stepper.apply_action("2dc650ae-8458-47b6-be0e-6ad1cab3cd4d")
+// model_stepper.simulate_step()
 
 
 // let m = new Model({
