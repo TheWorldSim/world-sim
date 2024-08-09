@@ -1,8 +1,10 @@
 import { TimeUnitsAll } from "simulation"
+
 import { PlainCalculationObject } from "../data_curator/src/calculations/interfaces"
 import { only_double_at_mentioned_uuids_regex } from "../data_curator/src/sharedf/rich_text/id_regexs"
 import { wcomponent_is_action, wcomponent_is_statev2, WComponentNode } from "../data_curator/src/wcomponent/interfaces/SpecialisedObjects"
 import { get_wcomponent_state_value_and_probabilities } from "../data_curator/src/wcomponent_derived/get_wcomponent_state_value_and_probabilities"
+
 
 export interface ModelConfig2
 {
@@ -255,27 +257,4 @@ export interface SimulationResult2
     time_units: TimeUnitsAll
     note?: string
     error?: string
-}
-
-
-function euler_solver (x: number, v: number, a: number, dt: number): [number, number] {
-    let x_ = x + v * dt + 0.5 * a * dt * dt
-    let v_ = v + a * dt
-    return [x_, v_]
-}
-
-export function demonstrate_euler_solver () {
-    let i = 0
-    let x = 0
-    let v = 0
-    const a = 1
-    const dt = 0.1
-    console.log(x, v)
-    while (i < 10) {
-        let [x_, v_] = euler_solver(x, v, a, dt)
-        console.log(x_, v_)
-        x = x_
-        v = v_
-        i++
-    }
 }

@@ -30,7 +30,7 @@ const action_component__move_a_to_b_id = "2dc650ae-8458-47b6-be0e-6ad1cab3cd4d"
 
 const model_stepper = make_model_stepper(input)
 
-export function App () {
+export function DemoAppAddOneToStock () {
   // const created_at_date = "2024-05-28"
   // const created_at_time = "11:22:59"
   // http://localhost:5173/app/#wcomponents/17edbf36-ad5b-4936-b3c5-7d803741c678/&storage_location=1&subview_id=57721b40-5b26-4587-9cc3-614c6c366cae&view=knowledge&x=1218&y=-1538&z=0&zoom=68&sdate=2024-03-24&stime=22:42:19&cdate=2024-05-24&ctime=11:22:59
