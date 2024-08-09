@@ -9,6 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@types/chart.js": "^2.9.41",
+    "chart.js": "^4.4.3",
     "preact": "10.19.6",
     "simulation": "3.0.0"
   },
