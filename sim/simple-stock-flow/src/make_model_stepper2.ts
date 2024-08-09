@@ -3,7 +3,17 @@ import { Model2, SimulationResult2, ValueByWComponentId } from "./simulation2/si
 // const { Model, ModelVariableConfig } = await import("simulation")
 
 
-export function make_model_stepper (wcomponents: WComponentNode[])
+interface ModelStepper
+{
+    state_by_id: (wcomponent_id: string) => number | undefined
+    // subscribe_to_state_change: (wcomponent_id: string, subscriber: (value: number) => void) => () => void
+    on_state_change: (subscriber: (state: ValueByWComponentId) => void) => () => void
+    simulate_step: () => SimulationResult2
+    apply_action: (wcomponent_id: string) => void
+}
+
+
+export function make_model_stepper2 (wcomponents: WComponentNode[]): ModelStepper
 {
     const wcomponent_by_id: WComponentsById = {}
     wcomponents.forEach(wcomponent => wcomponent_by_id[wcomponent.id] = wcomponent)

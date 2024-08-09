@@ -1,7 +1,7 @@
 import { useEffect, useState } from "preact/hooks"
 
 import "./app.css"
-import { make_model_stepper } from "./demo_simulation"
+import { make_model_stepper2 } from "./make_model_stepper2"
 import { get_data } from "./data/get_data"
 import { WComponentNode } from "./data_curator/src/wcomponent/interfaces/SpecialisedObjects"
 // import { get_state_components_by_id } from "./data/get_state_components_by_id"
@@ -28,7 +28,7 @@ const action_component__move_a_to_b_id = "2dc650ae-8458-47b6-be0e-6ad1cab3cd4d"
 
 // const initial_state_by_id: {[component_id: string]: number} = {}
 
-const model_stepper = make_model_stepper(input)
+const model_stepper = make_model_stepper2(input)
 
 export function DemoAppAddOneToStock () {
   // const created_at_date = "2024-05-28"
