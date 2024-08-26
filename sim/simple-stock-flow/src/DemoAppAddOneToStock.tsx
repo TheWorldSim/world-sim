@@ -1,6 +1,7 @@
-import { useEffect, useState } from "preact/hooks"
+import { useEffect, useRef, useState } from "preact/hooks"
 
 import "./app.css"
+import { make_model_stepper1 } from "./make_model_stepper1"
 import { make_model_stepper2 } from "./make_model_stepper2"
 import { get_data } from "./data/get_data"
 import { WComponentNode } from "./data_curator/src/wcomponent/interfaces/SpecialisedObjects"
@@ -28,7 +29,9 @@ const action_component__move_a_to_b_id = "2dc650ae-8458-47b6-be0e-6ad1cab3cd4d"
 
 // const initial_state_by_id: {[component_id: string]: number} = {}
 
-const model_stepper = make_model_stepper2(input)
+const TARGET_REFRESH_RATE = 2 // Hz
+const model_stepper = make_model_stepper1(input, TARGET_REFRESH_RATE)
+// const model_stepper = make_model_stepper2(input)
 
 export function DemoAppAddOneToStock () {
   // const created_at_date = "2024-05-28"
@@ -37,6 +40,43 @@ export function DemoAppAddOneToStock () {
 
   const [stock_a, set_stock_a] = useState(model_stepper.state_by_id(state_component__stock_a_id))
   const [stock_b, set_stock_b] = useState(model_stepper.state_by_id(state_component__stock_b_id))
+
+  const start_time_ms = useRef(new Date().getTime())
+  const current_simulation_step = useRef(0)
+
+  useEffect(() => {
+    let animationFrameId: number
+
+    const animate = () => {
+      const time_since_start_ms = new Date().getTime() - start_time_ms.current
+      const simulation_step = Math.floor(time_since_start_ms / (1000 / TARGET_REFRESH_RATE))
+      if (simulation_step > current_simulation_step.current)
+      {
+        const simulation_step_completed = () =>
+        {
+          // Restart scheduling the next frame
+          animationFrameId = requestAnimationFrame(animate)
+        }
+
+        model_stepper.simulate_step(simulation_step_completed)
+        current_simulation_step.current = simulation_step
+      }
+      else
+      {
+        // Schedule the next frame
+        animationFrameId = requestAnimationFrame(animate)
+      }
+    }
+
+    // Start the animation
+    animationFrameId = requestAnimationFrame(animate)
+
+    // Cleanup function to cancel the animation frame
+    return () => {
+      cancelAnimationFrame(animationFrameId)
+    }
+  }, [])
+
 
   useEffect(() => {
     return model_stepper.on_state_change((state) => {

@@ -3,8 +3,10 @@ declare module "simulation" {
     {
         primitiveFn?: (root, type) => SimulationNode[]
         timeStart?: number
+        timeStep?: number
         timeLength?: number
         timeUnits?: TimeUnitsAll // todo
+        timePause?: number
     }
 
     interface ModelVariableConfig
@@ -24,6 +26,29 @@ declare module "simulation" {
     }
 
 
+    interface Primitive
+    {
+        id: string
+    }
+
+
+    interface onPauseResArg
+    {
+        times: number[]
+        data: object[]
+        timeUnits: TimeUnitsAll
+        children: undefined
+        error: null
+        errorPrimitive: null
+        stochastic: undefined
+        value: (item: Primitive) => number
+        lastValue: (item: Primitive) => number
+        periods: number
+        resume: () => void
+        setValue: (cell: Primitive, value: number) => void
+    }
+
+
     export class Model
     {
         constructor (config: ModelConfig)
@@ -31,7 +56,9 @@ declare module "simulation" {
         Variable (config: ModelVariableConfig): SimulationComponent { }
         Stock (config: ModelStockConfig): SimulationComponent { }
 
-        simulate (): SimulationResult { }
+        // If config.onPause is set then the simulation will pause and return
+        // value of this function will be undefined.
+        simulate (config: { onPause: (res: onPauseResArg) => void }): SimulationResult | undefined { }
 
         Link (source_component: SimulationComponent, consuming_component: SimulationComponent) { }
 
@@ -48,7 +75,7 @@ declare module "simulation" {
 
 
     type TimeUnits = "years"
-    type TimeUnitsAll = "Years" | TimeUnits
+    type TimeUnitsAll = "Years" | "Seconds" | TimeUnits
 
 
     type ModelAttributeNames = "name" | "Note" | "Equation" | "Units" | "MaxConstraintUsed" | "MinConstraintUsed" | "MaxConstraint" | "MinConstraint" | "ShowSlider" | "SliderMax" | "SliderMin" | "SliderStep" | "Image" | "FlipHorizontal" | "FlipVertical" | "LabelPosition"
