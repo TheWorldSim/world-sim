@@ -29,7 +29,7 @@ const action_component__move_a_to_b_id = "2dc650ae-8458-47b6-be0e-6ad1cab3cd4d"
 
 // const initial_state_by_id: {[component_id: string]: number} = {}
 
-const TARGET_REFRESH_RATE = 2 // Hz
+const TARGET_REFRESH_RATE = 0.2 // Hz
 const model_stepper = make_model_stepper1(input, TARGET_REFRESH_RATE)
 // const model_stepper = make_model_stepper2(input)
 
@@ -45,35 +45,38 @@ export function DemoAppAddOneToStock () {
   const current_simulation_step = useRef(0)
 
   useEffect(() => {
-    let animationFrameId: number
+    let cancelled = false
 
     const animate = () => {
+      if (cancelled) return
+
       const time_since_start_ms = new Date().getTime() - start_time_ms.current
       const simulation_step = Math.floor(time_since_start_ms / (1000 / TARGET_REFRESH_RATE))
       if (simulation_step > current_simulation_step.current)
       {
+        current_simulation_step.current = simulation_step
+
         const simulation_step_completed = () =>
         {
           // Restart scheduling the next frame
-          animationFrameId = requestAnimationFrame(animate)
+          requestAnimationFrame(animate)
         }
 
         model_stepper.simulate_step(simulation_step_completed)
-        current_simulation_step.current = simulation_step
       }
       else
       {
         // Schedule the next frame
-        animationFrameId = requestAnimationFrame(animate)
+        requestAnimationFrame(animate)
       }
     }
 
-    // Start the animation
-    animationFrameId = requestAnimationFrame(animate)
+    // Start the simulation / animation
+    model_stepper.simulate_step(animate)
 
-    // Cleanup function to cancel the animation frame
+    // Cleanup function to cancel the simulation / animation
     return () => {
-      cancelAnimationFrame(animationFrameId)
+      cancelled = true
     }
   }, [])
 
