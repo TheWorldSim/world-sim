@@ -16,8 +16,8 @@ export function DemoAppAddOneToStock () {
   // http://localhost:5173/app/#wcomponents/17edbf36-ad5b-4936-b3c5-7d803741c678/&storage_location=1&subview_id=57721b40-5b26-4587-9cc3-614c6c366cae&view=knowledge&x=1218&y=-1538&z=0&zoom=68&sdate=2024-03-24&stime=22:42:19&cdate=2024-05-24&ctime=11:22:59
 
   const [current_time, set_current_time] = useState(model_stepper.get_current_time())
-  const [stock_a, set_stock_a] = useState(model_stepper.get_latest_state_by_id(IDS.state_component__stock_a_id))
-  const [stock_b, set_stock_b] = useState(model_stepper.get_latest_state_by_id(IDS.state_component__stock_b_id))
+  const [stock_a, set_stock_a] = useState(model_stepper.get_latest_state_by_id(IDS.state_component__stock_a))
+  const [stock_b, set_stock_b] = useState(model_stepper.get_latest_state_by_id(IDS.state_component__stock_b))
   const past_actions_taken = useRef<{step: number, actions_taken: {[action_id: string]: number}}[]>([])
   const actions_taken = useRef<{[action_id: string]: number}>({})
 
@@ -29,8 +29,8 @@ export function DemoAppAddOneToStock () {
     on_simulation_step_completed: (result: ModelStepResult) =>
     {
       set_current_time(result.current_time)
-      set_stock_a(result.values[IDS.state_component__stock_a_id])
-      set_stock_b(result.values[IDS.state_component__stock_b_id])
+      set_stock_a(result.values[IDS.state_component__stock_a])
+      set_stock_b(result.values[IDS.state_component__stock_b])
 
       const { set_value } = result
       if (!set_value) return
@@ -67,12 +67,12 @@ export function DemoAppAddOneToStock () {
 
   function action__increase_stock_a ()
   {
-    model_stepper.apply_action(actions_taken, IDS.action_component__increase_stock_a_id)
+    model_stepper.apply_action(actions_taken, IDS.variable_component__action_increase_a)
   }
 
   function action__move_a_to_b ()
   {
-    model_stepper.apply_action(actions_taken, IDS.variable_component__action_move_a_to_b_id)
+    model_stepper.apply_action(actions_taken, IDS.variable_component__action_move_a_to_b)
   }
 
   return (
