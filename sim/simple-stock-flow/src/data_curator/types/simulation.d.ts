@@ -55,6 +55,7 @@ declare module "simulation" {
 
         Variable (config: ModelVariableConfig): SimulationComponent { }
         Stock (config: ModelStockConfig): SimulationComponent { }
+        Flow(from_id: SimulationComponent | undefined, to_id: SimulationComponent | undefined, config: { name: string; note: string, rate: string }): SimulationComponent {}
 
         // If config.onPause is set then the simulation will pause and return
         // value of this function will be undefined.
@@ -63,6 +64,7 @@ declare module "simulation" {
         Link (source_component: SimulationComponent, consuming_component: SimulationComponent) { }
 
         findStocks(selector: (model_item: {_node: SimulationNode, model: {_graph: {}, settings: {}, p: ()=>{} } }) => void): SimulationComponent[] { }
+        getId(model_id: string): SimulationComponent | null { }
     }
 
     export interface SimulationError
@@ -98,7 +100,7 @@ declare module "simulation" {
     {
         _node: SimulationNode
         model: {}
-        units: string
+        units?: string
     }
 
     interface SimulationResult

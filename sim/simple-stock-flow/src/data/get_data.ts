@@ -1,6 +1,19 @@
 import { WComponent } from "../data_curator/src/wcomponent/interfaces/SpecialisedObjects"
 
 
+export const IDS = {
+    state_component__stock_a_id: "17edbf36-ad5b-4936-b3c5-7d803741c678",
+    state_component__stock_b_id: "b644e33f-c00f-4a50-acc4-f158e4e11be5",
+
+    variable_component__action_move_a_to_b_id: "action-move-a-to-b",
+
+    flow_component__flow_a_to_b_id: "flow-a-to-b",
+
+    action_component__increase_stock_a_id: "8ecb8d21-4803-4028-9341-b7cd59b56cda",
+    action_component__move_a_to_b_id: "2dc650ae-8458-47b6-be0e-6ad1cab3cd4d",
+}
+
+
 // For now we manually copied over the data from http://localhost:5173/app/#wcomponents/17edbf36-ad5b-4936-b3c5-7d803741c678/&storage_location=1&subview_id=57721b40-5b26-4587-9cc3-614c6c366cae&view=knowledge&x=1218&y=-1538&zoom=68&sdate=2024-03-24&stime=22:42:19&cdate=2024-05-24&ctime=11:22:59
 const _get_data = (): WComponent[] => [
     {

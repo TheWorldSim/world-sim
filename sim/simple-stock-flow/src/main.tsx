@@ -1,6 +1,8 @@
 import { render } from "preact"
 import "./index.css"
 
+import "./monkey_patch"
+
 import { DemoAppAddOneToStock } from "./DemoAppAddOneToStock.tsx"
 render(<DemoAppAddOneToStock />, document.getElementById("app")!)
 

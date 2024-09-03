@@ -22,7 +22,11 @@ export function make_model_stepper2 (wcomponents: WComponentNode[]): ModelSteppe
     const time_step = 1
     const time_step_units = "Years"
 
-    const model = new Model2({timeStart: time_start, timeLength: time_step, timeUnits: time_step_units}, wcomponents)
+    const model = new Model2({
+        timeStart: time_start,
+        timeLength: time_step,
+        timeUnits: time_step_units
+    }, wcomponents)
 
     return {
         state_by_id: (wcomponent_id: string) =>
