@@ -45,7 +45,7 @@ declare module "simulation" {
         lastValue: (item: Primitive) => number
         periods: number
         resume: () => void
-        setValue: (cell: Primitive, value: number) => void
+        setValue: (cell: Primitive | SimulationComponent, value: number) => void
     }
 
 

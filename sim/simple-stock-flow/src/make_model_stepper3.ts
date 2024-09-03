@@ -1,10 +1,18 @@
-import { ModelStockConfig, ModelVariableConfig, onPauseResArg, SimulationComponent, TimeUnitsAll } from "simulation"
+import { ModelStockConfig, ModelVariableConfig, onPauseResArg, Primitive, SimulationComponent, TimeUnitsAll } from "simulation"
 import { IDS } from "./data/get_data"
+import { MutableRef } from "preact/hooks"
 const { Model } = await import("simulation")
+
 
 if (Model.toString().match(/.*simulate\(\).*/mg))
 {
-    const error_msg = `Model requires a customised simulate method.  Please replace with the following code:
+    const error_msg = `Model requires a customised simulate method.
+
+    Please:
+    1.  stop the vite server.
+    2.  delete: rm -rf node_modules/.vite
+    3.  open: node_modules/simulation/src/api/Model.js and replace with the following code:
+
     simulate(config) {
         config = {
             silent: true,
@@ -29,6 +37,8 @@ export interface ModelStepResult
 {
     values: ModelValues
     current_time: number
+    current_step: number
+    set_value?: (cell: Primitive | SimulationComponent, value: number) => void
 }
 
 export interface RunSimulationConfig
@@ -46,6 +56,7 @@ export interface AddStockArgs extends ModelStockConfig
 export interface AddVariableArgs extends ModelVariableConfig
 {
     wcomponent_id: string
+    is_action?: boolean
 }
 
 export interface AddFlowArgs
@@ -61,7 +72,7 @@ export interface AddFlowArgs
 
 export function make_model_stepper (
     // wcomponents: WComponentNode[],
-    TARGET_REFRESH_RATE: number
+    // TARGET_REFRESH_RATE: number
 ): ModelStepper
 {
     // const wcomponent_by_id: WComponentsById = {}
@@ -69,20 +80,22 @@ export function make_model_stepper (
 
     const time_start = 2020
 
-    const time_step = 1 / TARGET_REFRESH_RATE
+    const simulation_time_step = 1
     const time_units = "Seconds"
 
-    const wrapped_model = make_wrapped_model({
+    const model_config: ModelConfigStrict = {
         timeStart: time_start,
-        timeStep: time_step,
+        timeStep: simulation_time_step,
         timeLength: 1e6,
         timeUnits: time_units,
-        timePause: time_step,
-    })
+        timePause: simulation_time_step,
+    }
+
+    const wrapped_model = make_wrapped_model(model_config)
 
     wrapped_model.add_stock({ wcomponent_id: IDS.state_component__stock_a_id, name: "Stock A", initial: 100 })
     wrapped_model.add_stock({ wcomponent_id: IDS.state_component__stock_b_id, name: "Stock B", initial: 10 })
-    wrapped_model.add_variable({ wcomponent_id: IDS.variable_component__action_move_a_to_b_id, name: "Action: Move A to B", value: 0 })
+    wrapped_model.add_variable({ wcomponent_id: IDS.variable_component__action_move_a_to_b_id, name: "Action: Move A to B", value: 0, is_action: true })
     wrapped_model.add_flow({
         wcomponent_id: IDS.flow_component__flow_a_to_b_id,
         name: "Flow A to B",
@@ -107,28 +120,35 @@ interface ModelConfigStrict
 }
 
 
-interface ModelStepper
-{
-    get_latest_state_by_id: (wcomponent_id: string) => ModelValue | undefined
-    // subscribe_to_state_change: (wcomponent_id: string, subscriber: (value: number) => void) => () => void
-    // on_state_change: (subscriber: (state: ValueByWComponentId) => void) => () => void
-    simulate_step: (simulation_step_completed: (step_return: ModelStepResult) => void) => void
-    apply_action: (wcomponent_id: string) => void
-    add_stock: (add_stock_args: AddStockArgs) => SimulationComponent
-    add_variable: (add_variable_args: AddVariableArgs) => SimulationComponent
-    add_flow: (add_flow_args: AddFlowArgs) => SimulationComponent
-    get_current_time: () => number
-    model: typeof Model
-    extract_step_results: (res: onPauseResArg) => ModelStepResult
-    get_ids_map: () => {[id: string]: string}
-    run_simulation: (run_sim_config: RunSimulationConfig) => () => () => void
-}
+// interface ModelStepper
+// {
+//     get_latest_state_by_id: (wcomponent_id: string) => ModelValue | undefined
+//     // subscribe_to_state_change: (wcomponent_id: string, subscriber: (value: number) => void) => () => void
+//     // on_state_change: (subscriber: (state: ValueByWComponentId) => void) => () => void
+//     simulate_step: (simulation_step_completed: (step_return: ModelStepResult) => void) => void
+//     apply_action: (wcomponent_id: string) => void
+//     add_stock: (add_stock_args: AddStockArgs) => SimulationComponent
+//     add_variable: (add_variable_args: AddVariableArgs) => SimulationComponent
+//     add_flow: (add_flow_args: AddFlowArgs) => SimulationComponent
+//     get_current_time: () => number
+//     model: typeof Model
+//     extract_step_results: (res: onPauseResArg) => ModelStepResult
+//     // get_ids_map: () => {[id: string]: string}
+//     // function get_node_from_id (id: string | undefined, throw_on_missing?: false): SimulationComponent | undefined
+//     // function get_node_from_id (id: string | undefined, throw_on_missing: true): SimulationComponent
+//     // function get_node_from_id (id: string | undefined, throw_on_missing?: boolean): SimulationComponent | undefined
+//     get_node_from_id: (id: string | undefined, throw_on_missing?: boolean) => SimulationComponent | undefined
+//     run_simulation: (run_sim_config: RunSimulationConfig) => () => () => void
+// }
 
+type ModelStepper = ReturnType<typeof make_wrapped_model>
 
-function make_wrapped_model (model_config: ModelConfigStrict): ModelStepper
+function make_wrapped_model (model_config: ModelConfigStrict)
 {
     const model = new Model(model_config)
     let model_simulation_started = false
+    let simulation_cancelled = false
+    let current_simulation_step = 0
 
     const map_between_model_and_wcomponent_id: {[id: string]: string} = {}
     const map_between_wcomponent_and_model_id: {[id: string]: string} = {}
@@ -136,10 +156,16 @@ function make_wrapped_model (model_config: ModelConfigStrict): ModelStepper
     let latest_model_results: ModelStepResult = {
         values: {},
         current_time: model_config.timeStart,
+        current_step: 0,
+        set_value: undefined,
     }
 
+    const actions_by_id: {[action_id: string]: number} = {}
 
-    function get_id_as_model_id (id: string | undefined)
+
+    function get_id_as_model_id (id: string | undefined, throw_on_missing?: false): string | undefined
+    function get_id_as_model_id (id: string | undefined, throw_on_missing: true): string
+    function get_id_as_model_id (id: string | undefined, throw_on_missing?: boolean): string | undefined
     {
         if (!id) return undefined
 
@@ -149,7 +175,7 @@ function make_wrapped_model (model_config: ModelConfigStrict): ModelStepper
         const wcomponent_id = map_between_model_and_wcomponent_id[id]
         if (wcomponent_id) return id
 
-        console.error(`No model id (or wcomponent id) found for id: "${id}"`)
+        if (throw_on_missing) throw new Error(`No model id (or wcomponent id) found for id: "${id}"`)
         return ""
     }
 
@@ -202,6 +228,11 @@ function make_wrapped_model (model_config: ModelConfigStrict): ModelStepper
         latest_model_results.values[variable._node.id] = value
         latest_model_results.values[wcomponent_id] = value
 
+        if (args.is_action)
+        {
+            actions_by_id[wcomponent_id] = typeof value === "number" ? value : 0
+        }
+
         return variable
     }
 
@@ -248,6 +279,8 @@ function make_wrapped_model (model_config: ModelConfigStrict): ModelStepper
         latest_model_results = {
             values,
             current_time: res.times.last() || 0,
+            current_step: current_simulation_step,
+            set_value: res.setValue,
         }
 
         return latest_model_results
@@ -268,14 +301,26 @@ function make_wrapped_model (model_config: ModelConfigStrict): ModelStepper
     }
 
 
+    let model_resume: () => void = () => {
+        throw new Error("model_resume not yet set")
+    }
     function simulate_step (simulation_step_completed: (step_results: ModelStepResult) => void)
     {
         console.log(`simulate step ${get_current_time() + (model_config.timeStep || 1)}`)
 
         if (!model_simulation_started)
         {
+            function onPause (res: onPauseResArg)
+            {
+                console.log("onPause", res.data)
+                model_resume = res.resume
+
+                const step_results = extract_step_results(res)
+                simulation_step_completed(step_results)
+            }
+
             model_simulation_started = true
-            model.simulate({ onPause: factory_on_pause(simulation_step_completed) })
+            model.simulate({ onPause })
         }
         else
         {
@@ -284,93 +329,74 @@ function make_wrapped_model (model_config: ModelConfigStrict): ModelStepper
     }
 
 
-    let model_resume: () => void = () => {
-        throw new Error("model_resume not yet set")
-    }
-    const factory_on_pause = (simulation_step_completed: (step_results: ModelStepResult) => void) => (res: onPauseResArg) =>
-    {
-        console.log("onPause", res.data)
-        model_resume = res.resume
-
-        const step_results = extract_step_results(res)
-        simulation_step_completed(step_results)
-    }
-
-    function apply_action (wcomponent_id: string)
-    {
-        // We do this through setting the "slider" value of a variable
-
-        const model_id = map_between_model_and_wcomponent_id[wcomponent_id]
-        if (!model_id) return
-
-
-    }
-
-
-    let simulation_cancelled = false
     function run_simulation (run_sim_config: RunSimulationConfig)
     {
-        return () =>
-        {
+        if (simulation_cancelled) throw new Error("Can not yet restart a cancelled simulation")
+        const target_refresh_rate = run_sim_config.target_refresh_rate || 1
+        console.log(`Starting simulation running at ${target_refresh_rate} Hz`)
 
-            if (simulation_cancelled) throw new Error("Can not yet restart a cancelled simulation")
-            const target_refresh_rate = run_sim_config.target_refresh_rate || 1
-            console.log(`Starting simulation running at ${target_refresh_rate} Hz`)
+        const ms_per_step = 1000 / target_refresh_rate
 
-            const ms_per_step = 1000 / target_refresh_rate
+        let start_time_ms = new Date().getTime()
 
-            let start_time_ms = new Date().getTime()
-            let current_simulation_step = 0
+        const animate = () => {
+            if (simulation_cancelled) return
 
-            const animate = () => {
-                if (simulation_cancelled) return
+            const time_since_start_ms = new Date().getTime() - start_time_ms
+            const simulation_step = Math.floor(time_since_start_ms / ms_per_step)
+            if (simulation_step > current_simulation_step)
+            {
+                current_simulation_step += 1 //= simulation_step
 
-                const time_since_start_ms = new Date().getTime() - start_time_ms
-                const simulation_step = Math.floor(time_since_start_ms / ms_per_step)
-                if (simulation_step > current_simulation_step)
+                const simulation_step_completed = (step_result: ModelStepResult) =>
                 {
-                    current_simulation_step = simulation_step
+                    run_sim_config.on_simulation_step_completed(step_result)
 
-                    const simulation_step_completed = (step_result: ModelStepResult) =>
-                    {
-                        run_sim_config.on_simulation_step_completed(step_result)
-
-                        // Restart scheduling the next frame
-                        requestAnimationFrame(animate)
-                    }
-
-                    simulate_step(simulation_step_completed)
-                }
-                else
-                {
-                    // Schedule the next frame
+                    // Restart scheduling the next frame
                     requestAnimationFrame(animate)
                 }
-            }
 
-            // Start the simulation / animation
-            requestAnimationFrame(animate)
-
-            // Cleanup function to cancel the simulation / animation
-            return () => {
-                console.log("firing clean up...")
-                simulation_cancelled = true
+                simulate_step(simulation_step_completed)
             }
+            else
+            {
+                // Schedule the next frame
+                requestAnimationFrame(animate)
+            }
+        }
+
+        // Start the simulation / animation
+        requestAnimationFrame(animate)
+
+        // Cleanup function to cancel the simulation / animation
+        return () => {
+            console.log("firing clean up...")
+            simulation_cancelled = true
         }
     }
 
 
     return {
         model: model as any,
+
         add_stock,
         add_variable,
         add_flow,
         extract_step_results,
-        get_ids_map: () => map_between_model_and_wcomponent_id,
+        // get_ids_map: () => map_between_model_and_wcomponent_id,
+
+        get_actions_by_id: () => ({...actions_by_id}),
+        apply_action: (actions_taken: MutableRef<{[action_id: string]: number}>, action_id: string, change_in_value: number=1) =>
+        {
+            const new_value = (actions_taken.current[action_id] || 0) + change_in_value
+            actions_taken.current[action_id] = new_value
+        },
+
+        get_node_from_id,
         get_current_time,
         get_latest_state_by_id,
-        simulate_step,
-        apply_action,
+        // simulate_step,
+        // apply_action,
         run_simulation,
     }
 }
