@@ -6,22 +6,32 @@ import "./monkey_patch"
 import { DemoAppAddOneToStockV3 } from "./DemoAppAddOneToStockV3.tsx"
 import { useState } from "preact/hooks"
 
+
+const Apps = {
+    add_one_to_stock_v3: "Add One To Stock V3",
+    // add_one_to_stock_v4: "Add One To Stock V4",
+}
+
 function App ()
 {
-    const [app_id, set_app_id] = useState<undefined | 3>(undefined)
+    const [selected_app_id, set_selected_app_id] = useState<undefined | keyof typeof Apps>(undefined)
 
-    if (app_id === undefined)
+    if (selected_app_id === undefined)
     {
         return <div>
-            <button onClick={() => set_app_id(3)}>DemoAppAddOneToStockV3</button>
+            {Object.entries(Apps).map(([app_id, app_name]) => <div key={app_id}>
+                <button onClick={() => set_selected_app_id(app_id as keyof typeof Apps)}>{app_name}</button>
+            </div>)}
         </div>
     }
 
-    let app: h.JSX.Element = <DemoAppAddOneToStockV3 />
+    const app_name = Apps[selected_app_id]
+    let app_jsx: h.JSX.Element = <DemoAppAddOneToStockV3 />
 
     return <div>
-        <button onClick={() => set_app_id(undefined)}>Back</button>
-        {app}
+        <button onClick={() => set_selected_app_id(undefined)}>Back</button>
+        <h3>{app_name}</h3>
+        {app_jsx}
     </div>
 }
 
