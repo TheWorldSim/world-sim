@@ -103,27 +103,6 @@ export function make_model_stepper (
 
     const wrapped_model = make_wrapped_model(model_config)
 
-    wrapped_model.add_stock({ wcomponent_id: IDS.state_component__stock_a, name: "Stock A", initial: 100 })
-    wrapped_model.add_stock({ wcomponent_id: IDS.state_component__stock_b, name: "Stock B", initial: 10 })
-    const action_component__increase_a = wrapped_model.add_variable({ wcomponent_id: IDS.variable_component__action_increase_a, name: "Action: Increase Stock A", value: 0, is_action: true })
-    const action_component__move_a_to_b = wrapped_model.add_variable({ wcomponent_id: IDS.variable_component__action_move_a_to_b, name: "Action: Move A to B", value: 0, is_action: true })
-    wrapped_model.add_flow({
-        wcomponent_id: IDS.flow_component__flow_into_a,
-        name: "Flow into A",
-        flow_rate: `[${action_component__increase_a.name}]`,
-        from_id: undefined,
-        to_id: IDS.state_component__stock_a,
-        linked_ids: [IDS.variable_component__action_increase_a],
-    })
-    wrapped_model.add_flow({
-        wcomponent_id: IDS.flow_component__flow_a_to_b,
-        name: "Flow A to B",
-        flow_rate: `[${action_component__move_a_to_b.name}]`,
-        from_id: IDS.state_component__stock_a,
-        to_id: IDS.state_component__stock_b,
-        linked_ids: [IDS.variable_component__action_move_a_to_b],
-    })
-
     return wrapped_model
 }
 

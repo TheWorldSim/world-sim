@@ -3,53 +3,18 @@ import { useEffect, useMemo, useRef, useState } from "preact/hooks"
 import "./app.css"
 import { make_model_stepper, ModelStepResult } from "./make_model_stepper3"
 import { IDS } from "./data/get_data"
-// import { SimulationResult2 } from "./simulation2/simulation2"
-// import { WComponentNode } from "./data_curator/src/wcomponent/interfaces/SpecialisedObjects"
 
 
 const TARGET_REFRESH_RATE = 30 // Hz
 
-export function DemoAppAddOneToStockV3 () {
-    const model_stepper = useMemo(() =>
-    {
-        const wrapped_model = make_model_stepper({target_refresh_rate: TARGET_REFRESH_RATE})
-
-        wrapped_model.add_stock({ wcomponent_id: IDS.state_component__stock_a, name: "Stock A", initial: 100 })
-        wrapped_model.add_stock({ wcomponent_id: IDS.state_component__stock_b, name: "Stock B", initial: 10 })
-        const action_component__increase_a = wrapped_model.add_variable({ wcomponent_id: IDS.variable_component__action_increase_a, name: "Action: Increase Stock A", value: 0, is_action: true })
-        const action_component__move_a_to_b = wrapped_model.add_variable({ wcomponent_id: IDS.variable_component__action_move_a_to_b, name: "Action: Move A to B", value: 0, is_action: true })
-        wrapped_model.add_flow({
-            wcomponent_id: IDS.flow_component__flow_into_a,
-            name: "Flow into A",
-            flow_rate: `[${action_component__increase_a.name}]`,
-            from_id: undefined,
-            to_id: IDS.state_component__stock_a,
-            linked_ids: [IDS.variable_component__action_increase_a],
-        })
-        wrapped_model.add_flow({
-            wcomponent_id: IDS.flow_component__flow_a_to_b,
-            name: "Flow A to B",
-            flow_rate: `[${action_component__move_a_to_b.name}]`,
-            from_id: IDS.state_component__stock_a,
-            to_id: IDS.state_component__stock_b,
-            linked_ids: [IDS.variable_component__action_move_a_to_b],
-        })
-
-        return wrapped_model
-    }, [])
-
-    // const created_at_date = "2024-05-28"
-    // const created_at_time = "11:22:59"
-    // http://localhost:5173/app/#wcomponents/17edbf36-ad5b-4936-b3c5-7d803741c678/&storage_location=1&subview_id=57721b40-5b26-4587-9cc3-614c6c366cae&view=knowledge&x=1218&y=-1538&z=0&zoom=68&sdate=2024-03-24&stime=22:42:19&cdate=2024-05-24&ctime=11:22:59
+export function DemoAppAddOneToStockV4 () {
+    const model_stepper = useMemo(() => make_model_stepper({target_refresh_rate: TARGET_REFRESH_RATE}), [])
 
     const [current_time, set_current_time] = useState(model_stepper.get_current_time())
     const [stock_a, set_stock_a] = useState(model_stepper.get_latest_state_by_id(IDS.state_component__stock_a))
     const [stock_b, set_stock_b] = useState(model_stepper.get_latest_state_by_id(IDS.state_component__stock_b))
     const past_actions_taken = useRef<{step: number, actions_taken: {[action_id: string]: number}}[]>([])
     const actions_taken = useRef<{[action_id: string]: number}>({})
-
-//   const start_time_ms = useRef(new Date().getTime())
-//   const current_simulation_step = useRef(0)
 
     useEffect(() => model_stepper.run_simulation({
         target_refresh_rate: TARGET_REFRESH_RATE,
@@ -107,17 +72,17 @@ export function DemoAppAddOneToStockV3 () {
         <div class="card">
             This is an implementation of&nbsp;
             <a
-                href="https://insightmaker.com/insight/UGp2Y64uh2Pn2euRc9JSc"
+                href="https://insightmaker.com/insight/6KLn6dwkVWUYRTdZStySyk"
                 target="_blank"
             >
-                Simple Stock Actions v1
+                Simple Stock Actions v4
             </a>
         </div>
 
         <div class="card">
             <div>Current time is {current_time.toFixed(1)}</div>
-            <div>Stock A is {round_to_5_dp(stock_a)}</div>
-            <div>Stock B is {round_to_5_dp(stock_b)}</div>
+            <div>Stock A is {stock_a}</div>
+            <div>Stock B is {stock_b}</div>
 
             <button onClick={action__increase_stock_a}>
                 Increase stock A
@@ -128,12 +93,4 @@ export function DemoAppAddOneToStockV3 () {
             </button>
         </div>
     </>
-}
-
-
-function round_to_5_dp (value: number | string | undefined)
-{
-    if (typeof value === "string" || value === undefined) return value
-    const new_value = Math.round(value * 100000) / 100000
-    return `${new_value}${value !== new_value ? " (rounded)" : ""}`
 }

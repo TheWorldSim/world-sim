@@ -4,12 +4,13 @@ import "./index.css"
 import "./monkey_patch"
 
 import { DemoAppAddOneToStockV3 } from "./DemoAppAddOneToStockV3.tsx"
+// import { DemoAppAddOneToStockV4 } from "./DemoAppAddOneToStockV4.tsx"
 import { useState } from "preact/hooks"
 
 
 const Apps = {
     add_one_to_stock_v3: "Add One To Stock V3",
-    // add_one_to_stock_v4: "Add One To Stock V4",
+    add_one_to_stock_v4: "Add One To Stock V4",
 }
 
 function App ()
@@ -27,6 +28,10 @@ function App ()
 
     const app_name = Apps[selected_app_id]
     let app_jsx: h.JSX.Element = <DemoAppAddOneToStockV3 />
+    if (selected_app_id === "add_one_to_stock_v4")
+    {
+        // app_jsx = <DemoAppAddOneToStockV4 />
+    }
 
     return <div>
         <button onClick={() => set_selected_app_id(undefined)}>Back</button>
