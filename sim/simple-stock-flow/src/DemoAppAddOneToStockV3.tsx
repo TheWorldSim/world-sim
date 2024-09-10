@@ -8,9 +8,10 @@ import { IDS } from "./data/get_data"
 
 
 const TARGET_REFRESH_RATE = 30 // Hz
-const model_stepper = make_model_stepper({target_refresh_rate: TARGET_REFRESH_RATE})
 
-export function DemoAppAddOneToStock () {
+export function DemoAppAddOneToStockV3 () {
+  const model_stepper = useMemo(() => make_model_stepper({target_refresh_rate: TARGET_REFRESH_RATE}), [])
+
   // const created_at_date = "2024-05-28"
   // const created_at_time = "11:22:59"
   // http://localhost:5173/app/#wcomponents/17edbf36-ad5b-4936-b3c5-7d803741c678/&storage_location=1&subview_id=57721b40-5b26-4587-9cc3-614c6c366cae&view=knowledge&x=1218&y=-1538&z=0&zoom=68&sdate=2024-03-24&stime=22:42:19&cdate=2024-05-24&ctime=11:22:59
@@ -37,7 +38,6 @@ export function DemoAppAddOneToStock () {
 
       // Reset previously taken actions
       const last_actions_taken = past_actions_taken.current[past_actions_taken.current.length - 1]
-      console.log("last_actions_taken", last_actions_taken?.step, result.current_step)
       if (last_actions_taken && (last_actions_taken.step + 1) === result.current_step)
       {
         Object.keys(last_actions_taken.actions_taken).forEach(action_id =>
