@@ -37,6 +37,7 @@ function App ()
         <button onClick={() => set_selected_app_id(undefined)}>Back</button>
         <h3>{app_name}</h3>
         {app_jsx}
+        <div id="debug_output"></div>
     </div>
 }
 

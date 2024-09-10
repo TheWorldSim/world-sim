@@ -202,6 +202,8 @@ function make_wrapped_model (model_config: ModelConfigStrict)
             name,
         }
 
+        console.debug(`added stock ${stock_extra.name} with id: ${stock_extra._node.id}`)
+
         return stock_extra
     }
 
@@ -232,11 +234,13 @@ function make_wrapped_model (model_config: ModelConfigStrict)
             name,
         }
 
+        console.debug(`added variable ${variable_extra.name} with id: ${variable_extra._node.id}`)
+
         return variable_extra
     }
 
 
-    function add_flow (args: AddFlowArgs): SimulationComponent
+    function add_flow (args: AddFlowArgs): SimulationComponentExtra
     {
         const { wcomponent_id, linked_ids = [] } = args
 
@@ -260,7 +264,15 @@ function make_wrapped_model (model_config: ModelConfigStrict)
 
         nodes.forEach(node => model.Link(node, flow))
 
-        return flow
+        // Add extra fields
+        const flow_extra: SimulationComponentExtra = {
+            ...flow,
+            name: args.name,
+        }
+
+        console.debug(`added flow ${flow_extra.name} with id: ${flow_extra._node.id}`)
+
+        return flow_extra
     }
 
 
@@ -288,6 +300,8 @@ function make_wrapped_model (model_config: ModelConfigStrict)
             ...action,
             name: args.name,
         }
+
+        console.debug(`added action ${action_extra.name} with id: ${action_extra._node.id}`)
 
         return action_extra
     }
@@ -334,13 +348,13 @@ function make_wrapped_model (model_config: ModelConfigStrict)
     }
     function simulate_step (simulation_step_completed: (step_results: ModelStepResult) => void)
     {
-        console.log(`simulate step ${get_current_time() + (model_config.timeStep || 1)}`)
+        // console.log(`simulate step ${get_current_time() + (model_config.timeStep || 1)}`)
 
         if (!model_simulation_started)
         {
             function onPause (res: onPauseResArg)
             {
-                console.log("onPause", res.data)
+                // console.log("onPause", res.data)
                 model_resume = res.resume
 
                 const step_results = extract_step_results(res)
