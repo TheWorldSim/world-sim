@@ -91,10 +91,12 @@ export function make_model_stepper (
     const simulation_time_step = 1 / args.target_refresh_rate
     const time_units = "Seconds"
 
+    const time_length = Math.round(1e5 / args.target_refresh_rate)
+
     const model_config: ModelConfigStrict = {
         timeStart: time_start,
         timeStep: simulation_time_step,
-        timeLength: 1e6,
+        timeLength: time_length,
         timeUnits: time_units,
         timePause: simulation_time_step,
     }

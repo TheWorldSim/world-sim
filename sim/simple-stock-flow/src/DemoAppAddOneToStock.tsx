@@ -7,7 +7,7 @@ import { IDS } from "./data/get_data"
 // import { WComponentNode } from "./data_curator/src/wcomponent/interfaces/SpecialisedObjects"
 
 
-const TARGET_REFRESH_RATE = 5 // Hz
+const TARGET_REFRESH_RATE = 30 // Hz
 const model_stepper = make_model_stepper({target_refresh_rate: TARGET_REFRESH_RATE})
 
 export function DemoAppAddOneToStock () {
