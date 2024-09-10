@@ -80,7 +80,7 @@ export interface AddFlowArgs
 
 export function make_model_stepper (
     // wcomponents: WComponentNode[],
-    // TARGET_REFRESH_RATE: number
+    args: {target_refresh_rate: number},
 ): ModelStepper
 {
     // const wcomponent_by_id: WComponentsById = {}
@@ -88,7 +88,7 @@ export function make_model_stepper (
 
     const time_start = 2020
 
-    const simulation_time_step = 1
+    const simulation_time_step = 1 / args.target_refresh_rate
     const time_units = "Seconds"
 
     const model_config: ModelConfigStrict = {
@@ -136,31 +136,11 @@ interface ModelConfigStrict
 }
 
 
-// interface ModelStepper
-// {
-//     get_latest_state_by_id: (wcomponent_id: string) => ModelValue | undefined
-//     // subscribe_to_state_change: (wcomponent_id: string, subscriber: (value: number) => void) => () => void
-//     // on_state_change: (subscriber: (state: ValueByWComponentId) => void) => () => void
-//     simulate_step: (simulation_step_completed: (step_return: ModelStepResult) => void) => void
-//     apply_action: (wcomponent_id: string) => void
-//     add_stock: (add_stock_args: AddStockArgs) => SimulationComponent
-//     add_variable: (add_variable_args: AddVariableArgs) => SimulationComponent
-//     add_flow: (add_flow_args: AddFlowArgs) => SimulationComponent
-//     get_current_time: () => number
-//     model: typeof Model
-//     extract_step_results: (res: onPauseResArg) => ModelStepResult
-//     // get_ids_map: () => {[id: string]: string}
-//     // function get_node_from_id (id: string | undefined, throw_on_missing?: false): SimulationComponent | undefined
-//     // function get_node_from_id (id: string | undefined, throw_on_missing: true): SimulationComponent
-//     // function get_node_from_id (id: string | undefined, throw_on_missing?: boolean): SimulationComponent | undefined
-//     get_node_from_id: (id: string | undefined, throw_on_missing?: boolean) => SimulationComponent | undefined
-//     run_simulation: (run_sim_config: RunSimulationConfig) => () => () => void
-// }
-
 type ModelStepper = ReturnType<typeof make_wrapped_model>
 
 function make_wrapped_model (model_config: ModelConfigStrict)
 {
+    model_config.timeStep
     const model = new Model(model_config)
     let model_simulation_started = false
     let simulation_cancelled = false
@@ -349,6 +329,24 @@ function make_wrapped_model (model_config: ModelConfigStrict)
     }
 
 
+    const apply_action = (actions_taken: MutableRef<{[action_id: string]: number}>, action_id: string, change_in_value: number=1) =>
+    {
+        const new_value = (actions_taken.current[action_id] || 0) + change_in_value
+        actions_taken.current[action_id] = new_value
+    }
+
+
+    /**
+     * Use this in a react component like:
+     *   const actions_taken = useRef<{[action_id: string]: number}>({})
+     *   const action__increase_stock_a = useMemo(model_stepper.make_apply_action(actions_taken, IDS.variable_component__action_increase_a), [])
+     */
+    const make_apply_action = (actions_taken: MutableRef<{[action_id: string]: number}>, action_id: string, change_in_value: number=1) =>
+    {
+        return () => () => apply_action(actions_taken, action_id, change_in_value)
+    }
+
+
     function run_simulation (run_sim_config: RunSimulationConfig)
     {
         if (simulation_cancelled) throw new Error("Can not yet restart a cancelled simulation")
@@ -406,11 +404,8 @@ function make_wrapped_model (model_config: ModelConfigStrict)
         // get_ids_map: () => map_between_model_and_wcomponent_id,
 
         get_actions_by_id: () => ({...actions_by_id}),
-        apply_action: (actions_taken: MutableRef<{[action_id: string]: number}>, action_id: string, change_in_value: number=1) =>
-        {
-            const new_value = (actions_taken.current[action_id] || 0) + change_in_value
-            actions_taken.current[action_id] = new_value
-        },
+        apply_action,
+        make_apply_action,
 
         get_node_from_id,
         get_current_time,

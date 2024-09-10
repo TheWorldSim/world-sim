@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "preact/hooks"
+import { useEffect, useMemo, useRef, useState } from "preact/hooks"
 
 import "./app.css"
 import { make_model_stepper, ModelStepResult } from "./make_model_stepper3"
@@ -7,8 +7,8 @@ import { IDS } from "./data/get_data"
 // import { WComponentNode } from "./data_curator/src/wcomponent/interfaces/SpecialisedObjects"
 
 
-const TARGET_REFRESH_RATE = 1 // Hz
-const model_stepper = make_model_stepper()
+const TARGET_REFRESH_RATE = 5 // Hz
+const model_stepper = make_model_stepper({target_refresh_rate: TARGET_REFRESH_RATE})
 
 export function DemoAppAddOneToStock () {
   // const created_at_date = "2024-05-28"
@@ -65,31 +65,41 @@ export function DemoAppAddOneToStock () {
   }), [])
 
 
-  function action__increase_stock_a ()
-  {
-    model_stepper.apply_action(actions_taken, IDS.variable_component__action_increase_a)
-  }
+  const action__increase_stock_a = useMemo(model_stepper.make_apply_action(
+    actions_taken,
+    IDS.variable_component__action_increase_a,
+    TARGET_REFRESH_RATE
+  ), [TARGET_REFRESH_RATE])
 
-  function action__move_a_to_b ()
-  {
-    model_stepper.apply_action(actions_taken, IDS.variable_component__action_move_a_to_b)
-  }
+  const action__move_a_to_b = useMemo(model_stepper.make_apply_action(
+    actions_taken,
+    IDS.variable_component__action_move_a_to_b,
+    TARGET_REFRESH_RATE
+  ), [TARGET_REFRESH_RATE])
 
   return (
     <>
       <div class="card">
-        <div>Current time is {current_time}</div>
-        <div>Stock A is {stock_a}</div>
-        <div>Stock B is {stock_b}</div>
+        <div>Current time is {current_time.toFixed(1)}</div>
+        <div>Stock A is {round_to_5_dp(stock_a)}</div>
+        <div>Stock B is {round_to_5_dp(stock_b)}</div>
 
-        <button onClick={() => action__increase_stock_a()}>
+        <button onClick={action__increase_stock_a}>
           Increase stock A
         </button>
 
-        <button onClick={() => action__move_a_to_b()}>
+        <button onClick={action__move_a_to_b}>
           Move A to B
         </button>
       </div>
     </>
   )
+}
+
+
+function round_to_5_dp (value: number | string | undefined)
+{
+  if (typeof value === "string" || value === undefined) return value
+  const new_value = Math.round(value * 100000) / 100000
+  return `${new_value}${value !== new_value ? " (rounded)" : ""}`
 }
