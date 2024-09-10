@@ -78,6 +78,16 @@ export interface AddFlowArgs
 }
 
 
+export interface AddActionArgs
+{
+    wcomponent_id: string
+    name: string
+    action: string
+    trigger_value: string
+    linked_ids?: string[]
+}
+
+
 export function make_model_stepper (
     // wcomponents: WComponentNode[],
     args: {target_refresh_rate: number},
@@ -171,7 +181,7 @@ function make_wrapped_model (model_config: ModelConfigStrict)
     }
 
 
-    function add_stock (args: AddStockArgs): SimulationComponent
+    function add_stock (args: AddStockArgs): SimulationComponentExtra
     {
         const { wcomponent_id, name, initial } = args
 
@@ -186,7 +196,13 @@ function make_wrapped_model (model_config: ModelConfigStrict)
         latest_model_results.values[stock._node.id] = initial
         latest_model_results.values[wcomponent_id] = initial
 
-        return stock
+        // Add extra fields
+        const stock_extra: SimulationComponentExtra = {
+            ...stock,
+            name,
+        }
+
+        return stock_extra
     }
 
 
@@ -211,27 +227,29 @@ function make_wrapped_model (model_config: ModelConfigStrict)
         }
 
         // Add extra fields
-        const variable_extra = variable as SimulationComponentExtra
-        variable_extra.name = name
+        const variable_extra: SimulationComponentExtra = {
+            ...variable,
+            name,
+        }
 
         return variable_extra
     }
 
 
-    function add_flow (add_flow_args: AddFlowArgs): SimulationComponent
+    function add_flow (args: AddFlowArgs): SimulationComponent
     {
-        const { wcomponent_id, linked_ids = [] } = add_flow_args
+        const { wcomponent_id, linked_ids = [] } = args
 
-        const from_node = get_node_from_id(add_flow_args.from_id)
-        const to_node = get_node_from_id(add_flow_args.to_id)
+        const from_node = get_node_from_id(args.from_id)
+        const to_node = get_node_from_id(args.to_id)
 
         const flow = model.Flow(
             from_node,
             to_node,
             {
-                name: add_flow_args.name,
+                name: args.name,
                 note: wcomponent_id,
-                rate: add_flow_args.flow_rate,
+                rate: args.flow_rate,
             }
         )
 
@@ -243,6 +261,35 @@ function make_wrapped_model (model_config: ModelConfigStrict)
         nodes.forEach(node => model.Link(node, flow))
 
         return flow
+    }
+
+
+    function add_action (args: AddActionArgs): SimulationComponentExtra
+    {
+        const { wcomponent_id, linked_ids = [] } = args
+
+        const action = model.Action({
+            name: args.name,
+            action: args.action,
+            trigger: "Condition",
+            value: args.trigger_value,
+            note: wcomponent_id,
+        })
+
+        map_between_model_and_wcomponent_id[action._node.id] = wcomponent_id
+        map_between_wcomponent_and_model_id[wcomponent_id] = action._node.id
+
+        const nodes = linked_ids.map(id => get_node_from_id(id, true))
+
+        nodes.forEach(node => model.Link(node, action))
+
+        // Add extra fields
+        const action_extra: SimulationComponentExtra = {
+            ...action,
+            name: args.name,
+        }
+
+        return action_extra
     }
 
 
@@ -381,6 +428,8 @@ function make_wrapped_model (model_config: ModelConfigStrict)
         add_stock,
         add_variable,
         add_flow,
+        add_action,
+
         extract_step_results,
         // get_ids_map: () => map_between_model_and_wcomponent_id,
 

@@ -4,7 +4,7 @@ import "./index.css"
 import "./monkey_patch"
 
 import { DemoAppAddOneToStockV3 } from "./DemoAppAddOneToStockV3.tsx"
-// import { DemoAppAddOneToStockV4 } from "./DemoAppAddOneToStockV4.tsx"
+import { DemoAppAddOneToStockV4 } from "./DemoAppAddOneToStockV4.tsx"
 import { useState } from "preact/hooks"
 
 
@@ -30,7 +30,7 @@ function App ()
     let app_jsx: h.JSX.Element = <DemoAppAddOneToStockV3 />
     if (selected_app_id === "add_one_to_stock_v4")
     {
-        // app_jsx = <DemoAppAddOneToStockV4 />
+        app_jsx = <DemoAppAddOneToStockV4 />
     }
 
     return <div>

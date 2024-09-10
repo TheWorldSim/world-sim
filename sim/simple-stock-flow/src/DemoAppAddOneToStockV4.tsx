@@ -8,11 +8,38 @@ import { IDS } from "./data/get_data"
 const TARGET_REFRESH_RATE = 30 // Hz
 
 export function DemoAppAddOneToStockV4 () {
-    const model_stepper = useMemo(() => make_model_stepper({target_refresh_rate: TARGET_REFRESH_RATE}), [])
+    const model_stepper = useMemo(() => {
+        const wrapped_model = make_model_stepper({target_refresh_rate: TARGET_REFRESH_RATE})
+
+        const stock_a = wrapped_model.add_stock({ wcomponent_id: IDS.stock_a, name: "Stock A", initial: 100 })
+        const stock_b = wrapped_model.add_stock({ wcomponent_id: IDS.stock_b, name: "Stock B", initial: 10 })
+        const action_component__increase_a = wrapped_model.add_variable({ wcomponent_id: IDS.variable__action_increase_a, name: "Action: Increase Stock A", value: 0, is_action: true })
+        const action_component__move_a_to_b = wrapped_model.add_variable({ wcomponent_id: IDS.variable__action_move_a_to_b, name: "Action: Move A to B", value: 0, is_action: true })
+        wrapped_model.add_action({
+            wcomponent_id: IDS.action__increase_stock_a,
+            name: "Increase Stock A",
+            action: `[${stock_a.name}] <- [${stock_a.name}] + [${action_component__increase_a.name}]`,
+            trigger_value: `[${action_component__increase_a.name}]`,
+            linked_ids: [
+                IDS.variable__action_increase_a,
+                IDS.stock_a,
+            ],
+        })
+        // wrapped_model.add_flow({
+        //     wcomponent_id: IDS.flow_component__flow_a_to_b,
+        //     name: "Move A to B",
+        //     flow_rate: `[${action_component__move_a_to_b.name}]`,
+        //     from_id: IDS.state_component__stock_a,
+        //     to_id: IDS.state_component__stock_b,
+        //     linked_ids: [IDS.variable_component__action_move_a_to_b],
+        // })
+
+        return wrapped_model
+    }, [])
 
     const [current_time, set_current_time] = useState(model_stepper.get_current_time())
-    const [stock_a, set_stock_a] = useState(model_stepper.get_latest_state_by_id(IDS.state_component__stock_a))
-    const [stock_b, set_stock_b] = useState(model_stepper.get_latest_state_by_id(IDS.state_component__stock_b))
+    const [stock_a, set_stock_a] = useState(model_stepper.get_latest_state_by_id(IDS.stock_a))
+    const [stock_b, set_stock_b] = useState(model_stepper.get_latest_state_by_id(IDS.stock_b))
     const past_actions_taken = useRef<{step: number, actions_taken: {[action_id: string]: number}}[]>([])
     const actions_taken = useRef<{[action_id: string]: number}>({})
 
@@ -21,15 +48,15 @@ export function DemoAppAddOneToStockV4 () {
         on_simulation_step_completed: (result: ModelStepResult) =>
         {
             set_current_time(result.current_time)
-            set_stock_a(result.values[IDS.state_component__stock_a])
-            set_stock_b(result.values[IDS.state_component__stock_b])
+            set_stock_a(result.values[IDS.stock_a])
+            set_stock_b(result.values[IDS.stock_b])
 
             const { set_value } = result
             if (!set_value) return
 
             // Reset previously taken actions
             const last_actions_taken = past_actions_taken.current[past_actions_taken.current.length - 1]
-            if (last_actions_taken && (last_actions_taken.step + 1) === result.current_step)
+            if (last_actions_taken && (last_actions_taken.step + 2) === result.current_step)
             {
                 Object.keys(last_actions_taken.actions_taken).forEach(action_id =>
                 {
@@ -58,15 +85,13 @@ export function DemoAppAddOneToStockV4 () {
 
     const action__increase_stock_a = useMemo(model_stepper.make_apply_action(
         actions_taken,
-        IDS.variable_component__action_increase_a,
-        TARGET_REFRESH_RATE
-    ), [TARGET_REFRESH_RATE])
+        IDS.variable__action_increase_a,
+    ), [])
 
     const action__move_a_to_b = useMemo(model_stepper.make_apply_action(
         actions_taken,
-        IDS.variable_component__action_move_a_to_b,
-        TARGET_REFRESH_RATE
-    ), [TARGET_REFRESH_RATE])
+        IDS.variable__action_move_a_to_b,
+    ), [])
 
     return <>
         <div class="card">

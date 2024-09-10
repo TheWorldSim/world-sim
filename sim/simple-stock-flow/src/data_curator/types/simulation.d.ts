@@ -25,6 +25,15 @@ declare module "simulation" {
         note?: string
     }
 
+    interface ModelActionConfig
+    {
+        name: string
+        action: string
+        trigger: "Timeout" | "Probability" | "Condition"
+        value: string // number | string | "True" | "False"
+        note?: string
+    }
+
 
     interface Primitive
     {
@@ -56,6 +65,7 @@ declare module "simulation" {
         Variable (config: ModelVariableConfig): SimulationComponent { }
         Stock (config: ModelStockConfig): SimulationComponent { }
         Flow(from_id: SimulationComponent | undefined, to_id: SimulationComponent | undefined, config: { name: string; note: string, rate: string }): SimulationComponent {}
+        Action(config: ModelActionConfig): SimulationComponent { }
 
         // If config.onPause is set then the simulation will pause and return
         // value of this function will be undefined.
