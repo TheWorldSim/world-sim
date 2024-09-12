@@ -1,5 +1,4 @@
 import { ModelStockConfig, ModelVariableConfig, onPauseResArg, Primitive, SimulationComponent, TimeUnitsAll } from "simulation"
-import { IDS } from "./data/get_data"
 import { MutableRef } from "preact/hooks"
 const { Model } = await import("simulation")
 
@@ -37,7 +36,7 @@ if (Model.toString().match(/.*simulate\(\).*/mg))
 
 
 type ModelValue = number | string | "True" | "False"
-interface ModelValues
+export interface ModelValues
 {
     [component_id: string]: ModelValue
 }
@@ -117,7 +116,7 @@ export function make_model_stepper (
 }
 
 
-interface ModelConfigStrict
+export interface ModelConfigStrict
 {
     timeStart: number
     timeStep: number
@@ -397,7 +396,7 @@ function make_wrapped_model (model_config: ModelConfigStrict)
 
         const ms_per_step = 1000 / target_refresh_rate
 
-        let start_time_ms = new Date().getTime()
+        const start_time_ms = new Date().getTime()
 
         const animate = () => {
             if (simulation_cancelled) return
@@ -406,7 +405,7 @@ function make_wrapped_model (model_config: ModelConfigStrict)
             const simulation_step = Math.floor(time_since_start_ms / ms_per_step)
             if (simulation_step > current_simulation_step)
             {
-                current_simulation_step += 1 //= simulation_step
+                current_simulation_step += 1
 
                 const simulation_step_completed = (step_result: ModelStepResult) =>
                 {
