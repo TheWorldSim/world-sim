@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks"
 
 import "./app.css"
-import { make_model_stepper, ModelStepResult } from "./make_model_stepper3"
+import { make_model_stepper, ModelStepper, ModelStepResult } from "./make_model_stepper3"
 import { IDS } from "./data/get_data"
 // import { SimulationResult2 } from "./simulation2/simulation2"
 // import { WComponentNode } from "./data_curator/src/wcomponent/interfaces/SpecialisedObjects"
@@ -10,8 +10,16 @@ import { IDS } from "./data/get_data"
 const TARGET_REFRESH_RATE = 30 // Hz
 
 export function DemoAppAddOneToStockV3 () {
-    const model_stepper = useMemo(() =>
+    const data: undefined = useMemo(() =>
     {
+        return undefined
+    }, [])
+
+
+    const model_stepper: ModelStepper | undefined = useMemo(() =>
+    {
+        if (data === undefined) return undefined
+
         const wrapped_model = make_model_stepper({target_refresh_rate: TARGET_REFRESH_RATE})
 
         wrapped_model.add_stock({ wcomponent_id: IDS.stock__state_a, name: "Stock A", initial: 100 })
@@ -36,7 +44,15 @@ export function DemoAppAddOneToStockV3 () {
         })
 
         return wrapped_model
-    }, [])
+    }, [data])
+
+    return model_stepper ? <AppAddOneToStockV3 model_stepper={model_stepper} /> : <div>Loading...</div>
+}
+
+
+function AppAddOneToStockV3(props: { model_stepper: ModelStepper })
+{
+    const { model_stepper } = props
 
     // const created_at_date = "2024-05-28"
     // const created_at_time = "11:22:59"

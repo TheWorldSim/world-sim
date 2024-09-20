@@ -126,7 +126,7 @@ export interface ModelConfigStrict
 }
 
 
-type ModelStepper = ReturnType<typeof make_wrapped_model>
+export type ModelStepper = ReturnType<typeof make_wrapped_model>
 
 function make_wrapped_model (model_config: ModelConfigStrict)
 {
