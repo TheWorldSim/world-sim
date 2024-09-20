@@ -2,17 +2,17 @@ import { WComponent } from "../data_curator/src/wcomponent/interfaces/Specialise
 
 
 export const IDS = {
-    stock_a: "17edbf36-ad5b-4936-b3c5-7d803741c678",
-    stock_b: "b644e33f-c00f-4a50-acc4-f158e4e11be5",
+    stock__state_a: "17edbf36-ad5b-4936-b3c5-7d803741c678",
+    stock__state_b: "b644e33f-c00f-4a50-acc4-f158e4e11be5",
 
-    variable__action_increase_a: "action-increase-a",
-    variable__action_move_a_to_b: "action-move-a-to-b",
+    variable__action_increase_a: "8ecb8d21-4803-4028-9341-b7cd59b56cda",
+    variable__action_move_a_to_b: "2dc650ae-8458-47b6-be0e-6ad1cab3cd4d",
 
-    flow__flow_into_a: "flow-into-a",
-    flow__flow_a_to_b: "flow-a-to-b",
+    flow__flow_into_a: "c31be0d8-6ce5-4db2-8b4b-1d13ed48a869",
+    flow__flow_a_to_b: "a8ca022f-1f52-4f8f-b9b2-045f77c65eea",
 
-    action__increase_stock_a: "action-effector-increase-a",
-    action__move_a_to_b: "action-effector-move-a-to-b",
+    action__action_increase_stock_a: "action-effector-increase-a",
+    action__action_move_a_to_b: "action-effector-move-a-to-b",
 }
 
 
