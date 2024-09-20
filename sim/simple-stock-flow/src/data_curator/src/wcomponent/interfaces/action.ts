@@ -1,6 +1,4 @@
-// Copied from: https://github.com/AJamesPhillips/DataCurator/blob/main/app/frontend/src/wcomponent/interfaces/actions.ts
-
-import { HasObjectives } from "./judgement"
+import type { HasObjectives } from "./judgement"
 import type { WComponentCalculations, WComponentNodeBase } from "./wcomponent_base"
 
 
