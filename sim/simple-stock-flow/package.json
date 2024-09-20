@@ -9,15 +9,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@types/chart.js": "^2.9.41",
-    "chart.js": "^4.4.3",
+    "@supabase/supabase-js": "2.45.4",
+    "@types/chart.js": "2.9.41",
+    "chart.js": "4.4.3",
     "preact": "10.19.6",
     "simulation": "3.0.0"
   },
   "devDependencies": {
     "@preact/preset-vite": "2.8.2",
-    "simulation-viz-console": "1.0.4",
-    "ts-node": "^10.9.2",
+    "ts-node": "10.9.2",
     "typescript": "5.2.2",
     "vite": "5.2.0"
   }
