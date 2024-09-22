@@ -41,20 +41,11 @@ declare module "simulation" {
     }
 
 
-    interface onPauseResArg
+    interface onPauseSimulationArg
     {
-        times: number[]
-        data: object[]
-        timeUnits: TimeUnitsAll
-        children: undefined
-        error: null
-        errorPrimitive: null
-        stochastic: undefined
-        value: (item: Primitive) => number
-        lastValue: (item: Primitive) => number
-        periods: number
-        resume: () => void
-        setValue: (cell: Primitive | SimulationComponent, value: number) => void
+        results: SimulationResult
+        time: number
+        setValue: (primitive: Primitive, value: number) => void
     }
 
 
@@ -67,9 +58,8 @@ declare module "simulation" {
         Flow (from_component: SimulationComponent | undefined, to_component: SimulationComponent | undefined, config: { name: string; note?: string, rate: string | number }): SimulationComponent {}
         Action (config: ModelActionConfig): SimulationComponent { }
 
-        // If config.onPause is set then the simulation will pause and return
-        // value of this function will be undefined.
-        simulate (config: { onPause: (res: onPauseResArg) => void }): SimulationResult | undefined { }
+        simulate (): SimulationResult { }
+        async simulateAsync (config: { onPause: (simulation: onPauseSimulationArg) => void }): SimulationResult { }
 
         Link (source_component: SimulationComponent, consuming_component: SimulationComponent) { }
 
@@ -118,6 +108,7 @@ declare module "simulation" {
         _data: SimulationResult_data
         _nameIdMapping: {[index: string]: string} // maps id to Variable.name
         timeUnits: TimeUnits
+        value: (primitive: Primitive | SimulationComponent, time: number) => {}
     }
 
     interface SimulationResult_data
@@ -129,6 +120,10 @@ declare module "simulation" {
         error: null
         errorPrimitive: null
         stochastic: boolean
+        value: (primitive: Primitive) => {}
+        lastValue: () => {}
         periods: number
+        resume: () => void
+        setValue: (primitive: Primitive, value: number) => void
     }
 }
