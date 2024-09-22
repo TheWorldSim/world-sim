@@ -8,13 +8,13 @@ import { normalise_calculation_numbers } from "./normalise_calculation_numbers"
 import { convert_percentages } from "./convert_percentages"
 import { hide_currency_symbols } from "./hide_currency_symbols"
 import { apply_units_from_component } from "./apply_units_from_component"
-import { WComponentsValueById, get_wcomponents_values_by_id } from "../../../data/get_wcomponents_values_by_id"
+import { SimplifiedWComponentsValueById, get_wcomponents_values_by_id } from "../../../data/get_wcomponents_values_by_id"
 
 
 
 export function prepare_model (calculations: PlainCalculationObject[], wcomponents_by_id: WComponentsById)
 {
-    const wcomponents_state_by_id: WComponentsValueById = get_wcomponents_values_by_id(wcomponents_by_id)
+    const wcomponents_state_by_id: SimplifiedWComponentsValueById = get_wcomponents_values_by_id(wcomponents_by_id)
 
     const values: { [id: string]: CalculationResult } = {}
 
@@ -52,7 +52,7 @@ export function prepare_model (calculations: PlainCalculationObject[], wcomponen
 
 
 
-function prepare_other_components (model: Model, model_component: SimulationComponent, values: { [id: string]: CalculationResult }, uuids: string[], wcomponents_state_by_id: WComponentsValueById)
+function prepare_other_components (model: Model, model_component: SimulationComponent, values: { [id: string]: CalculationResult }, uuids: string[], wcomponents_state_by_id: SimplifiedWComponentsValueById)
 {
     const other_components: { [id: string]: SimulationComponent } = {}
 

@@ -8,16 +8,40 @@ import { WComponentsById } from "./data_curator/src/wcomponent/interfaces/Specia
 import { GetItemsReturn } from "./data_curator/src/state/sync/supabase/get_items"
 import {
     get_wcomponents_values_by_id,
-    WComponentsValueById,
+    SimplifiedWComponentsValueById,
 } from "./data/get_wcomponents_values_by_id"
 import { get_supabase } from "./data_curator/src/supabase/get_supabase"
+import { get_double_at_mentioned_uuids_from_text } from "./data_curator/src/sharedf/rich_text/replace_normal_ids"
+import { normalise_calculation_ids } from "./data_curator/src/calculations/normalise_calculation_ids"
 
 
 const supabase = get_supabase()
-const cached_data: GetItemsReturn<WComponentsValueById> = {
+const cached_data: GetItemsReturn<SimplifiedWComponentsValueById> = {
     value: {
-        "17edbf36-ad5b-4936-b3c5-7d803741c678": 5,
-        "b644e33f-c00f-4a50-acc4-f158e4e11be5": 2,
+        statev2: {
+            "17edbf36-ad5b-4936-b3c5-7d803741c678": {
+                state: 5
+            },
+            "b644e33f-c00f-4a50-acc4-f158e4e11be5": {
+                state: 2
+            }
+        },
+        causal_link: {
+            "a8ca022f-1f52-4f8f-b9b2-045f77c65eea": {
+                effect: "@@2dc650ae-8458-47b6-be0e-6ad1cab3cd4d"
+            },
+            "c31be0d8-6ce5-4db2-8b4b-1d13ed48a869": {
+                effect: "@@8ecb8d21-4803-4028-9341-b7cd59b56cda"
+            }
+        },
+        action: {
+            "2dc650ae-8458-47b6-be0e-6ad1cab3cd4d": {
+                calculation: ""
+            },
+            "8ecb8d21-4803-4028-9341-b7cd59b56cda": {
+                calculation: ""
+            }
+        }
     },
     error: undefined,
 }
@@ -26,7 +50,7 @@ const TARGET_REFRESH_RATE = 30 // Hz
 
 export function DemoAppAddOneToStockV3 () {
     const use_cached_data = false
-    const [data, set_data] = useState<GetItemsReturn<WComponentsValueById> | undefined>(use_cached_data ? cached_data : undefined)
+    const [data, set_data] = useState<GetItemsReturn<SimplifiedWComponentsValueById> | undefined>(use_cached_data ? cached_data : undefined)
 
     useEffect(() => {
         if (use_cached_data) return
@@ -37,13 +61,12 @@ export function DemoAppAddOneToStockV3 () {
             const wcomponents_by_id: WComponentsById = {}
             wcomponents_response.value.forEach(wcomponent => wcomponents_by_id[wcomponent.id] = wcomponent)
 
-            const wcomponents_state_by_id = get_wcomponents_values_by_id(wcomponents_by_id)
+            const wcomponents_values_by_id = get_wcomponents_values_by_id(wcomponents_by_id)
 
-            const wcomponents_by_id_response: GetItemsReturn<WComponentsValueById> = {
-                value: wcomponents_state_by_id,
+            const wcomponents_by_id_response: GetItemsReturn<SimplifiedWComponentsValueById> = {
+                value: wcomponents_values_by_id,
                 error: wcomponents_response.error,
             }
-            debugger
             set_data(wcomponents_by_id_response)
         }
 
@@ -57,17 +80,29 @@ export function DemoAppAddOneToStockV3 () {
 
         const wrapped_model = make_model_stepper({target_refresh_rate: TARGET_REFRESH_RATE})
 
-        const stock_a_value = data.value[IDS_v3.stock__state_a]
-        const stock_b_value = data.value[IDS_v3.stock__state_b]
+        const stock_a_value = data.value.statev2[IDS_v3.stock__state_a]
+        const stock_b_value = data.value.statev2[IDS_v3.stock__state_b]
 
-        wrapped_model.add_stock({ wcomponent_id: IDS_v3.stock__state_a, name: "Stock A", initial: stock_a_value || 100 })
-        wrapped_model.add_stock({ wcomponent_id: IDS_v3.stock__state_b, name: "Stock B", initial: stock_b_value || 10 })
-        const action_component__increase_a = wrapped_model.add_variable({ wcomponent_id: IDS_v3.variable__action_increase_a, name: "Action: Increase Stock A", value: 0, is_action: true })
-        const action_component__move_a_to_b = wrapped_model.add_variable({ wcomponent_id: IDS_v3.variable__action_move_a_to_b, name: "Action: Move A to B", value: 0, is_action: true })
+        wrapped_model.add_stock({ wcomponent_id: IDS_v3.stock__state_a, name: "Stock A", initial: stock_a_value?.state || 100 })
+        wrapped_model.add_stock({ wcomponent_id: IDS_v3.stock__state_b, name: "Stock B", initial: stock_b_value?.state || 10 })
+
+        const action_component__increase_a = wrapped_model.add_variable({
+            wcomponent_id: IDS_v3.variable__action_increase_a,
+            name: IDS_v3.variable__action_increase_a,
+            value: 0,
+            is_action: true,
+        })
+        const action_component__move_a_to_b = wrapped_model.add_variable({
+            wcomponent_id: IDS_v3.variable__action_move_a_to_b,
+            name: IDS_v3.variable__action_move_a_to_b,
+            value: 0,
+            is_action: true,
+        })
+
         wrapped_model.add_flow({
             wcomponent_id: IDS_v3.flow__flow_into_a,
             name: "Flow into A",
-            flow_rate: `[${action_component__increase_a.name}]`,
+            flow_rate: data.value.causal_link[IDS_v3.flow__flow_into_a]?.effect || "",
             from_id: undefined,
             to_id: IDS_v3.stock__state_a,
             linked_ids: [IDS_v3.variable__action_increase_a],
@@ -75,7 +110,7 @@ export function DemoAppAddOneToStockV3 () {
         wrapped_model.add_flow({
             wcomponent_id: IDS_v3.flow__flow_a_to_b,
             name: "Flow A to B",
-            flow_rate: `[${action_component__move_a_to_b.name}]`,
+            flow_rate: data.value.causal_link[IDS_v3.flow__flow_a_to_b]?.effect || "",
             from_id: IDS_v3.stock__state_a,
             to_id: IDS_v3.stock__state_b,
             linked_ids: [IDS_v3.variable__action_move_a_to_b],

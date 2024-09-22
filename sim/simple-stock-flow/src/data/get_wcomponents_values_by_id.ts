@@ -1,20 +1,61 @@
-import { WComponentsById } from "../data_curator/src/wcomponent/interfaces/SpecialisedObjects"
+import { wcomponent_is_action, wcomponent_is_causal_link, WComponentsById } from "../data_curator/src/wcomponent/interfaces/SpecialisedObjects"
 import { get_wcomponent_state_value_and_probabilities } from "../data_curator/src/wcomponent_derived/get_wcomponent_state_value_and_probabilities"
 
 
-export interface WComponentsValueById
+interface SimplifiedWComponentStateV2
 {
-    [id: string]: number | string
+    state: number | string
+}
+interface SimplifiedWComponentCausalLink
+{
+    effect: string
+}
+interface SimplifiedWComponentAction {
+    calculation: string
+    // trigger_type: "condition"
+    // trigger_calculation: string
 }
 
-export function get_wcomponents_values_by_id (wcomponents_by_id: WComponentsById): WComponentsValueById
+export interface SimplifiedWComponentsValueById
 {
-    const initial_state_by_id: {[id: string]: number | string} = {}
+    statev2: {[id: string]: SimplifiedWComponentStateV2}
+    causal_link: {[id: string]: SimplifiedWComponentCausalLink}
+    action: {[id: string]: SimplifiedWComponentAction}
+}
+
+export function get_wcomponents_values_by_id (wcomponents_by_id: WComponentsById): SimplifiedWComponentsValueById
+{
+    const value_by_id: SimplifiedWComponentsValueById = {
+        statev2: {},
+        causal_link: {},
+        action: {},
+    }
 
     const now_ms = new Date().getTime()
 
     Object.entries(wcomponents_by_id).forEach(([uuid, wcomponent]) =>
     {
+        if (wcomponent_is_causal_link(wcomponent))
+        {
+            value_by_id.causal_link[uuid] = {
+                effect: wcomponent.effect_string || "",
+            }
+            return
+        }
+
+        if (wcomponent_is_action(wcomponent))
+        {
+            const calculation = wcomponent.calculations?.join("\n") || ""
+            // const trigger_calculation = wcomponent.trigger_calculations.join("\n") || ""
+            // const trigger_type = "condition" //wcomponent.trigger_type
+            value_by_id.action[uuid] = {
+                calculation,
+                // trigger_type,
+                // trigger_calculation,
+            }
+            return
+        }
+
         const VAP_sets = get_wcomponent_state_value_and_probabilities({
             wcomponent,
             VAP_set_id_to_counterfactual_v2_map: {},
@@ -30,8 +71,10 @@ export function get_wcomponents_values_by_id (wcomponents_by_id: WComponentsById
         // Note that currently the value of boolean's is a string of "True" or "False"
         if (typeof value === "boolean") return
 
-        initial_state_by_id[uuid] = value
+        value_by_id.statev2[uuid] = {
+            state: value,
+        }
     })
 
-    return initial_state_by_id
+    return value_by_id
 }

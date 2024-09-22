@@ -1,5 +1,7 @@
 import { ModelStockConfig, ModelVariableConfig, onPauseResArg, Primitive, SimulationComponent, TimeUnitsAll } from "simulation"
 import { MutableRef } from "preact/hooks"
+import { get_double_at_mentioned_uuids_from_text } from "./data_curator/src/sharedf/rich_text/replace_normal_ids"
+import { normalise_calculation_ids } from "./data_curator/src/calculations/normalise_calculation_ids"
 const { Model } = await import("simulation")
 
 
@@ -70,7 +72,7 @@ export interface AddFlowArgs
 {
     wcomponent_id: string
     name: string
-    flow_rate: string
+    flow_rate: string | number
     from_id: string | undefined
     to_id: string | undefined
     linked_ids?: string[]
@@ -246,13 +248,20 @@ function make_wrapped_model (model_config: ModelConfigStrict)
         const from_node = get_node_from_id(args.from_id)
         const to_node = get_node_from_id(args.to_id)
 
+        let flow_rate_calculation = args.flow_rate
+        if (typeof args.flow_rate === "string")
+        {
+            const flow_rate_uuids = get_double_at_mentioned_uuids_from_text(args.flow_rate)
+            flow_rate_calculation = normalise_calculation_ids(args.flow_rate, flow_rate_uuids)
+        }
+
         const flow = model.Flow(
             from_node,
             to_node,
             {
                 name: args.name,
                 note: wcomponent_id,
-                rate: args.flow_rate,
+                rate: flow_rate_calculation,
             }
         )
 

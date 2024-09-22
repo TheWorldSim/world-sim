@@ -1,3 +1,4 @@
+import { PlainCalculationObject } from "../../calculations/interfaces"
 import type { HasObjectives } from "./judgement"
 import type { WComponentCalculations, WComponentNodeBase } from "./wcomponent_base"
 
