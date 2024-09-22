@@ -21,8 +21,8 @@ importers:
         specifier: 10.19.6
         version: 10.19.6
       simulation:
-        specifier: 3.0.0
-        version: 3.0.0
+        specifier: 5.0.0
+        version: 5.0.0
     devDependencies:
       '@preact/preset-vite':
         specifier: 2.8.2
@@ -693,8 +693,8 @@ packages:
     resolution: {integrity: sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==}
     hasBin: true
 
-  simulation@3.0.0:
-    resolution: {integrity: sha512-74Stoq/Z7vBbGicZcCEbpqx3nAdcVN2h52zW8rDxYszJhBXrnZ4X9u5TbtwFfpH0+174LJGma8zHA2hi1AGiTw==}
+  simulation@5.0.0:
+    resolution: {integrity: sha512-RuYIR5G0w9ZRvmGJx7dZFiv2VEXngQcv+IPt1lAA4x80HN+BiE3c2r69g8TctkyUV0Y+FadjH9X217/u9+uM/w==}
 
   source-map-js@1.2.0:
     resolution: {integrity: sha512-itJW8lvSA0TXEphiRoawsCksnlf8SyvmFzIhltqAHluXd88pkCd+cXJVHTDwdCr0IzwptSm035IHQktUu1QUMg==}
@@ -1435,7 +1435,7 @@ snapshots:
 
   semver@6.3.1: {}
 
-  simulation@3.0.0: {}
+  simulation@5.0.0: {}
 
   source-map-js@1.2.0: {}
 
