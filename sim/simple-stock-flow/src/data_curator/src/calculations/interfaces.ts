@@ -1,5 +1,61 @@
+// import { YAMLParseError } from "yaml"
+import { ReplaceNormalIdsInTextArgs } from "../sharedf/rich_text/interfaces"
 import { NumberDisplayType } from "../shared/types"
-import { WComponentNodeStateV2 } from "../wcomponent/interfaces/state"
+
+
+
+interface ValidPlainCalculationObject
+{
+    valid: true
+    value: number | string  // strings might be an @@<uuid v4>
+    name?: string
+}
+
+// interface InvalidCalculationObject
+// {
+//     valid: false
+//     errors: (string | YAMLParseError)[]
+// }
+
+
+// export type PlainCalculationObjectV1 = ValidPlainCalculationObject | InvalidCalculationObject
+
+
+// interface _FullCalculationObject
+// {
+//     valid: true
+//     name: string
+//     value_str: string
+//     value: number
+// }
+
+
+// export type FullCalculationObject = _FullCalculationObject | InvalidCalculationObject
+
+
+
+// interface _ParsedCalculationObject
+// {
+//     valid: true
+//     name: string
+//     value_str: string
+//     value: number
+//     needs_computing: boolean
+// }
+
+
+// export type ParsedCalculationObject = _ParsedCalculationObject | InvalidCalculationObject
+
+
+
+
+export interface ReplaceCalculationsWithResults extends ReplaceNormalIdsInTextArgs
+{
+    created_at_ms: number
+    sim_ms: number
+}
+
+
 
 
 /**
@@ -23,9 +79,5 @@ export interface CalculationResult
     value: number | undefined
     units: string
     error?: string
-}
-
-
-export interface WComponentNodeStateV2ById {
-    [id: string]: WComponentNodeStateV2
+    warning?: string
 }

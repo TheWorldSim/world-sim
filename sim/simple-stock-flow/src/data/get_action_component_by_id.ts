@@ -1,5 +1,5 @@
 import { wcomponent_is_action } from "../data_curator/src/wcomponent/interfaces/SpecialisedObjects"
-import { WComponentNodeAction } from "../data_curator/src/wcomponent/interfaces/actions"
+import { WComponentNodeAction } from "../data_curator/src/wcomponent/interfaces/action"
 import { get_data } from "./get_data"
 
 

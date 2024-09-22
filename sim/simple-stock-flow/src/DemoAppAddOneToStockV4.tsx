@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "preact/hooks"
 
 import "./app.css"
 import { make_model_stepper, ModelStepResult } from "./make_model_stepper3"
-import { IDS } from "./data/get_data"
+import { IDS_v4 } from "./data/get_data"
 
 
 const TARGET_REFRESH_RATE = 30 // Hz
@@ -11,29 +11,29 @@ export function DemoAppAddOneToStockV4 () {
     const model_stepper = useMemo(() => {
         const wrapped_model = make_model_stepper({target_refresh_rate: TARGET_REFRESH_RATE})
 
-        const stock_a = wrapped_model.add_stock({ wcomponent_id: IDS.stock__state_a, name: "Stock A", initial: 100 })
-        const stock_b = wrapped_model.add_stock({ wcomponent_id: IDS.stock__state_b, name: "Stock B", initial: 10 })
-        const action_component__increase_a = wrapped_model.add_variable({ wcomponent_id: IDS.variable__action_increase_a, name: "Action: Increase Stock A", value: 0, is_action: true })
-        const action_component__move_a_to_b = wrapped_model.add_variable({ wcomponent_id: IDS.variable__action_move_a_to_b, name: "Action: Move A to B", value: 0, is_action: true })
+        const stock_a = wrapped_model.add_stock({ wcomponent_id: IDS_v4.stock__state_a, name: "Stock A", initial: 100 })
+        const stock_b = wrapped_model.add_stock({ wcomponent_id: IDS_v4.stock__state_b, name: "Stock B", initial: 10 })
+        const action_component__increase_a = wrapped_model.add_variable({ wcomponent_id: IDS_v4.variable__action_increase_a, name: "Action: Increase Stock A", value: 0, is_action: true })
+        const action_component__move_a_to_b = wrapped_model.add_variable({ wcomponent_id: IDS_v4.variable__action_move_a_to_b, name: "Action: Move A to B", value: 0, is_action: true })
         wrapped_model.add_action({
-            wcomponent_id: IDS.action__action_increase_stock_a,
+            wcomponent_id: IDS_v4.action__action_increase_stock_a,
             name: "Increase Stock A",
             action: `[${stock_a.name}] <- [${stock_a.name}] + [${action_component__increase_a.name}]`,
             trigger_value: `[${action_component__increase_a.name}]`,
             linked_ids: [
-                IDS.variable__action_increase_a,
-                IDS.stock__state_a,
+                IDS_v4.variable__action_increase_a,
+                IDS_v4.stock__state_a,
             ],
         })
         wrapped_model.add_action({
-            wcomponent_id: IDS.action__action_move_a_to_b,
+            wcomponent_id: IDS_v4.action__action_move_a_to_b,
             name: "Move A to B",
             action: `[${stock_a.name}] <- [${stock_a.name}] - [${action_component__move_a_to_b.name}]; [${stock_b.name}] <- [${stock_b.name}] + [${action_component__move_a_to_b.name}]`,
             trigger_value: `[${action_component__move_a_to_b.name}]`,
             linked_ids: [
-                IDS.variable__action_move_a_to_b,
-                IDS.stock__state_a,
-                IDS.stock__state_b,
+                IDS_v4.variable__action_move_a_to_b,
+                IDS_v4.stock__state_a,
+                IDS_v4.stock__state_b,
             ],
         })
 
@@ -41,8 +41,8 @@ export function DemoAppAddOneToStockV4 () {
     }, [])
 
     const [current_time, set_current_time] = useState(model_stepper.get_current_time())
-    const [stock_a, set_stock_a] = useState(model_stepper.get_latest_state_by_id(IDS.stock__state_a))
-    const [stock_b, set_stock_b] = useState(model_stepper.get_latest_state_by_id(IDS.stock__state_b))
+    const [stock_a, set_stock_a] = useState(model_stepper.get_latest_state_by_id(IDS_v4.stock__state_a))
+    const [stock_b, set_stock_b] = useState(model_stepper.get_latest_state_by_id(IDS_v4.stock__state_b))
     const past_actions_taken = useRef<{step: number, actions_taken: {[action_id: string]: number}}[]>([])
     const actions_taken = useRef<{[action_id: string]: number}>({})
 
@@ -51,8 +51,8 @@ export function DemoAppAddOneToStockV4 () {
         on_simulation_step_completed: (result: ModelStepResult) =>
         {
             set_current_time(result.current_time)
-            set_stock_a(result.values[IDS.stock__state_a])
-            set_stock_b(result.values[IDS.stock__state_b])
+            set_stock_a(result.values[IDS_v4.stock__state_a])
+            set_stock_b(result.values[IDS_v4.stock__state_b])
 
             const { set_value } = result
             if (!set_value) return
@@ -88,12 +88,12 @@ export function DemoAppAddOneToStockV4 () {
 
     const action__increase_stock_a = useMemo(model_stepper.make_apply_action(
         actions_taken,
-        IDS.variable__action_increase_a,
+        IDS_v4.variable__action_increase_a,
     ), [])
 
     const action__move_a_to_b = useMemo(model_stepper.make_apply_action(
         actions_taken,
-        IDS.variable__action_move_a_to_b,
+        IDS_v4.variable__action_move_a_to_b,
     ), [])
 
     return <>

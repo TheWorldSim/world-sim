@@ -1,5 +1,5 @@
-import { WComponentsById } from "../wcomponent/interfaces/SpecialisedObjects"
-import { get_wcomponent_state_value_and_probabilities } from "../wcomponent_derived/get_wcomponent_state_value_and_probabilities"
+import { WComponentsById } from "../data_curator/src/wcomponent/interfaces/SpecialisedObjects"
+import { get_wcomponent_state_value_and_probabilities } from "../data_curator/src/wcomponent_derived/get_wcomponent_state_value_and_probabilities"
 
 
 export interface WComponentsStateById

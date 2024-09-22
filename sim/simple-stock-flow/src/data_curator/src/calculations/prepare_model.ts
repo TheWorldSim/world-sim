@@ -8,7 +8,7 @@ import { normalise_calculation_numbers } from "./normalise_calculation_numbers"
 import { convert_percentages } from "./convert_percentages"
 import { hide_currency_symbols } from "./hide_currency_symbols"
 import { apply_units_from_component } from "./apply_units_from_component"
-import { WComponentsStateById, get_wcomponents_state_by_id } from "./get_wcomponents_state_by_id"
+import { WComponentsStateById, get_wcomponents_state_by_id } from "../../../data/get_wcomponents_state_by_id"
 
 
 
