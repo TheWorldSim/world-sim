@@ -2,12 +2,12 @@ import { WComponentsById } from "../data_curator/src/wcomponent/interfaces/Speci
 import { get_wcomponent_state_value_and_probabilities } from "../data_curator/src/wcomponent_derived/get_wcomponent_state_value_and_probabilities"
 
 
-export interface WComponentsStateById
+export interface WComponentsValueById
 {
     [id: string]: number | string
 }
 
-export function get_wcomponents_state_by_id (wcomponents_by_id: WComponentsById): WComponentsStateById
+export function get_wcomponents_values_by_id (wcomponents_by_id: WComponentsById): WComponentsValueById
 {
     const initial_state_by_id: {[id: string]: number | string} = {}
 

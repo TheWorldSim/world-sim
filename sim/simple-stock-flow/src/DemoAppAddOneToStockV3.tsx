@@ -7,14 +7,14 @@ import { supabase_get_wcomponents } from "./data_curator/src/state/sync/supabase
 import { WComponentsById } from "./data_curator/src/wcomponent/interfaces/SpecialisedObjects"
 import { GetItemsReturn } from "./data_curator/src/state/sync/supabase/get_items"
 import {
-    get_wcomponents_state_by_id,
-    WComponentsStateById,
-} from "./data/get_wcomponents_state_by_id"
+    get_wcomponents_values_by_id,
+    WComponentsValueById,
+} from "./data/get_wcomponents_values_by_id"
 import { get_supabase } from "./data_curator/src/supabase/get_supabase"
 
 
 const supabase = get_supabase()
-const cached_data: GetItemsReturn<WComponentsStateById> = {
+const cached_data: GetItemsReturn<WComponentsValueById> = {
     value: {
         "17edbf36-ad5b-4936-b3c5-7d803741c678": 5,
         "b644e33f-c00f-4a50-acc4-f158e4e11be5": 2,
@@ -26,7 +26,7 @@ const TARGET_REFRESH_RATE = 30 // Hz
 
 export function DemoAppAddOneToStockV3 () {
     const use_cached_data = false
-    const [data, set_data] = useState<GetItemsReturn<WComponentsStateById> | undefined>(use_cached_data ? cached_data : undefined)
+    const [data, set_data] = useState<GetItemsReturn<WComponentsValueById> | undefined>(use_cached_data ? cached_data : undefined)
 
     useEffect(() => {
         if (use_cached_data) return
@@ -37,9 +37,9 @@ export function DemoAppAddOneToStockV3 () {
             const wcomponents_by_id: WComponentsById = {}
             wcomponents_response.value.forEach(wcomponent => wcomponents_by_id[wcomponent.id] = wcomponent)
 
-            const wcomponents_state_by_id = get_wcomponents_state_by_id(wcomponents_by_id)
+            const wcomponents_state_by_id = get_wcomponents_values_by_id(wcomponents_by_id)
 
-            const wcomponents_by_id_response: GetItemsReturn<WComponentsStateById> = {
+            const wcomponents_by_id_response: GetItemsReturn<WComponentsValueById> = {
                 value: wcomponents_state_by_id,
                 error: wcomponents_response.error,
             }
