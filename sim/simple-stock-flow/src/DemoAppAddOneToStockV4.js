@@ -14,25 +14,14 @@ if (!Array.prototype.last) {
 }
 
 
-if (Model.toString().match(/.*simulate\(\).*/mg) && !Model.toString().match(/.*async simulateAsync\(.*/mg))
+if (!Model.toString().match(/.*async simulateAsync\(.*/mg))
 {
-    const error_msg = `Model requires a customised simulate method or async simulateAsync method.
+    const error_msg = `Model requires simulateAsync method.
 
     Please:
     1.  stop the vite server.
     2.  delete: rm -rf node_modules/.vite
-    3.  open: node_modules/simulation/src/api/Model.js and replace with the following code:
-
-    simulate(config) {
-        config = {
-            silent: true,
-            model: this,
-            ...config,
-        }
-
-        let results = runSimulation(config);
-        if (!results) return undefined
-        // rest of function...
+    3.  open: node_modules/simulation/src and copy accross the relevant files
     `
     throw new Error(error_msg)
 }
@@ -70,8 +59,8 @@ model.Link(stock_a, actual_action_increase_a)
 model.Link(action_increase_a, actual_action_increase_a)
 
 
-// import type { onPauseSimulationArg } from "simulation"
-// async function onPause (simulation: onPauseSimulationArg)
+// import type { OnPauseSimulationArg } from "simulation"
+// async function onPause (simulation: OnPauseSimulationArg)
 async function onPause (simulation)
 {
     const current_time = simulation.time

@@ -14,9 +14,6 @@ export const IDS_v4 = {
     stock__state_a: "3d77c2b9-e1cb-4b1b-9e22-66bc0b673f75",
     stock__state_b: "e429827b-3b12-475b-bcd8-9afd6f4b9973",
 
-    variable__action_increase_a: IDS_v3.variable__action_increase_a,
-    variable__action_move_a_to_b: IDS_v3.variable__action_move_a_to_b,
-
-    action__action_increase_stock_a: "action-effector-increase-a",
-    action__action_move_a_to_b: "action-effector-move-a-to-b",
+    action__action_increase_stock_a: "779e1a1b-b590-4a9f-b1a8-cfccb543b807",
+    action__action_move_a_to_b: "8b65e686-2926-4f89-8919-79d450ac682f",
 }

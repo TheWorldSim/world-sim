@@ -11,10 +11,9 @@ import {
     SimplifiedWComponentsValueById,
 } from "./data/get_wcomponents_values_by_id"
 import { get_supabase } from "./data_curator/src/supabase/get_supabase"
-import { get_double_at_mentioned_uuids_from_text } from "./data_curator/src/sharedf/rich_text/replace_normal_ids"
-import { normalise_calculation_ids } from "./data_curator/src/calculations/normalise_calculation_ids"
 
 
+const TARGET_REFRESH_RATE = 30 // Hz
 const supabase = get_supabase()
 const cached_data: GetItemsReturn<SimplifiedWComponentsValueById> = {
     value: {
@@ -28,10 +27,10 @@ const cached_data: GetItemsReturn<SimplifiedWComponentsValueById> = {
         },
         causal_link: {
             "a8ca022f-1f52-4f8f-b9b2-045f77c65eea": {
-                effect: "@@2dc650ae-8458-47b6-be0e-6ad1cab3cd4d"
+                effect: "[2dc650ae-8458-47b6-be0e-6ad1cab3cd4d]"
             },
             "c31be0d8-6ce5-4db2-8b4b-1d13ed48a869": {
-                effect: "@@8ecb8d21-4803-4028-9341-b7cd59b56cda"
+                effect: "[8ecb8d21-4803-4028-9341-b7cd59b56cda]"
             }
         },
         action: {
@@ -46,14 +45,13 @@ const cached_data: GetItemsReturn<SimplifiedWComponentsValueById> = {
     error: undefined,
 }
 
-const TARGET_REFRESH_RATE = 30 // Hz
 
 export function DemoAppAddOneToStockV3 () {
-    const use_cached_data = false
-    const [data, set_data] = useState<GetItemsReturn<SimplifiedWComponentsValueById> | undefined>(use_cached_data ? cached_data : undefined)
+    const [data, set_data] = useState<GetItemsReturn<SimplifiedWComponentsValueById> | undefined>(cached_data)
 
     useEffect(() => {
-        if (use_cached_data) return
+        if (data) return
+
         const fetch_data = async () => {
             const ids = Object.values(IDS_v3)
             const wcomponents_response = await supabase_get_wcomponents({ supabase, base_id: undefined, all_bases: true, ids })
@@ -71,7 +69,7 @@ export function DemoAppAddOneToStockV3 () {
         }
 
         fetch_data()
-    }, [])
+    }, [data])
 
 
     const model_stepper: ModelStepper | undefined = useMemo(() =>
@@ -83,8 +81,16 @@ export function DemoAppAddOneToStockV3 () {
         const stock_a_value = data.value.statev2[IDS_v3.stock__state_a]
         const stock_b_value = data.value.statev2[IDS_v3.stock__state_b]
 
-        wrapped_model.add_stock({ wcomponent_id: IDS_v3.stock__state_a, name: "Stock A", initial: stock_a_value?.state || 100 })
-        wrapped_model.add_stock({ wcomponent_id: IDS_v3.stock__state_b, name: "Stock B", initial: stock_b_value?.state || 10 })
+        wrapped_model.add_stock({
+            wcomponent_id: IDS_v3.stock__state_a,
+            name: "Stock A",
+            initial: stock_a_value?.state || 100,
+        })
+        wrapped_model.add_stock({
+            wcomponent_id: IDS_v3.stock__state_b,
+            name: "Stock B",
+            initial: stock_b_value?.state || 10,
+        })
 
         const action_component__increase_a = wrapped_model.add_variable({
             wcomponent_id: IDS_v3.variable__action_increase_a,
@@ -120,13 +126,16 @@ export function DemoAppAddOneToStockV3 () {
     }, [data])
 
 
-    if (model_stepper) return <AppAddOneToStockV3 model_stepper={model_stepper} />
+    if (model_stepper) return <AppAddOneToStockV3
+        model_stepper={model_stepper}
+        trigger_fetching_live_data={() => set_data(undefined)}
+    />
     if (data?.error) return <div>Error: {data.error.message}</div>
     return <div>Loading...</div>
 }
 
 
-function AppAddOneToStockV3(props: { model_stepper: ModelStepper })
+function AppAddOneToStockV3(props: { model_stepper: ModelStepper, trigger_fetching_live_data: () => void })
 {
     const { model_stepper } = props
 
@@ -141,16 +150,14 @@ function AppAddOneToStockV3(props: { model_stepper: ModelStepper })
     const actions_taken = useRef<{[action_id: string]: number}>({})
 
 
-    useEffect(() => model_stepper.run_simulation({
-        target_refresh_rate: TARGET_REFRESH_RATE,
-        on_simulation_step_completed: (result: ModelStepResult) =>
+    useEffect(() => model_stepper.run_simulation((result: ModelStepResult) =>
         {
             set_current_time(result.current_time)
             set_stock_a(result.values[IDS_v3.stock__state_a])
             set_stock_b(result.values[IDS_v3.stock__state_b])
 
             const { set_value } = result
-            if (!set_value) return
+            if (!set_value) return { reason_to_stop: "Error: no set_value" }
 
             // Reset previously taken actions
             const last_actions_taken = past_actions_taken.current[past_actions_taken.current.length - 1]
@@ -177,8 +184,9 @@ function AppAddOneToStockV3(props: { model_stepper: ModelStepper })
                 past_actions_taken.current.push({ step: result.current_step, actions_taken: actions_taken.current })
                 actions_taken.current = {}
             }
-        }
-    }), [])
+
+            return undefined
+        }), [])
 
 
     const action__increase_stock_a = useMemo(model_stepper.make_apply_action(
@@ -202,6 +210,10 @@ function AppAddOneToStockV3(props: { model_stepper: ModelStepper })
             >
                 Simple Stock Actions v1
             </a>
+            <br />
+            <button onClick={() => props.trigger_fetching_live_data()}>
+                Refresh data from DataCurator
+            </button>
         </div>
 
         <div class="card">
@@ -224,6 +236,6 @@ function AppAddOneToStockV3(props: { model_stepper: ModelStepper })
 function round_to_5_dp (value: number | string | undefined)
 {
     if (typeof value === "string" || value === undefined) return value
-    const new_value = Math.round(value * 100000) / 100000
-    return `${new_value}${value !== new_value ? " (rounded)" : ""}`
+    const new_value = value.toFixed(1)
+    return `${new_value}`//${value !== new_value ? " (rounded)" : ""}`
 }

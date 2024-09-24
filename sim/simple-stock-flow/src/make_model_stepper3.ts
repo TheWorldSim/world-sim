@@ -1,7 +1,5 @@
-import { ModelStockConfig, ModelVariableConfig, onPauseResArg, Primitive, SimulationComponent, TimeUnitsAll } from "simulation"
+import { ModelStockConfig, ModelVariableConfig, OnPauseSimulationArg, Primitive, SimulationComponent, TimeUnitsAll } from "simulation"
 import { MutableRef } from "preact/hooks"
-import { get_double_at_mentioned_uuids_from_text } from "./data_curator/src/sharedf/rich_text/replace_normal_ids"
-import { normalise_calculation_ids } from "./data_curator/src/calculations/normalise_calculation_ids"
 const { Model } = await import("simulation")
 
 
@@ -13,25 +11,14 @@ interface SimulationComponentExtra extends SimulationComponent
 }
 
 
-if (Model.toString().match(/.*simulate\(\).*/mg))
+if (!Model.toString().match(/.*async simulateAsync\(.*/mg))
 {
-    const error_msg = `Model requires a customised simulate method.
+    const error_msg = `Model requires simulateAsync method.
 
     Please:
     1.  stop the vite server.
     2.  delete: rm -rf node_modules/.vite
-    3.  open: node_modules/simulation/src/api/Model.js and replace with the following code:
-
-    simulate(config) {
-        config = {
-            silent: true,
-            model: this,
-            ...config,
-        }
-
-        let results = runSimulation(config);
-        if (!results) return undefined
-        // rest of function...
+    3.  open: node_modules/simulation/src and copy accross the relevant files
     `
     throw new Error(error_msg)
 }
@@ -48,12 +35,6 @@ export interface ModelStepResult
     current_time: number
     current_step: number
     set_value?: (cell: Primitive | SimulationComponent, value: number) => void
-}
-
-export interface RunSimulationConfig
-{
-    target_refresh_rate?: number
-    on_simulation_step_completed: (step_results: ModelStepResult) => void
 }
 
 export interface AddStockArgs extends ModelStockConfig
@@ -96,13 +77,13 @@ export function make_model_stepper (
 {
     // const wcomponent_by_id: WComponentsById = {}
     // wcomponents.forEach(wcomponent => wcomponent_by_id[wcomponent.id] = wcomponent)
-
+    const { target_refresh_rate } = args
     const time_start = 2020
 
-    const simulation_time_step = 1 / args.target_refresh_rate
+    const simulation_time_step = 1 / target_refresh_rate
     const time_units = "Seconds"
 
-    const time_length = Math.round(1e5 / args.target_refresh_rate)
+    const time_length = Math.round(1e5 / target_refresh_rate)
 
     const model_config: ModelConfigStrict = {
         timeStart: time_start,
@@ -112,7 +93,7 @@ export function make_model_stepper (
         timePause: simulation_time_step,
     }
 
-    const wrapped_model = make_wrapped_model(model_config)
+    const wrapped_model = make_wrapped_model(model_config, { target_refresh_rate })
 
     return wrapped_model
 }
@@ -130,10 +111,11 @@ export interface ModelConfigStrict
 
 export type ModelStepper = ReturnType<typeof make_wrapped_model>
 
-function make_wrapped_model (model_config: ModelConfigStrict)
+function make_wrapped_model (model_config: ModelConfigStrict, run_sim_config: { target_refresh_rate: number })
 {
-    model_config.timeStep
     const model = new Model(model_config)
+    const target_refresh_rate = run_sim_config.target_refresh_rate
+
     let model_simulation_started = false
     let simulation_cancelled = false
     let current_simulation_step = 0
@@ -248,20 +230,13 @@ function make_wrapped_model (model_config: ModelConfigStrict)
         const from_node = get_node_from_id(args.from_id)
         const to_node = get_node_from_id(args.to_id)
 
-        let flow_rate_calculation = args.flow_rate
-        if (typeof args.flow_rate === "string")
-        {
-            const flow_rate_uuids = get_double_at_mentioned_uuids_from_text(args.flow_rate)
-            flow_rate_calculation = normalise_calculation_ids(args.flow_rate, flow_rate_uuids)
-        }
-
         const flow = model.Flow(
             from_node,
             to_node,
             {
                 name: args.name,
                 note: wcomponent_id,
-                rate: flow_rate_calculation,
+                rate: args.flow_rate,
             }
         )
 
@@ -315,28 +290,6 @@ function make_wrapped_model (model_config: ModelConfigStrict)
     }
 
 
-    function extract_step_results (res: onPauseResArg): ModelStepResult
-    {
-        const values: ModelValues = {}
-
-        Object.entries(res.data.last() || {}).forEach(([model_id, value]) =>
-        {
-            values[model_id] = value as any as number
-            const wcomponent_id = map_between_model_and_wcomponent_id[model_id]
-            if (wcomponent_id) values[wcomponent_id] = value as any as number
-        })
-
-        latest_model_results = {
-            values,
-            current_time: res.times.last() || 0,
-            current_step: current_simulation_step,
-            set_value: res.setValue,
-        }
-
-        return latest_model_results
-    }
-
-
     function get_current_time (): number
     {
         return latest_model_results.current_time
@@ -348,34 +301,6 @@ function make_wrapped_model (model_config: ModelConfigStrict)
         const model_id = get_id_as_model_id(id) || ""
 
         return latest_model_results.values[model_id]
-    }
-
-
-    let model_resume: () => void = () => {
-        throw new Error("model_resume not yet set")
-    }
-    function simulate_step (simulation_step_completed: (step_results: ModelStepResult) => void)
-    {
-        // console.log(`simulate step ${get_current_time() + (model_config.timeStep || 1)}`)
-
-        if (!model_simulation_started)
-        {
-            function onPause (res: onPauseResArg)
-            {
-                // console.log("onPause", res.data)
-                model_resume = res.resume
-
-                const step_results = extract_step_results(res)
-                simulation_step_completed(step_results)
-            }
-
-            model_simulation_started = true
-            model.simulate({ onPause })
-        }
-        else
-        {
-            model_resume()
-        }
     }
 
 
@@ -397,48 +322,74 @@ function make_wrapped_model (model_config: ModelConfigStrict)
     }
 
 
-    function run_simulation (run_sim_config: RunSimulationConfig)
+    function run_simulation (on_simulation_step_completed: (step_results: ModelStepResult) => { reason_to_stop: string } | undefined)
     {
         if (simulation_cancelled) throw new Error("Can not yet restart a cancelled simulation")
-        const target_refresh_rate = run_sim_config.target_refresh_rate || 1
+        if (model_simulation_started) throw new Error("Can not start an already started simulation")
+
         console.log(`Starting simulation running at ${target_refresh_rate} Hz`)
+        model_simulation_started = true
 
         const ms_per_step = 1000 / target_refresh_rate
-
         const start_time_ms = new Date().getTime()
 
-        const animate = () => {
-            if (simulation_cancelled) return
 
-            const time_since_start_ms = new Date().getTime() - start_time_ms
-            const simulation_step = Math.floor(time_since_start_ms / ms_per_step)
-            if (simulation_step > current_simulation_step)
+        function wait_for_next_simulation_step (): Promise<void>
+        {
+            return new Promise((resolve, reject) =>
             {
-                current_simulation_step += 1
+                const animate = () => {
+                    if (simulation_cancelled)
+                    {
+                        reject("Stopping simulation as requested by clean up function")
+                        return
+                    }
 
-                const simulation_step_completed = (step_result: ModelStepResult) =>
-                {
-                    run_sim_config.on_simulation_step_completed(step_result)
-
-                    // Restart scheduling the next frame
-                    requestAnimationFrame(animate)
+                    const time_since_start_ms = new Date().getTime() - start_time_ms
+                    const simulation_step = Math.floor(time_since_start_ms / ms_per_step)
+                    if (simulation_step > current_simulation_step)
+                    {
+                        current_simulation_step += 1
+                        resolve()
+                    }
+                    else
+                    {
+                        // Schedule the next frame
+                        requestAnimationFrame(animate)
+                    }
                 }
 
-                simulate_step(simulation_step_completed)
-            }
-            else
-            {
-                // Schedule the next frame
+                // Start the simulation animation
                 requestAnimationFrame(animate)
-            }
+            })
         }
 
-        // Start the simulation / animation
-        requestAnimationFrame(animate)
 
-        // Cleanup function to cancel the simulation / animation
+        async function onPause (simulation: OnPauseSimulationArg)
+        {
+            if (simulation_cancelled)
+            {
+                throw new Error("Stopping simulation as requested by clean up function")
+            }
+
+            const step_results = extract_step_results(simulation, current_simulation_step, map_between_model_and_wcomponent_id)
+            const stop_simulation = on_simulation_step_completed(step_results)
+
+            if (stop_simulation?.reason_to_stop)
+            {
+                throw new Error(`Stopping simulation as requested by client through on_simulation_step_completed because: "${stop_simulation?.reason_to_stop}"`)
+            }
+
+            await wait_for_next_simulation_step()
+        }
+
+
+        // Start the simulation
+        model.simulateAsync({ onPause })
+
+        // Clean up function to cancel the simulation / animation
         return () => {
-            console.log("firing clean up...")
+            console.log("firing async clean up...")
             simulation_cancelled = true
         }
     }
@@ -452,7 +403,7 @@ function make_wrapped_model (model_config: ModelConfigStrict)
         add_flow,
         add_action,
 
-        extract_step_results,
+        // extract_step_results,
         // get_ids_map: () => map_between_model_and_wcomponent_id,
 
         get_actions_by_id: () => ({...actions_by_id}),
@@ -466,4 +417,27 @@ function make_wrapped_model (model_config: ModelConfigStrict)
         // apply_action,
         run_simulation,
     }
+}
+
+
+
+function extract_step_results (simulation: OnPauseSimulationArg, current_simulation_step: number, map_between_model_and_wcomponent_id: {[id: string]: string}): ModelStepResult
+{
+    const values: ModelValues = {}
+
+    Object.entries(simulation.results._data.data.last() || {}).forEach(([model_id, value]) =>
+    {
+        values[model_id] = value as any as number
+        const wcomponent_id = map_between_model_and_wcomponent_id[model_id]
+        if (wcomponent_id) values[wcomponent_id] = value as any as number
+    })
+
+    const latest_model_results: ModelStepResult = {
+        values,
+        current_time: simulation.results._data.times.last() || 0,
+        current_step: current_simulation_step,
+        set_value: simulation.setValue,
+    }
+
+    return latest_model_results
 }

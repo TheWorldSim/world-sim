@@ -1,5 +1,8 @@
+import { normalise_calculation_ids } from "../data_curator/src/calculations/normalise_calculation_ids"
+import { get_double_at_mentioned_uuids_from_text } from "../data_curator/src/sharedf/rich_text/replace_normal_ids"
 import { wcomponent_is_action, wcomponent_is_causal_link, WComponentsById } from "../data_curator/src/wcomponent/interfaces/SpecialisedObjects"
 import { get_wcomponent_state_value_and_probabilities } from "../data_curator/src/wcomponent_derived/get_wcomponent_state_value_and_probabilities"
+import { get_calculation_string_from_calculation_rows } from "./get_calculation_string_from_calculation_rows"
 
 
 interface SimplifiedWComponentStateV2
@@ -37,15 +40,17 @@ export function get_wcomponents_values_by_id (wcomponents_by_id: WComponentsById
     {
         if (wcomponent_is_causal_link(wcomponent))
         {
-            value_by_id.causal_link[uuid] = {
-                effect: wcomponent.effect_string || "",
-            }
+            let effect = wcomponent.effect_string || ""
+            const effect_uuids = get_double_at_mentioned_uuids_from_text(effect)
+            effect = normalise_calculation_ids(effect, effect_uuids)
+
+            value_by_id.causal_link[uuid] = { effect }
             return
         }
 
         if (wcomponent_is_action(wcomponent))
         {
-            const calculation = wcomponent.calculations?.join("\n") || ""
+            const calculation = get_calculation_string_from_calculation_rows(wcomponent.calculations)
             // const trigger_calculation = wcomponent.trigger_calculations.join("\n") || ""
             // const trigger_type = "condition" //wcomponent.trigger_type
             value_by_id.action[uuid] = {

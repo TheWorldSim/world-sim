@@ -41,11 +41,11 @@ declare module "simulation" {
     }
 
 
-    interface onPauseSimulationArg
+    interface OnPauseSimulationArg
     {
         results: SimulationResult
         time: number
-        setValue: (primitive: Primitive, value: number) => void
+        setValue: (primitive: Primitive | SimulationComponent, value: number) => void
     }
 
 
@@ -59,7 +59,7 @@ declare module "simulation" {
         Action (config: ModelActionConfig): SimulationComponent { }
 
         simulate (): SimulationResult { }
-        async simulateAsync (config: { onPause: (simulation: onPauseSimulationArg) => void }): SimulationResult { }
+        async simulateAsync (config: { onPause: (simulation: OnPauseSimulationArg) => void }): SimulationResult { }
 
         Link (source_component: SimulationComponent, consuming_component: SimulationComponent) { }
 
