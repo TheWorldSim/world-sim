@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks"
 
-import "./app.css"
 import { make_model_stepper, ModelStepper, ModelStepResult } from "./make_model_stepper3"
 import { IDS_v4 } from "./data/get_data"
 import { GetItemsReturn } from "./data_curator/src/state/sync/supabase/get_items"
@@ -56,7 +55,6 @@ export function DemoAppAddOneToStockV4 () {
                 value: wcomponents_values_by_id,
                 error: wcomponents_response.error,
             }
-            debugger
             set_data(wcomponents_by_id_response)
         }
 

@@ -1,4 +1,4 @@
-import { ModelStockConfig, ModelVariableConfig, OnPauseSimulationArg, Primitive, SimulationComponent, TimeUnitsAll } from "simulation"
+import { ModelConfig, ModelStockConfig, ModelVariableConfig, OnPauseSimulationArg, Primitive, SimulationComponent, TimeUnitsAll } from "simulation"
 import { MutableRef } from "preact/hooks"
 const { Model } = await import("simulation")
 
@@ -47,6 +47,7 @@ export interface AddVariableArgs extends ModelVariableConfig
 {
     wcomponent_id: string
     is_action?: boolean
+    linked_ids?: string[]
 }
 
 export interface AddFlowArgs
@@ -54,6 +55,7 @@ export interface AddFlowArgs
     wcomponent_id: string
     name: string
     flow_rate: string | number
+    only_positive?: boolean
     from_id: string | undefined
     to_id: string | undefined
     linked_ids?: string[]
@@ -72,7 +74,8 @@ export interface AddActionArgs
 
 export function make_model_stepper (
     // wcomponents: WComponentNode[],
-    args: {target_refresh_rate: number},
+    args: { target_refresh_rate: number },
+    model_config: ModelConfig = {},
 ): ModelStepper
 {
     // const wcomponent_by_id: WComponentsById = {}
@@ -85,21 +88,22 @@ export function make_model_stepper (
 
     const time_length = Math.round(1e5 / target_refresh_rate)
 
-    const model_config: ModelConfigStrict = {
+    const all_model_config: ModelConfigStrict = {
         timeStart: time_start,
         timeStep: simulation_time_step,
         timeLength: time_length,
         timeUnits: time_units,
         timePause: simulation_time_step,
+        ...model_config,
     }
 
-    const wrapped_model = make_wrapped_model(model_config, { target_refresh_rate })
+    const wrapped_model = make_wrapped_model(all_model_config, { target_refresh_rate })
 
     return wrapped_model
 }
 
 
-export interface ModelConfigStrict
+interface ModelConfigStrict
 {
     timeStart: number
     timeStep: number
@@ -193,13 +197,16 @@ function make_wrapped_model (model_config: ModelConfigStrict, run_sim_config: { 
 
     function add_variable (args: AddVariableArgs): SimulationComponentExtra
     {
-        const { wcomponent_id, name, value } = args
+        const { wcomponent_id, name, value, linked_ids = [] } = args
 
         const variable = model.Variable({
             name,
             value,
             note: wcomponent_id,
         })
+
+        const nodes = linked_ids.map(id => get_node_from_id(id, true))
+        nodes.forEach(node => model.Link(node, variable))
 
         map_between_model_and_wcomponent_id[variable._node.id] = wcomponent_id
         map_between_wcomponent_and_model_id[wcomponent_id] = variable._node.id
@@ -237,6 +244,7 @@ function make_wrapped_model (model_config: ModelConfigStrict, run_sim_config: { 
                 name: args.name,
                 note: wcomponent_id,
                 rate: args.flow_rate,
+                nonNegative: args.only_positive ?? true,
             }
         )
 

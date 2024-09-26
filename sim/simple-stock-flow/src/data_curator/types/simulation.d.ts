@@ -7,6 +7,7 @@ declare module "simulation" {
         timeLength?: number
         timeUnits?: TimeUnitsAll // todo
         timePause?: number
+        algorithm?: "Euler" | "RK4"
     }
 
     interface ModelVariableConfig
@@ -55,7 +56,7 @@ declare module "simulation" {
 
         Variable (config: ModelVariableConfig): SimulationComponent { }
         Stock (config: ModelStockConfig): SimulationComponent { }
-        Flow (from_component: SimulationComponent | undefined, to_component: SimulationComponent | undefined, config: { name: string; note?: string, rate: string | number }): SimulationComponent {}
+        Flow (from_component: SimulationComponent | undefined, to_component: SimulationComponent | undefined, config: { name: string; note?: string, rate: string | number, nonNegative?: boolean = true }): SimulationComponent {}
         Action (config: ModelActionConfig): SimulationComponent { }
 
         simulate (): SimulationResult { }

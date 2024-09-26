@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks"
 
-import "./app.css"
 import { make_model_stepper, ModelStepper, ModelStepResult } from "./make_model_stepper3"
 import { IDS_v3 } from "./data/get_data"
 import { supabase_get_wcomponents } from "./data_curator/src/state/sync/supabase/wcomponent"

@@ -6,11 +6,14 @@ import "./monkey_patch"
 import { DemoAppAddOneToStockV3 } from "./DemoAppAddOneToStockV3.tsx"
 import { DemoAppAddOneToStockV4 } from "./DemoAppAddOneToStockV4.tsx"
 import { useState } from "preact/hooks"
+import { DemoAppDoublePendulum } from "./DemoAppDoublePendulum.tsx"
+import "./app.css"
 
 
 const Apps = {
     add_one_to_stock_v3: "Add One To Stock V3",
     add_one_to_stock_v4: "Add One To Stock V4",
+    double_pendulum: "Double Pendulum",
 }
 
 function App ()
@@ -31,6 +34,10 @@ function App ()
     if (selected_app_id === "add_one_to_stock_v4")
     {
         app_jsx = <DemoAppAddOneToStockV4 />
+    }
+    else if (selected_app_id === "double_pendulum")
+    {
+        app_jsx = <DemoAppDoublePendulum />
     }
 
     return <div>

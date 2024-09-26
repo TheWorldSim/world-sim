@@ -1,6 +1,6 @@
 import { normalise_calculation_ids } from "../data_curator/src/calculations/normalise_calculation_ids"
 import { get_double_at_mentioned_uuids_from_text } from "../data_curator/src/sharedf/rich_text/replace_normal_ids"
-import { wcomponent_is_action, wcomponent_is_causal_link, WComponentsById } from "../data_curator/src/wcomponent/interfaces/SpecialisedObjects"
+import { wcomponent_is_action, wcomponent_is_causal_link, wcomponent_is_statev2, WComponentsById } from "../data_curator/src/wcomponent/interfaces/SpecialisedObjects"
 import { get_wcomponent_state_value_and_probabilities } from "../data_curator/src/wcomponent_derived/get_wcomponent_state_value_and_probabilities"
 import { get_calculation_string_from_calculation_rows } from "./get_calculation_string_from_calculation_rows"
 
@@ -8,6 +8,7 @@ import { get_calculation_string_from_calculation_rows } from "./get_calculation_
 interface SimplifiedWComponentStateV2
 {
     state: number | string
+    calculation?: string
 }
 interface SimplifiedWComponentCausalLink
 {
@@ -61,24 +62,33 @@ export function get_wcomponents_values_by_id (wcomponents_by_id: WComponentsById
             return
         }
 
+        if (!wcomponent_is_statev2(wcomponent))
+        {
+            return
+        }
+
         const VAP_sets = get_wcomponent_state_value_and_probabilities({
             wcomponent,
             VAP_set_id_to_counterfactual_v2_map: {},
             created_at_ms: now_ms,
             sim_ms: now_ms,
         }).most_probable_VAP_set_values
-        if (VAP_sets.length === 0) return
+        const calculation = get_calculation_string_from_calculation_rows(wcomponent.calculations)
+        if (VAP_sets.length === 0 && !calculation) return
 
-        const value = VAP_sets[0]!.parsed_value
+        const value = VAP_sets[0]?.parsed_value
 
-        if (value === undefined || value === null) return
+        if ((value === undefined || value === null) && !calculation) return
 
         // Note that currently the value of boolean's is a string of "True" or "False"
         if (typeof value === "boolean") return
 
-        value_by_id.statev2[uuid] = {
-            state: value,
+        const value_obj: SimplifiedWComponentStateV2 = {
+            state: value || "",
         }
+        if (calculation) value_obj.calculation = calculation
+
+        value_by_id.statev2[uuid] = value_obj
     })
 
     return value_by_id
