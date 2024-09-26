@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks"
 
-import { make_model_stepper, ModelStepper, ModelStepResult } from "./make_model_stepper3"
+import { make_model_stepper, ModelStepper, ModelStepResult } from "./make_model_stepper"
 import { GetItemsReturn } from "./data_curator/src/state/sync/supabase/get_items"
 import { get_wcomponents_values_by_id, SimplifiedWComponentsValueById } from "./data/get_wcomponents_values_by_id"
 import { get_supabase } from "./data_curator/src/supabase/get_supabase"
