@@ -41,26 +41,23 @@ export function get_calculation_string_from_calculation_rows(calculations: Plain
         }, text)
     }
 
-    let calculation = calculations.map(c => `${ensure_name_is_safe(c.name)} <- ${replace_unsafe_names(c.value)}`).join("\n") || ""
+    let calculation_strs: string[] = []
+    calculations.forEach((c, i) =>
+    {
+        const is_last = i === calculations.length - 1
+
+        if (is_last && c.name.startsWith("@@"))
+        {
+            calculation_strs.push(replace_unsafe_names(c.value))
+            return
+        }
+
+        calculation_strs.push(`${ensure_name_is_safe(c.name)} <- ${replace_unsafe_names(c.value)}`)
+    })
+    let calculation = calculation_strs.join("\n")
+
     const calculation_uuids = get_double_at_mentioned_uuids_from_text(calculation)
     calculation = normalise_calculation_ids(calculation, calculation_uuids)
 
     return calculation
 }
-
-
-function test_get_calculation_string_from_calculation_rows ()
-{
-    let result = get_calculation_string_from_calculation_rows([{
-        name: "Some variable name",
-        value: "1 + 2",
-        id: -1,
-    }, {
-        name: "@@10000000-0000-4000-a000-000000000000",
-        value: "1 + [Some variable name]",
-        id: -1,
-    }])
-    console.assert(result === "Some_variable_name <- 1 + 2\n[10000000-0000-4000-a000-000000000000] <- 1 + Some_variable_name", "get_calculation_string_from_calculation_rows works as expected")
-}
-
-test_get_calculation_string_from_calculation_rows()

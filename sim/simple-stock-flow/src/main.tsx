@@ -8,6 +8,7 @@ import { DemoAppAddOneToStockV4 } from "./DemoAppAddOneToStockV4.tsx"
 import { useState } from "preact/hooks"
 import { DemoAppDoublePendulum } from "./DemoAppDoublePendulum.tsx"
 import "./app.css"
+import { run_all_tests } from "./tests.ts"
 
 
 const Apps = {
@@ -49,6 +50,8 @@ function App ()
 }
 
 render(<App />, document.getElementById("app")!)
+
+;(window as any).run_tests = run_all_tests
 
 // import { DemoAppDoublePendulum } from "./DemoAppDoublePendulum.tsx"
 // render(<DemoAppDoublePendulum />, document.getElementById("app")!)
