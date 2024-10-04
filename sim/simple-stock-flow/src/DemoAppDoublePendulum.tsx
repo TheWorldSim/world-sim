@@ -304,6 +304,8 @@ function AppAddOneToStockV4 (props: { model_stepper: ModelStepper, trigger_fetch
     const [pendulum_2_angle, set_pendulum_2_angle] = useState(model_stepper.get_latest_state_by_id(IDS.stock__pendulum_2_angle))
     const pendulum_1_length = model_stepper.get_latest_state_by_id(IDS.variable__pendulum_1_length)
     const pendulum_2_length = model_stepper.get_latest_state_by_id(IDS.variable__pendulum_2_length)
+    const pendulum_1_mass = model_stepper.get_latest_state_by_id(IDS.variable__pendulum_1_mass)
+    const pendulum_2_mass = model_stepper.get_latest_state_by_id(IDS.variable__pendulum_2_mass)
 
     // const [stock_b, set_stock_b] = useState(model_stepper.get_latest_state_by_id(IDS_v4.stock__state_b))
     const past_actions_taken = useRef<{step: number, actions_taken: {[action_id: string]: number}}[]>([])
@@ -375,8 +377,8 @@ function AppAddOneToStockV4 (props: { model_stepper: ModelStepper, trigger_fetch
 
         <div class="card">
             <div>Current time is {current_time.toFixed(1)}</div>
-            <div>Pendulum 1 length: {pendulum_1_length}</div>
-            <div>Pendulum 2 length: {pendulum_2_length}</div>
+            <div>Pendulum 1: {pendulum_1_length} m, {pendulum_1_mass} kg</div>
+            <div>Pendulum 2: {pendulum_2_length} m, {pendulum_2_mass} kg</div>
             <div>Pendulum 1 angle: {as_number(pendulum_1_angle).toFixed(2)}</div>
             <div>Pendulum 2 angle: {as_number(pendulum_2_angle).toFixed(2)}</div>
 
