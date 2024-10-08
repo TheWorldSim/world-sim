@@ -6,7 +6,7 @@ import { GetItemsReturn } from "./data_curator/src/state/sync/supabase/get_items
 import { get_wcomponents_values_by_id, SimplifiedWComponentsValueById } from "./data/get_wcomponents_values_by_id"
 import { get_supabase } from "./data_curator/src/supabase/get_supabase"
 import { supabase_get_wcomponents } from "./data_curator/src/state/sync/supabase/wcomponent"
-import { WComponentsById } from "./data_curator/src/wcomponent/interfaces/SpecialisedObjects"
+import { wcomponent_has_VAP_sets, WComponentsById } from "./data_curator/src/wcomponent/interfaces/SpecialisedObjects"
 import { get_composed_wcomponents_by_id } from "./data_curator/src/state/derived/get_composed_wcomponents_by_id"
 import { KnowledgeViewWComponentIdEntryMap } from "./data_curator/src/shared/interfaces/knowledge_view"
 import { get_created_at_ms } from "./data_curator/src/shared/utils_datetime/utils_datetime"
@@ -16,7 +16,7 @@ const TARGET_REFRESH_RATE = 30 // Hz
 const supabase = get_supabase()
 
 
-const IDS = {
+const IDS__scenario_base = {
     variable__g: "02d4a5f4-4abd-41a2-bb50-e68e358a3169",
 
     variable__pendulum_1_mass: "297916db-1365-48ad-a8e1-44809a63a599",
@@ -39,181 +39,215 @@ const IDS = {
     flow__change_in_pendulum_2_angular_velocity: "95ea2714-7955-4e9f-be96-5ac1fcfe9e93",
 }
 
-const IDS_scenario_2 = {
-    ...IDS,
+const IDS__scenario_2 = {
+    ...IDS__scenario_base,
     stock__pendulum_1_angle__alternative_value: "0be2bdea-c84f-44f0-8d8e-723e6d7ce9ba",
 }
 
-
-const cached_data: GetItemsReturn<SimplifiedWComponentsValueById> = {
-    value: {
-        statev2: {
-            [IDS.variable__g]: {
-                state: 9.81
-            },
-
-            [IDS.variable__pendulum_1_mass]: {
-                state: 1
-            },
-            [IDS.variable__pendulum_2_mass]: {
-                state: 1
-            },
-            [IDS.variable__pendulum_1_length]: {
-                state: 1.5
-            },
-            [IDS.variable__pendulum_2_length]: {
-                state: 1
-            },
-            [IDS.stock__pendulum_1_angle]: {
-                state: 1.5
-            },
-            [IDS.stock__pendulum_2_angle]: {
-                state: 1.5
-            },
-
-            [IDS.variable__pendulum_mass_ratio]: {
-                state: 0.5,
-                calculation: "[b30dda15-ef05-4c42-a392-7d515552d63b] / [297916db-1365-48ad-a8e1-44809a63a599]",
-            },
-
-            [IDS.stock__pendulum_1_angular_velocity]: {
-                state: 0
-            },
-            [IDS.variable__pendulum_1_angular_acceleration]: {
-                state: "",
-                calculation: "term1 <- -(([02d4a5f4-4abd-41a2-bb50-e68e358a3169]/[e34796cf-ab9e-47b8-9ea5-20cb00fb611d])*[86635a8b-f4f8-4489-8a02-b4f09c0a22ec])\nterm2 <- ((([02d4a5f4-4abd-41a2-bb50-e68e358a3169]*[56fcc4f1-29a9-4a97-b629-068b532ec19d])/[e34796cf-ab9e-47b8-9ea5-20cb00fb611d])*[892551e3-bb5b-4957-8104-6f49e578350a])\nterm1 + term2",
-            },
-            [IDS.stock__pendulum_2_angular_velocity]: {
-                state: 0,
-            },
-            [IDS.variable__pendulum_2_angular_acceleration]: {
-                state: "",
-                calculation: "term1 <- ([02d4a5f4-4abd-41a2-bb50-e68e358a3169]/[e34796cf-ab9e-47b8-9ea5-20cb00fb611d])*[86635a8b-f4f8-4489-8a02-b4f09c0a22ec]\nterm2a <- [02d4a5f4-4abd-41a2-bb50-e68e358a3169]/[b1448ce5-3015-4b78-ad34-24cbb0b85040]\nterm2b <- ([02d4a5f4-4abd-41a2-bb50-e68e358a3169] *[56fcc4f1-29a9-4a97-b629-068b532ec19d])/[b1448ce5-3015-4b78-ad34-24cbb0b85040]\nterm2c <- ([02d4a5f4-4abd-41a2-bb50-e68e358a3169]*[56fcc4f1-29a9-4a97-b629-068b532ec19d])/[e34796cf-ab9e-47b8-9ea5-20cb00fb611d]\nterm2 <- (term2a + term2b + term2c)*[892551e3-bb5b-4957-8104-6f49e578350a]\nterm1 - term2",
-            },
-        },
-        state_value: {
-            [IDS_scenario_2.stock__pendulum_1_angle__alternative_value]: {
-                state: 3.14,
-                target_wcomponent_id: IDS.stock__pendulum_1_angle,
-            }
-        },
-        causal_link: {
-            [IDS.flow__change_in_pendulum_2_angle]: {
-                effect: "[8455647b-e016-476a-a6ae-a049deb8bdbb]"
-            },
-            [IDS.flow__change_in_pendulum_2_angular_velocity]: {
-                effect: "[83f8e273-0702-4bc1-8a84-83bc3c285e8d]"
-            },
-            [IDS.flow__change_in_pendulum_1_angular_velocity]: {
-                effect: "[b264f09c-9a68-489d-b545-44176d1c866b]"
-            },
-            [IDS.flow__change_in_pendulum_1_angle]: {
-                effect: "[28c5c78a-3281-449c-b47b-6f094c15d337]"
-            }
-        },
-        action: {}
-    },
-    error: undefined,
+const IDS__ALL = {
+    ...IDS__scenario_base,
+    ...IDS__scenario_2,
 }
 
+
+enum ScenarioId
+{
+    base = "base",
+    scenario_2 = "scenario_2",
+}
 
 interface Scenario
 {
+    id: ScenarioId
     title: string
-    extract_data: (data: GetItemsReturn<SimplifiedWComponentsValueById>) => GetItemsReturn<SimplifiedWComponentsValueById>
+    wcomponent_ids: Set<string>
+    data: GetItemsReturn<SimplifiedWComponentsValueById>
 }
 
 const scenario_base: Scenario = {
+    id: ScenarioId.base,
     title: "Base scenario",
-    extract_data: (data: GetItemsReturn<SimplifiedWComponentsValueById>) => {
-        const copied_data = JSON.parse(JSON.stringify(data)) as GetItemsReturn<SimplifiedWComponentsValueById>
-        copied_data.value.state_value = {}
-        return copied_data
+    wcomponent_ids: new Set(Object.values(IDS__scenario_base)),
+    data: {
+        value: {
+            statev2: {
+                [IDS__scenario_base.variable__g]: {
+                    state: 9.81
+                },
+
+                [IDS__scenario_base.variable__pendulum_1_mass]: {
+                    state: 1
+                },
+                [IDS__scenario_base.variable__pendulum_2_mass]: {
+                    state: 1
+                },
+                [IDS__scenario_base.variable__pendulum_1_length]: {
+                    state: 1.5
+                },
+                [IDS__scenario_base.variable__pendulum_2_length]: {
+                    state: 1
+                },
+                [IDS__scenario_base.stock__pendulum_1_angle]: {
+                    state: 1.5
+                },
+                [IDS__scenario_base.stock__pendulum_2_angle]: {
+                    state: 1.5
+                },
+
+                [IDS__scenario_base.variable__pendulum_mass_ratio]: {
+                    state: 0.5,
+                    calculation: "[b30dda15-ef05-4c42-a392-7d515552d63b] / [297916db-1365-48ad-a8e1-44809a63a599]",
+                },
+
+                [IDS__scenario_base.stock__pendulum_1_angular_velocity]: {
+                    state: 0
+                },
+                [IDS__scenario_base.variable__pendulum_1_angular_acceleration]: {
+                    state: "",
+                    calculation: "term1 <- -(([02d4a5f4-4abd-41a2-bb50-e68e358a3169]/[e34796cf-ab9e-47b8-9ea5-20cb00fb611d])*[86635a8b-f4f8-4489-8a02-b4f09c0a22ec])\nterm2 <- ((([02d4a5f4-4abd-41a2-bb50-e68e358a3169]*[56fcc4f1-29a9-4a97-b629-068b532ec19d])/[e34796cf-ab9e-47b8-9ea5-20cb00fb611d])*[892551e3-bb5b-4957-8104-6f49e578350a])\nterm1 + term2",
+                },
+                [IDS__scenario_base.stock__pendulum_2_angular_velocity]: {
+                    state: 0,
+                },
+                [IDS__scenario_base.variable__pendulum_2_angular_acceleration]: {
+                    state: "",
+                    calculation: "term1 <- ([02d4a5f4-4abd-41a2-bb50-e68e358a3169]/[e34796cf-ab9e-47b8-9ea5-20cb00fb611d])*[86635a8b-f4f8-4489-8a02-b4f09c0a22ec]\nterm2a <- [02d4a5f4-4abd-41a2-bb50-e68e358a3169]/[b1448ce5-3015-4b78-ad34-24cbb0b85040]\nterm2b <- ([02d4a5f4-4abd-41a2-bb50-e68e358a3169] *[56fcc4f1-29a9-4a97-b629-068b532ec19d])/[b1448ce5-3015-4b78-ad34-24cbb0b85040]\nterm2c <- ([02d4a5f4-4abd-41a2-bb50-e68e358a3169]*[56fcc4f1-29a9-4a97-b629-068b532ec19d])/[e34796cf-ab9e-47b8-9ea5-20cb00fb611d]\nterm2 <- (term2a + term2b + term2c)*[892551e3-bb5b-4957-8104-6f49e578350a]\nterm1 - term2",
+                },
+            },
+            causal_link: {
+                [IDS__scenario_base.flow__change_in_pendulum_2_angle]: {
+                    effect: "[8455647b-e016-476a-a6ae-a049deb8bdbb]"
+                },
+                [IDS__scenario_base.flow__change_in_pendulum_2_angular_velocity]: {
+                    effect: "[83f8e273-0702-4bc1-8a84-83bc3c285e8d]"
+                },
+                [IDS__scenario_base.flow__change_in_pendulum_1_angular_velocity]: {
+                    effect: "[b264f09c-9a68-489d-b545-44176d1c866b]"
+                },
+                [IDS__scenario_base.flow__change_in_pendulum_1_angle]: {
+                    effect: "[28c5c78a-3281-449c-b47b-6f094c15d337]"
+                }
+            },
+            action: {}
+        },
+        error: undefined,
     },
 }
 
+
+const scenario_2_data: GetItemsReturn<SimplifiedWComponentsValueById> = JSON.parse(JSON.stringify(scenario_base.data))
+scenario_2_data.value.statev2[IDS__scenario_base.stock__pendulum_1_angle]!.state = 3.14
+scenario_2_data.value.statev2[IDS__scenario_base.stock__pendulum_2_angle]!.state = 3.14
 const scenario_2: Scenario = {
+    id: ScenarioId.scenario_2,
     title: "Scenario 2",
-    extract_data: (data: GetItemsReturn<SimplifiedWComponentsValueById>) => {
-        const copied_data = JSON.parse(JSON.stringify(data)) as GetItemsReturn<SimplifiedWComponentsValueById>
-        copied_data.value.statev2[IDS_scenario_2.stock__pendulum_1_angle]!.state = copied_data.value.state_value[IDS_scenario_2.stock__pendulum_1_angle__alternative_value]!.state
-        return copied_data
-    },
+    wcomponent_ids: new Set(Object.values(IDS__scenario_2)),
+    data: scenario_2_data,
 }
+
 
 const scenarios: Scenario[] = [scenario_base, scenario_2]
-const scenarios_by_id: {[id: string]: Scenario} = {}
-scenarios.forEach(scenario => scenarios_by_id[scenario.title] = scenario)
-
+const scenarios_by_id: { [key in ScenarioId]: Scenario } = {
+    [ScenarioId.base]: scenario_base,
+    [ScenarioId.scenario_2]: scenario_2,
+}
 
 export function DemoAppDoublePendulum () {
-    // const [data, set_data] = useState<GetItemsReturn<SimplifiedWComponentsValueById> | undefined>(undefined)
-    const [data, set_data] = useState<GetItemsReturn<SimplifiedWComponentsValueById> | undefined>(cached_data)
-    const [selected_scenario, set_selected_scenario] = useState<Scenario>(scenario_base)
+    const [selected_scenario_id, set_selected_scenario_id] = useState<ScenarioId>(scenario_base.id)
+    const [data_needs_refresh, set_data_needs_refresh] = useState(false)
+    const [last_data_refresh_datetime_ms, set_last_data_refresh_datetime_ms] = useState(new Date().getTime())
+    const selected_scenario = scenarios_by_id[selected_scenario_id]
+
 
     useEffect(() => {
-        if (data) return
+        if (!data_needs_refresh) return
+
+        let cancel_data_fetch = false
 
         const fetch_data = async () => {
-            const ids = Object.values(IDS_scenario_2)
-            const wcomponents_response = await supabase_get_wcomponents({ supabase, base_id: undefined, all_bases: true, ids })
+            const ids = Object.values(IDS__ALL)
+            const wcomponents_response = await supabase_get_wcomponents({
+                supabase,
+                base_id: undefined,
+                all_bases: true,
+                ids,
+            })
+            // Check that this component hasn't been unmounted before continuing
+            // further to process the data.
+            if (cancel_data_fetch) return
 
             const wcomponents_by_id: WComponentsById = {}
-            const composed_visible_wc_id_map: KnowledgeViewWComponentIdEntryMap = {}
             let latest_created_at_ms = 0
             wcomponents_response.value.forEach(wcomponent =>
             {
                 wcomponents_by_id[wcomponent.id] = wcomponent
+                latest_created_at_ms = Math.max(latest_created_at_ms, get_created_at_ms(wcomponent))
+                if (wcomponent_has_VAP_sets(wcomponent))
+                {
+                    (wcomponent.values_and_prediction_sets || []).forEach(VAP_set =>
+                    {
+                        latest_created_at_ms = Math.max(latest_created_at_ms, get_created_at_ms(VAP_set))
+                    })
+                }
+            })
+
+            scenarios.forEach(scenario =>
+            {
                 // For now we make our own composed_visible_wc_id_map but later
                 // we could get this from DataCurator
-                composed_visible_wc_id_map[wcomponent.id] = { left: 0, top: 0 }
-                latest_created_at_ms = Math.max(latest_created_at_ms, get_created_at_ms(wcomponent))
+                const composed_visible_wc_id_map: KnowledgeViewWComponentIdEntryMap = {}
+                wcomponents_response.value.forEach(wcomponent =>
+                {
+                    if (scenario.wcomponent_ids.has(wcomponent.id)) composed_visible_wc_id_map[wcomponent.id] = { left: 0, top: 0 }
+                })
+
+                const composed_wcomponents_by_id = get_composed_wcomponents_by_id({
+                    composed_visible_wc_id_map,
+                    wcomponents_by_id,
+                    created_at_ms: latest_created_at_ms,
+                })
+                const wcomponents_values_by_id = get_wcomponents_values_by_id(composed_wcomponents_by_id)
+
+                scenario.data = {
+                    value: wcomponents_values_by_id,
+                    error: wcomponents_response.error,
+                }
             })
 
-            const composed_wcomponents_by_id: WComponentsById = get_composed_wcomponents_by_id({
-                composed_visible_wc_id_map,
-                wcomponents_by_id,
-                created_at_ms: latest_created_at_ms,
-            })
-            const wcomponents_values_by_id = get_wcomponents_values_by_id(composed_wcomponents_by_id)
-
-            const wcomponents_by_id_response: GetItemsReturn<SimplifiedWComponentsValueById> = {
-                value: wcomponents_values_by_id,
-                error: wcomponents_response.error,
-            }
-            console.log("wcomponents_by_id_response", JSON.stringify(wcomponents_by_id_response, null, 4))
-            set_data(wcomponents_by_id_response)
+            set_data_needs_refresh(false)
+            set_last_data_refresh_datetime_ms(new Date().getTime())
         }
 
         fetch_data()
-    }, [data])
+
+        return () => cancel_data_fetch = true
+    }, [data_needs_refresh])
 
 
     const model_stepper: ModelStepper | undefined = useMemo(() =>
     {
-        if (data === undefined || data.error) return undefined
+        if (selected_scenario === undefined || selected_scenario.data.error) return undefined
 
-        console.log(`Extracting data for scenario: ${selected_scenario.title}`)
-        const scenario_data = selected_scenario.extract_data(data)
+        const scenario_data = selected_scenario.data
 
 
-        const variable__g_value = scenario_data.value.statev2[IDS.variable__g]!.state
-        const variable__pendulum_1_mass_value = scenario_data.value.statev2[IDS.variable__pendulum_1_mass]!.state
-        const variable__pendulum_2_mass_value = scenario_data.value.statev2[IDS.variable__pendulum_2_mass]!.state
-        const variable__pendulum_1_length_value = scenario_data.value.statev2[IDS.variable__pendulum_1_length]!.state
-        const variable__pendulum_2_length_value = scenario_data.value.statev2[IDS.variable__pendulum_2_length]!.state
-        const stock__pendulum_1_angle_value = scenario_data.value.statev2[IDS.stock__pendulum_1_angle]!.state
-        const stock__pendulum_2_angle_value = scenario_data.value.statev2[IDS.stock__pendulum_2_angle]!.state
-        const variable__pendulum_mass_ratio_value = scenario_data.value.statev2[IDS.variable__pendulum_mass_ratio]!.calculation!
-        const stock__pendulum_1_angular_velocity_value = scenario_data.value.statev2[IDS.stock__pendulum_1_angular_velocity]!.state
-        const stock__pendulum_2_angular_velocity_value = scenario_data.value.statev2[IDS.stock__pendulum_2_angular_velocity]!.state
-        const variable__pendulum_1_angular_acceleration_value = scenario_data.value.statev2[IDS.variable__pendulum_1_angular_acceleration]!.calculation!
-        const variable__pendulum_2_angular_acceleration_value = scenario_data.value.statev2[IDS.variable__pendulum_2_angular_acceleration]!.calculation!
+        const variable__g_value = scenario_data.value.statev2[IDS__scenario_base.variable__g]!.state
+        const variable__pendulum_1_mass_value = scenario_data.value.statev2[IDS__scenario_base.variable__pendulum_1_mass]!.state
+        const variable__pendulum_2_mass_value = scenario_data.value.statev2[IDS__scenario_base.variable__pendulum_2_mass]!.state
+        const variable__pendulum_1_length_value = scenario_data.value.statev2[IDS__scenario_base.variable__pendulum_1_length]!.state
+        const variable__pendulum_2_length_value = scenario_data.value.statev2[IDS__scenario_base.variable__pendulum_2_length]!.state
+        const stock__pendulum_1_angle_value = scenario_data.value.statev2[IDS__scenario_base.stock__pendulum_1_angle]!.state
+        const stock__pendulum_2_angle_value = scenario_data.value.statev2[IDS__scenario_base.stock__pendulum_2_angle]!.state
+        const variable__pendulum_mass_ratio_value = scenario_data.value.statev2[IDS__scenario_base.variable__pendulum_mass_ratio]!.calculation!
+        const stock__pendulum_1_angular_velocity_value = scenario_data.value.statev2[IDS__scenario_base.stock__pendulum_1_angular_velocity]!.state
+        const stock__pendulum_2_angular_velocity_value = scenario_data.value.statev2[IDS__scenario_base.stock__pendulum_2_angular_velocity]!.state
+        const variable__pendulum_1_angular_acceleration_value = scenario_data.value.statev2[IDS__scenario_base.variable__pendulum_1_angular_acceleration]!.calculation!
+        const variable__pendulum_2_angular_acceleration_value = scenario_data.value.statev2[IDS__scenario_base.variable__pendulum_2_angular_acceleration]!.calculation!
 
-        const flow__change_in_pendulum_1_angle_value = scenario_data.value.causal_link[IDS.flow__change_in_pendulum_1_angle]!.effect
-        const flow__change_in_pendulum_1_angular_velocity_value = scenario_data.value.causal_link[IDS.flow__change_in_pendulum_1_angular_velocity]!.effect
-        const flow__change_in_pendulum_2_angle_value = scenario_data.value.causal_link[IDS.flow__change_in_pendulum_2_angle]!.effect
-        const flow__change_in_pendulum_2_angular_velocity_value = scenario_data.value.causal_link[IDS.flow__change_in_pendulum_2_angular_velocity]!.effect
+        const flow__change_in_pendulum_1_angle_value = scenario_data.value.causal_link[IDS__scenario_base.flow__change_in_pendulum_1_angle]!.effect
+        const flow__change_in_pendulum_1_angular_velocity_value = scenario_data.value.causal_link[IDS__scenario_base.flow__change_in_pendulum_1_angular_velocity]!.effect
+        const flow__change_in_pendulum_2_angle_value = scenario_data.value.causal_link[IDS__scenario_base.flow__change_in_pendulum_2_angle]!.effect
+        const flow__change_in_pendulum_2_angular_velocity_value = scenario_data.value.causal_link[IDS__scenario_base.flow__change_in_pendulum_2_angular_velocity]!.effect
 
 
         const wrapped_model = make_model_stepper(
@@ -222,150 +256,151 @@ export function DemoAppDoublePendulum () {
         )
 
         const variable__g = wrapped_model.add_variable({
-            wcomponent_id: IDS.variable__g,
-            name: IDS.variable__g,
+            wcomponent_id: IDS__scenario_base.variable__g,
+            name: IDS__scenario_base.variable__g,
             value: variable__g_value,
         })
 
         const variable__pendulum_1_mass = wrapped_model.add_variable({
-            wcomponent_id: IDS.variable__pendulum_1_mass,
-            name: IDS.variable__pendulum_1_mass,
+            wcomponent_id: IDS__scenario_base.variable__pendulum_1_mass,
+            name: IDS__scenario_base.variable__pendulum_1_mass,
             value: variable__pendulum_1_mass_value,
         })
         const variable__pendulum_2_mass = wrapped_model.add_variable({
-            wcomponent_id: IDS.variable__pendulum_2_mass,
-            name: IDS.variable__pendulum_2_mass,
+            wcomponent_id: IDS__scenario_base.variable__pendulum_2_mass,
+            name: IDS__scenario_base.variable__pendulum_2_mass,
             value: variable__pendulum_2_mass_value,
         })
         const variable__pendulum_1_length = wrapped_model.add_variable({
-            wcomponent_id: IDS.variable__pendulum_1_length,
-            name: IDS.variable__pendulum_1_length,
+            wcomponent_id: IDS__scenario_base.variable__pendulum_1_length,
+            name: IDS__scenario_base.variable__pendulum_1_length,
             value: variable__pendulum_1_length_value,
         })
         const variable__pendulum_2_length = wrapped_model.add_variable({
-            wcomponent_id: IDS.variable__pendulum_2_length,
-            name: IDS.variable__pendulum_2_length,
+            wcomponent_id: IDS__scenario_base.variable__pendulum_2_length,
+            name: IDS__scenario_base.variable__pendulum_2_length,
             value: variable__pendulum_2_length_value,
         })
 
         const stock__pendulum_1_angle = wrapped_model.add_stock({
-            wcomponent_id: IDS.stock__pendulum_1_angle,
-            name: IDS.stock__pendulum_1_angle,
+            wcomponent_id: IDS__scenario_base.stock__pendulum_1_angle,
+            name: IDS__scenario_base.stock__pendulum_1_angle,
             initial: stock__pendulum_1_angle_value,
         })
         const stock__pendulum_2_angle = wrapped_model.add_stock({
-            wcomponent_id: IDS.stock__pendulum_2_angle,
-            name: IDS.stock__pendulum_2_angle,
+            wcomponent_id: IDS__scenario_base.stock__pendulum_2_angle,
+            name: IDS__scenario_base.stock__pendulum_2_angle,
             initial: stock__pendulum_2_angle_value,
         })
 
         const variable__pendulum_mass_ratio = wrapped_model.add_variable({
-            wcomponent_id: IDS.variable__pendulum_mass_ratio,
-            name: IDS.variable__pendulum_mass_ratio,
+            wcomponent_id: IDS__scenario_base.variable__pendulum_mass_ratio,
+            name: IDS__scenario_base.variable__pendulum_mass_ratio,
             value: variable__pendulum_mass_ratio_value,
-            linked_ids: [IDS.variable__pendulum_1_mass, IDS.variable__pendulum_2_mass],
+            linked_ids: [IDS__scenario_base.variable__pendulum_1_mass, IDS__scenario_base.variable__pendulum_2_mass],
         })
 
         const stock__pendulum_1_angular_velocity = wrapped_model.add_stock({
-            wcomponent_id: IDS.stock__pendulum_1_angular_velocity,
-            name: IDS.stock__pendulum_1_angular_velocity,
+            wcomponent_id: IDS__scenario_base.stock__pendulum_1_angular_velocity,
+            name: IDS__scenario_base.stock__pendulum_1_angular_velocity,
             initial: stock__pendulum_1_angular_velocity_value,
         })
         const stock__pendulum_2_angular_velocity = wrapped_model.add_stock({
-            wcomponent_id: IDS.stock__pendulum_2_angular_velocity,
-            name: IDS.stock__pendulum_2_angular_velocity,
+            wcomponent_id: IDS__scenario_base.stock__pendulum_2_angular_velocity,
+            name: IDS__scenario_base.stock__pendulum_2_angular_velocity,
             initial: stock__pendulum_2_angular_velocity_value,
         })
         const variable__pendulum_1_angular_acceleration = wrapped_model.add_variable({
-            wcomponent_id: IDS.variable__pendulum_1_angular_acceleration,
-            name: IDS.variable__pendulum_1_angular_acceleration,
+            wcomponent_id: IDS__scenario_base.variable__pendulum_1_angular_acceleration,
+            name: IDS__scenario_base.variable__pendulum_1_angular_acceleration,
             value: variable__pendulum_1_angular_acceleration_value,
             linked_ids: [
-                IDS.variable__g,
-                IDS.variable__pendulum_1_length,
-                IDS.stock__pendulum_1_angle,
-                IDS.variable__pendulum_mass_ratio,
-                IDS.stock__pendulum_2_angle,
+                IDS__scenario_base.variable__g,
+                IDS__scenario_base.variable__pendulum_1_length,
+                IDS__scenario_base.stock__pendulum_1_angle,
+                IDS__scenario_base.variable__pendulum_mass_ratio,
+                IDS__scenario_base.stock__pendulum_2_angle,
             ],
         })
         const variable__pendulum_2_angular_acceleration = wrapped_model.add_variable({
-            wcomponent_id: IDS.variable__pendulum_2_angular_acceleration,
-            name: IDS.variable__pendulum_2_angular_acceleration,
+            wcomponent_id: IDS__scenario_base.variable__pendulum_2_angular_acceleration,
+            name: IDS__scenario_base.variable__pendulum_2_angular_acceleration,
             value: variable__pendulum_2_angular_acceleration_value,
             linked_ids: [
-                IDS.variable__g,
-                IDS.variable__pendulum_1_length,
-                IDS.stock__pendulum_1_angle,
-                IDS.variable__pendulum_mass_ratio,
-                IDS.stock__pendulum_2_angle,
-                IDS.variable__pendulum_2_length,
+                IDS__scenario_base.variable__g,
+                IDS__scenario_base.variable__pendulum_1_length,
+                IDS__scenario_base.stock__pendulum_1_angle,
+                IDS__scenario_base.variable__pendulum_mass_ratio,
+                IDS__scenario_base.stock__pendulum_2_angle,
+                IDS__scenario_base.variable__pendulum_2_length,
             ],
         })
 
         const flow__change_in_pendulum_1_angle = wrapped_model.add_flow({
-            wcomponent_id: IDS.flow__change_in_pendulum_1_angle,
-            name: IDS.flow__change_in_pendulum_1_angle,
+            wcomponent_id: IDS__scenario_base.flow__change_in_pendulum_1_angle,
+            name: IDS__scenario_base.flow__change_in_pendulum_1_angle,
             flow_rate: flow__change_in_pendulum_1_angle_value,
             only_positive: false,
             from_id: undefined,
-            to_id: IDS.stock__pendulum_1_angle,
-            linked_ids: [IDS.stock__pendulum_1_angular_velocity],
+            to_id: IDS__scenario_base.stock__pendulum_1_angle,
+            linked_ids: [IDS__scenario_base.stock__pendulum_1_angular_velocity],
         })
         const flow__change_in_pendulum_1_angular_velocity = wrapped_model.add_flow({
-            wcomponent_id: IDS.flow__change_in_pendulum_1_angular_velocity,
-            name: IDS.flow__change_in_pendulum_1_angular_velocity,
+            wcomponent_id: IDS__scenario_base.flow__change_in_pendulum_1_angular_velocity,
+            name: IDS__scenario_base.flow__change_in_pendulum_1_angular_velocity,
             flow_rate: flow__change_in_pendulum_1_angular_velocity_value,
             only_positive: false,
             from_id: undefined,
-            to_id: IDS.stock__pendulum_1_angular_velocity,
-            linked_ids: [IDS.variable__pendulum_1_angular_acceleration],
+            to_id: IDS__scenario_base.stock__pendulum_1_angular_velocity,
+            linked_ids: [IDS__scenario_base.variable__pendulum_1_angular_acceleration],
         })
         const flow__change_in_pendulum_2_angle = wrapped_model.add_flow({
-            wcomponent_id: IDS.flow__change_in_pendulum_2_angle,
-            name: IDS.flow__change_in_pendulum_2_angle,
+            wcomponent_id: IDS__scenario_base.flow__change_in_pendulum_2_angle,
+            name: IDS__scenario_base.flow__change_in_pendulum_2_angle,
             flow_rate: flow__change_in_pendulum_2_angle_value,
             only_positive: false,
             from_id: undefined,
-            to_id: IDS.stock__pendulum_2_angle,
-            linked_ids: [IDS.stock__pendulum_2_angular_velocity],
+            to_id: IDS__scenario_base.stock__pendulum_2_angle,
+            linked_ids: [IDS__scenario_base.stock__pendulum_2_angular_velocity],
         })
         const flow__change_in_pendulum_2_angular_velocity = wrapped_model.add_flow({
-            wcomponent_id: IDS.flow__change_in_pendulum_2_angular_velocity,
-            name: IDS.flow__change_in_pendulum_2_angular_velocity,
+            wcomponent_id: IDS__scenario_base.flow__change_in_pendulum_2_angular_velocity,
+            name: IDS__scenario_base.flow__change_in_pendulum_2_angular_velocity,
             flow_rate: flow__change_in_pendulum_2_angular_velocity_value,
             only_positive: false,
             from_id: undefined,
-            to_id: IDS.stock__pendulum_2_angular_velocity,
-            linked_ids: [IDS.variable__pendulum_2_angular_acceleration],
+            to_id: IDS__scenario_base.stock__pendulum_2_angular_velocity,
+            linked_ids: [IDS__scenario_base.variable__pendulum_2_angular_acceleration],
         })
 
         return wrapped_model
-    }, [data, selected_scenario])
+    }, [last_data_refresh_datetime_ms, selected_scenario])
 
 
-    if (model_stepper) return <AppAddOneToStockV4
+    if (!selected_scenario) return <div>Error: selected_scenario is undefined</div>
+    if (selected_scenario.data.error) return <div>Error: {selected_scenario.data.error.message}</div>
+    if (!model_stepper) return <div>Error: model_stepper is undefined</div>
+
+    return <AppDoublePendulum
         selected_scenario={selected_scenario}
-        set_selected_scenario={set_selected_scenario}
+        set_selected_scenario_id={set_selected_scenario_id}
         model_stepper={model_stepper}
-        trigger_fetching_live_data={() => set_data(undefined)}
+        trigger_fetching_live_data={() => set_data_needs_refresh(true)}
     />
-
-    if (data?.error) return <div>Error: {data.error.message}</div>
-    return <div>Loading...</div>
 }
 
 
-function AppAddOneToStockV4 (props: { selected_scenario: Scenario, set_selected_scenario: (scenario: Scenario) => void, model_stepper: ModelStepper, trigger_fetching_live_data: () => void })
+function AppDoublePendulum (props: { selected_scenario: Scenario, set_selected_scenario_id: (scenario_id: ScenarioId) => void, model_stepper: ModelStepper, trigger_fetching_live_data: () => void })
 {
     const { model_stepper } = props
 
     const [current_time, set_current_time] = useState(model_stepper.get_current_time())
-    const [pendulum_1_angle, set_pendulum_1_angle] = useState(model_stepper.get_latest_state_by_id(IDS.stock__pendulum_1_angle))
-    const [pendulum_2_angle, set_pendulum_2_angle] = useState(model_stepper.get_latest_state_by_id(IDS.stock__pendulum_2_angle))
-    const pendulum_1_length = model_stepper.get_latest_state_by_id(IDS.variable__pendulum_1_length)
-    const pendulum_2_length = model_stepper.get_latest_state_by_id(IDS.variable__pendulum_2_length)
-    const pendulum_1_mass = model_stepper.get_latest_state_by_id(IDS.variable__pendulum_1_mass)
-    const pendulum_2_mass = model_stepper.get_latest_state_by_id(IDS.variable__pendulum_2_mass)
+    const [pendulum_1_angle, set_pendulum_1_angle] = useState(model_stepper.get_latest_state_by_id(IDS__scenario_base.stock__pendulum_1_angle))
+    const [pendulum_2_angle, set_pendulum_2_angle] = useState(model_stepper.get_latest_state_by_id(IDS__scenario_base.stock__pendulum_2_angle))
+    const pendulum_1_length = model_stepper.get_latest_state_by_id(IDS__scenario_base.variable__pendulum_1_length)
+    const pendulum_2_length = model_stepper.get_latest_state_by_id(IDS__scenario_base.variable__pendulum_2_length)
+    const pendulum_1_mass = model_stepper.get_latest_state_by_id(IDS__scenario_base.variable__pendulum_1_mass)
+    const pendulum_2_mass = model_stepper.get_latest_state_by_id(IDS__scenario_base.variable__pendulum_2_mass)
 
     // const [stock_b, set_stock_b] = useState(model_stepper.get_latest_state_by_id(IDS_v4.stock__state_b))
     const past_actions_taken = useRef<{step: number, actions_taken: {[action_id: string]: number}}[]>([])
@@ -384,8 +419,8 @@ function AppAddOneToStockV4 (props: { selected_scenario: Scenario, set_selected_
     useEffect(() => model_stepper.run_simulation((result: ModelStepResult) =>
     {
         set_current_time(result.current_time)
-        set_pendulum_1_angle(result.values[IDS.stock__pendulum_1_angle])
-        set_pendulum_2_angle(result.values[IDS.stock__pendulum_2_angle])
+        set_pendulum_1_angle(result.values[IDS__scenario_base.stock__pendulum_1_angle])
+        set_pendulum_2_angle(result.values[IDS__scenario_base.stock__pendulum_2_angle])
 
         const { set_value } = result
         if (!set_value) return { reason_to_stop: "Error: no set_value" }
@@ -432,10 +467,12 @@ function AppAddOneToStockV4 (props: { selected_scenario: Scenario, set_selected_
 
     const handle_scenario_change = (event: ChangeEvent<HTMLSelectElement>) => {
         const target = event.target as HTMLSelectElement | null
-        if (!target) return  // type guard
-        const scenario = scenarios_by_id[target.value]
-        if (!scenario) return  // type guard
-        props.set_selected_scenario(scenario)
+        if (!target) throw new Error(`no event.target`)  // type guard
+
+        // ensure target.value is in ScenarioId
+        const scenario_id = target.value as ScenarioId
+        if (!(scenario_id in ScenarioId)) return console.error(`Invalid scenario_id: ${scenario_id}`)
+        props.set_selected_scenario_id(scenario_id)
     }
 
     return <>
@@ -450,8 +487,8 @@ function AppAddOneToStockV4 (props: { selected_scenario: Scenario, set_selected_
             <br />
             <div>
                 {/* <label htmlFor="options">Choose a scenario:</label> */}
-                <select id="options" value={props.selected_scenario.title} onChange={handle_scenario_change}>
-                    {scenarios.map(scenario => <option value={scenario.title}>{scenario.title}</option>)}
+                <select id="options" value={props.selected_scenario.id} onChange={handle_scenario_change}>
+                    {scenarios.map(scenario => <option value={scenario.id}>{scenario.title}</option>)}
                 </select>
             </div>
             <br />

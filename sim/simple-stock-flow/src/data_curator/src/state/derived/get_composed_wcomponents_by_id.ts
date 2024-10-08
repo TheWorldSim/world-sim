@@ -29,7 +29,6 @@ export function get_composed_wcomponents_by_id (args: {
         const wcomponent = wcomponents_by_id[wcomponent_id]
         if (!wcomponent) return
 
-
         if (wcomponent_is_state_value(wcomponent))
         {
             const target_wcomponent = wcomponents_by_id[wcomponent.attribute_wcomponent_id || ""]
