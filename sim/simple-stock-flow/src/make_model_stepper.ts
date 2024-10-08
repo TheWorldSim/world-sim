@@ -189,7 +189,7 @@ function make_wrapped_model (model_config: ModelConfigStrict, run_sim_config: { 
             name,
         }
 
-        console.debug(`added stock ${stock_extra.name} with id: ${stock_extra._node.id}`)
+        console.debug(`added stock ${stock_extra.name} with id: ${stock_extra._node.id} initial: ${initial}`)
 
         return stock_extra
     }
@@ -224,7 +224,7 @@ function make_wrapped_model (model_config: ModelConfigStrict, run_sim_config: { 
             name,
         }
 
-        console.debug(`added variable ${variable_extra.name} with id: ${variable_extra._node.id}`)
+        console.debug(`added variable ${variable_extra.name} with id: ${variable_extra._node.id} value: ${value}`)
 
         return variable_extra
     }
@@ -424,6 +424,7 @@ function make_wrapped_model (model_config: ModelConfigStrict, run_sim_config: { 
         // simulate_step,
         // apply_action,
         run_simulation,
+        cancel_simulation: () => { simulation_cancelled = true },
     }
 }
 

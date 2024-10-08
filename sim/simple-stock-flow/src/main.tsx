@@ -7,7 +7,6 @@ import { DemoAppAddOneToStockV3 } from "./DemoAppAddOneToStockV3.tsx"
 import { DemoAppAddOneToStockV4 } from "./DemoAppAddOneToStockV4.tsx"
 import { useState } from "preact/hooks"
 import { DemoAppDoublePendulum } from "./DemoAppDoublePendulum.tsx"
-import "./app.css"
 import { run_all_tests } from "./tests.ts"
 
 

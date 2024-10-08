@@ -6,7 +6,7 @@ import { calc_prediction_certainty, calc_prediction_is_uncertain } from "./predi
 import {
     partition_and_prune_items_by_datetimes_and_versions,
 } from "./value_and_prediction/partition_and_prune_items_by_datetimes_and_versions"
-import { WComponent, wcomponent_is_allowed_to_have_state_VAP_sets } from "../wcomponent/interfaces/SpecialisedObjects"
+import { WComponent, wcomponent_is_allowed_to_have_state_VAP_sets, WComponentsById } from "../wcomponent/interfaces/SpecialisedObjects"
 import { get_wcomponent_VAPs_represent } from "../wcomponent/get_wcomponent_VAPs_represent"
 import { get_VAPs_ordered_by_prob } from "./value_and_prediction/probable_VAPs"
 import { apply_counterfactuals_v2_to_VAP_set } from "./value_and_prediction/apply_counterfactuals_v2_to_VAP_set"
@@ -19,6 +19,7 @@ import { is_defined } from "../shared/utils/is_defined"
 
 interface GetWComponentStateValueAndProbabilitiesArgs
 {
+    wcomponents_by_id: WComponentsById
     wcomponent: WComponent
     VAP_set_id_to_counterfactual_v2_map: VAPSetIdToCounterfactualV2Map | undefined
     created_at_ms: number
@@ -27,6 +28,7 @@ interface GetWComponentStateValueAndProbabilitiesArgs
 interface GetWComponentStateValueAndProbabilitiesReturn
 {
     most_probable_VAP_set_values: CurrentValueAndProbability[]
+    not_allowed_VAP_set_values?: true
     any_uncertainty?: boolean
     counterfactual_applied?: boolean
     derived__using_value_from_wcomponent_ids?: string[]
@@ -36,11 +38,9 @@ export function get_wcomponent_state_value_and_probabilities (args: GetWComponen
     const { wcomponent, VAP_set_id_to_counterfactual_v2_map, created_at_ms, sim_ms } = args
 
 
-    if (!wcomponent_is_allowed_to_have_state_VAP_sets(wcomponent)) return { most_probable_VAP_set_values: [] }
+    if (!wcomponent_is_allowed_to_have_state_VAP_sets(wcomponent)) return { most_probable_VAP_set_values: [], not_allowed_VAP_set_values: true }
 
-    // todo should implement this fully?
-    const wcomponents_by_id = {}
-    const VAPs_represent = get_wcomponent_VAPs_represent(wcomponent, wcomponents_by_id)
+    const VAPs_represent = get_wcomponent_VAPs_represent(wcomponent, args.wcomponents_by_id)
 
     // Defensively set to empty array
     const { values_and_prediction_sets = [] } = wcomponent
@@ -104,6 +104,7 @@ function get_most_probable_VAP_set_values (VAP_set: ComposedCounterfactualV2Stat
                 probability: VAP.probability,
                 conviction: VAP.conviction,
                 certainty,
+                original_value: VAP.value,
                 parsed_value,
                 value_id: VAP.value_id,
             }
