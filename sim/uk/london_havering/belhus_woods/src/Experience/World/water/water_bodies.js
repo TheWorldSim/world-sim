@@ -16,7 +16,7 @@ export function make_water_bodies(experience, terrain)
 
     const water_body_args_list = [
         { id: WATER_IDS.TOP_LAKE, position: { x: 37.5, z: -26, y: -2.01 }, size: { x: 25, z: 20 } },
-        { id: WATER_IDS.DAM_LAKE, position: { x: 0, z: 11.5, y: -11.31 }, size: { x: 100, z: 36 } },
+        { id: WATER_IDS.DAM_LAKE, position: { x: 0, z: 11.5, y: -15.31 }, size: { x: 100, z: 36 } },
         // { x: 0, z: 10, y: 10 },
         // { x: 0, z: -10, y: 10 },
         // { x: 10, z: 0, y: 10 },

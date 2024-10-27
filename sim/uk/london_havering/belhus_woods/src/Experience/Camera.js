@@ -26,7 +26,9 @@ export default class Camera
             target: new THREE.Vector3(),
         }
         this.instance = new THREE.PerspectiveCamera(35, this.sizes.width / this.sizes.height, 0.1, 300)
-        this.instance.position.y = 30
+        this.instance.position.y = 40
+        this.instance.position.x = 50
+        this.instance.position.z = 60
         this.scene.add(this.instance)
     }
 
@@ -36,7 +38,7 @@ export default class Camera
         this.controls.enableDamping = true
         this.controls.maxDistance = 100
 
-        this.lookAt(new THREE.Vector3(-50, 0, 50))
+        this.lookAt(new THREE.Vector3(0, 0, 0))
     }
 
     resize()

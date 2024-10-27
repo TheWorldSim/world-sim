@@ -2,6 +2,7 @@ import restart from 'vite-plugin-restart'
 import glsl from "vite-plugin-glsl"
 
 export default {
+    base: '/sim/uk/london_havering/belhus_woods/', // Base URL for the project
     root: 'src/', // Sources files (typically where index.html is)
     publicDir: '../static/', // Path from "root" to static assets (files that are served as they are)
     server:

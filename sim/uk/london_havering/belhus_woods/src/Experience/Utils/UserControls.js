@@ -63,12 +63,12 @@ export default class UserControls extends EventEmitter
             }
         `
 
-        this.arrows_truck_dolly = this.add_image("./textures/symbols/arrows_truck_dolly.png", () =>
+        this.arrows_truck_dolly = this.add_image("./textures/symbols/arrows_truck_dolly_thin.png", () =>
         {
             this.trigger(MESSAGES.UserControls.movement_controls, [MOVEMENT_CONTROLS.tilt_pan])
         })
 
-        this.arrows_tilt_pan = this.add_image("./textures/symbols/arrows_tilt_pan.png", () =>
+        this.arrows_tilt_pan = this.add_image("./textures/symbols/arrows_tilt_pan_thin.png", () =>
         {
             this.trigger(MESSAGES.UserControls.movement_controls, [MOVEMENT_CONTROLS.truck_dolly])
         })

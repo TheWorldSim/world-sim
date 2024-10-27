@@ -1,0 +1,71 @@
+name: Test, Build, Deploy
+
+on:
+  push:
+    branches:
+      - '*'
+    tags:
+      - 'do-not-build-on-tags'  # Do not run workflow on pushing tags
+
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}  # e.g. Test, Build, Deploy API Lambda application-refs/heads/main
+  cancel-in-progress: false
+
+
+env:
+  node-version: "20.x"
+
+
+jobs:
+  test_build_deploy_environments:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ___________________________ SETUP ___________________________
+        run: echo Setup
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          version: latest
+          run_install: false
+
+      # - name: Install Node.js ${{ env.node-version }}
+      #   uses: actions/setup-node@v4
+      #   with:
+      #     node-version: ${{ env.node-version }}
+      #     cache: pnpm
+
+      - run: |
+          cd sim/uk/london_havering/belhus_woods
+          pnpm install --production=false --frozen-lockfile
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-2
+
+      - name: ___________________________ TEST ___________________________
+        run: echo Test
+
+      - name: ___________________________ BUILD ___________________________
+        run: echo Build
+
+      - run: |
+          cd sim/uk/london_havering/belhus_woods
+          pnpm run build
+
+      - name: ___________________________ DEPLOY ___________________________
+        run: echo Deploy
+
+      - name: Upload to s3
+        run: |
+          aws s3 cp index.html s3://public-simulations
+          aws s3 sync sim/uk/london_havering/belhus_woods/dist s3://public-simulations/sim/uk/london_havering/belhus_woods/ --delete
