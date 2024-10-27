@@ -1,0 +1,9 @@
+# temporary
+energy-explorer-v2
+
+# build files
+node_modules
+dist
+
+# misc
+.DS_Store
