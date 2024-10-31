@@ -2,13 +2,15 @@ import * as THREE from "three"
 import Experience from "../../Experience.js"
 import { MESSAGES } from "../../Utils/messages.js"
 
+
 export default class Water
 {
-    constructor({ terrain, position, size })
+    constructor(terrain)
     {
         this.terrain = terrain
-        this.position = position
-        this.size = size
+        this.size = terrain.size
+        this.position = new THREE.Vector3()
+        // this.size = size
 
         this.experience = new Experience()
         this.scene = this.experience.scene

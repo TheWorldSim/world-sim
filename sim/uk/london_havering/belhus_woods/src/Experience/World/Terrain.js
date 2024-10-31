@@ -27,6 +27,8 @@ export default class Terrain extends EventEmitter
             uTerrainColourRange: { value: 0.52 },
         }
 
+        this.size = { x: 100, z: 100 }
+
         // Wait for resources
         this.resources.on(MESSAGES.Resources.ready, () =>
         {
@@ -40,7 +42,7 @@ export default class Terrain extends EventEmitter
 
     setGeometry()
     {
-        this.geometry = new THREE.PlaneGeometry(100, 100, 1000, 1000)
+        this.geometry = new THREE.PlaneGeometry(this.size.x, this.size.z, 1000, 1000)
     }
 
     setTextures()

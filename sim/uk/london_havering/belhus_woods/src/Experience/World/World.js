@@ -2,7 +2,7 @@ import Experience from "../Experience.js"
 import Environment from "./Environment.js"
 import Terrain from "./Terrain.js"
 import Fox from "./Fox.js"
-import { make_water_bodies } from "./water/water_bodies.js"
+import Water from "./water/Water.js"
 
 export default class World
 {
@@ -14,7 +14,7 @@ export default class World
         this.terrain = new Terrain()
         this.fox = new Fox()
         this.environment = new Environment()
-        this.water_bodies = make_water_bodies(this.experience, this.terrain)
+        this.water = new Water(this.terrain)
     }
 
     update()
