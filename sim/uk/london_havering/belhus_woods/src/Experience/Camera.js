@@ -37,6 +37,11 @@ export default class Camera
         this.controls = new OrbitControls(this.instance, this.canvas)
         this.controls.enableDamping = true
         this.controls.maxDistance = 100
+        this.controls.maxPolarAngle = THREE.MathUtils.degToRad(85) // Don't let the camera go below the ground
+        // this.controls.minAzimuthAngle = THREE.MathUtils.degToRad(0)
+        // this.controls.maxAzimuthAngle = THREE.MathUtils.degToRad(180)
+        this.controls.zoomSpeed = 1.5
+        this.controls.rotateSpeed = 0.6
 
         this.lookAt(new THREE.Vector3(0, 0, 0))
     }
