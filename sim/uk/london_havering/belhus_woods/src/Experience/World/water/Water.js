@@ -28,9 +28,8 @@ export default class Water
         this.customUniforms = {
             uHeightMap: { value: undefined },
             uBumpScale: { value: 1 }, // will get updated when we call onTerrainScaleChanged
-            // uBumpScale2: { value: 1 },
+            uTerrainHeightMap: { value: null },
             uHeightOffset: { value: -0.1959 },
-            // uHeightMapSize: { value: new THREE.Vector2() }, // width and height of the map
             // uWaterColour: { value: new THREE.Vector3(37/255, 137/255, 185/255) }, // 0x2589b2
         }
         this.onTerrainScaleChanged() // update uBumpScale
@@ -77,7 +76,8 @@ export default class Water
         const heightMapTexture = new THREE.DataTexture(data, watershed.width, watershed.height, THREE.RedFormat, THREE.UnsignedByteType)
         heightMapTexture.needsUpdate = true
         this.customUniforms.uHeightMap.value = heightMapTexture
-        // this.customUniforms.uHeightMapSize.value = new THREE.Vector2(watershed.width, watershed.height)
+
+        this.customUniforms.uTerrainHeightMap.value = this.resources.items.dtm_texture_height_map
 
         this.geometry = new THREE.PlaneGeometry(this.size.x, this.size.z, 1000, 1000)
     }
@@ -140,7 +140,6 @@ export default class Water
 
     onTerrainScaleChanged()
     {
-        console.log(this.customUniforms.uBumpScale.value)
         this.customUniforms.uBumpScale.value = this.terrain.customUniforms.uBumpScale.value
     }
 }

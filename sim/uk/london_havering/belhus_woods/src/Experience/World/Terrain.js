@@ -20,7 +20,7 @@ export default class Terrain extends EventEmitter
         }
         this.customUniforms = {
             uTextureMap:  { value: null },
-            uBumpTexture: { value: null },
+            uTerrainHeightMap: { value: null },
             uBumpScale:   { value: 30.0 },
             uTerrainColourMin:   { value: -0.018 },
             uTerrainColourRange: { value: 0.52 },
@@ -67,7 +67,7 @@ export default class Terrain extends EventEmitter
         const terrain_fragment_shader = this.resources.items.terrain_fragment_shader
 
         this.customUniforms.uTextureMap.value = this.textures.colour
-        this.customUniforms.uBumpTexture.value = this.textures.bump
+        this.customUniforms.uTerrainHeightMap.value = this.textures.bump
 
         const material_custom = new THREE.ShaderMaterial({
             uniforms: this.customUniforms,

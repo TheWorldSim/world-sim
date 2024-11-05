@@ -1,5 +1,5 @@
 
-uniform sampler2D uBumpTexture;
+uniform sampler2D uTerrainHeightMap;
 uniform float uBumpScale;
 
 // varying float vAmount;
@@ -11,7 +11,7 @@ void main()
     // the bump map round the edges by moving the UV coordinates inwards.
     float fudge_offset = 0.001;
     float fudge_multiplier = 0.999;
-	vec4 bumpData = texture2D( uBumpTexture, (uv * fudge_multiplier) + fudge_offset);
+	vec4 bumpData = texture2D( uTerrainHeightMap, (uv * fudge_multiplier) + fudge_offset);
 
 	float vertical_displacement = bumpData.r; // assuming map is grayscale it doesn't matter if you use r, g, or b.
 
