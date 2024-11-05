@@ -13,7 +13,7 @@ export default [
     //     ]
     // },
     {
-        name: "dtm_v1_texture_height_map",
+        name: "dtm_texture_height_map",
         type: "texture",
         path: "textures/terrain/dtm_v2.png"
     },

@@ -1,7 +1,7 @@
 
 precision mediump float;
 
-uniform sampler2D textureMap;
+uniform sampler2D uTextureMap;
 uniform float uTerrainColourMin;
 uniform float uTerrainColourRange;
 
@@ -17,7 +17,7 @@ float calc_strength(float d)
 
 void main()
 {
-    vec4 colourFromTexture = (texture2D(textureMap, vUv) - uTerrainColourMin) / uTerrainColourRange;
+    vec4 colourFromTexture = (texture2D(uTextureMap, vUv) - uTerrainColourMin) / uTerrainColourRange;
 
     // As we approach the edge of the terrain, the colour will become more transparent
     vec2 vUv_0_centered = vUv - vec2(0.5);  // get uv in the range [-0.5, 0.5]

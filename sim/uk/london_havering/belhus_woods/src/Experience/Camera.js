@@ -43,7 +43,7 @@ export default class Camera
         this.controls.zoomSpeed = 1.5
         this.controls.rotateSpeed = 0.6
 
-        this.lookAt(new THREE.Vector3(0, 0, 0))
+        this.lookAt(new THREE.Vector3(0, 10, 0))
     }
 
     resize()

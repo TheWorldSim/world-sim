@@ -1,272 +1,86 @@
 
 import Experience from "./Experience/Experience.js"
 
-const experience = new Experience(document.querySelector("canvas.webgl"))
+new Experience(document.querySelector("canvas.webgl"))
 
-function abc ()
+
+import * as THREE from 'three';
+function abc()
 {
-    // import * as THREE from "three"
-    // import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js"
-    // import GUI from "lil-gui"
-    // import { Timer } from "three/addons/misc/Timer.js"
-    // import ground_vertex_shader from "./shaders/ground/vertex.glsl"
-    // import ground_fragment_shader from "./shaders/ground/fragment.glsl"
+    // Example height map values (grayscale)
+    const width = 256;
+    const height = 256;
+    const size = width * height;
+    const data = new Uint8Array(size);
 
-    /**
-     * Debug
-     */
-    const gui = new GUI()
-    const debugObject = {}
+    // Fill the data array with height map values (0-255)
+    for (let i = 0; i < size; i++) {
+        data[i] = Math.random() * 255
+    }
 
-    /**
-     * Base
-     */
-    // Canvas
-    const canvas = document.querySelector("canvas.webgl")
+    // Create a DataTexture
 
-    // Scene
-    const scene = new THREE.Scene()
+    const heightMapTexture = new THREE.DataTexture(data, width, height, THREE.RedFormat, THREE.UnsignedByteType);
+    heightMapTexture.needsUpdate = true;
 
-    /**
-     * Textures
-     */
-    const textureLoader = new THREE.TextureLoader()
-
-    // const dtm_v1_texture_height_map = textureLoader.load("./textures/terrain/dtm_v2.png")
-    // const satellite_v2b_texture = textureLoader.load("./textures/terrain/satellite_v2b.jpg")
-    // satellite_v2b_texture.colorSpace = THREE.SRGBColorSpace
-
-    // const bumpTexture = dtm_v1_texture_height_map
-    // bumpTexture.wrapS = bumpTexture.wrapT = THREE.RepeatWrapping;
-
-    // magnitude of normal displacement
-    debugObject.bumpScale = 30.0
-    debugObject.uTerrainColourMin = -0.018
-    debugObject.uTerrainColourRange = 0.52
-
+    // Shader uniforms
     const customUniforms = {
-        textureMap:  { value: satellite_v2b_texture },
-        bumpTexture: { value: bumpTexture },
-        bumpScale:   { value: debugObject.bumpScale },
-        uTerrainColourMin:   { value: debugObject.uTerrainColourMin },
-        uTerrainColourRange: { value: debugObject.uTerrainColourRange },
-    }
+        uHeightMap: { value: heightMapTexture }
+    };
 
-    const gui_folder_terrain = gui.addFolder("Terrain")
+    // Vertex shader
+    const vertexShader = `
+        uniform sampler2D uHeightMap;
+        varying float vHeight;
 
-    gui_folder_terrain
-        .add(debugObject, "bumpScale")
-        .min(1).max(230).step(1).name("Scale")
-        .onChange(() => {
-            water.position.y = calc_water_y()
-            customUniforms.bumpScale.value = debugObject.bumpScale
-        })
-    gui_folder_terrain
-        .add(debugObject, "uTerrainColourMin")
-        .min(-0.1).max(0.1).step(0.001).name("Colour Min")
-        .onChange(() => {
-            customUniforms.uTerrainColourMin.value = debugObject.uTerrainColourMin
-        })
-    gui_folder_terrain
-        .add(debugObject, "uTerrainColourRange")
-        .min(0).max(1.0).step(0.01).name("Colour Range")
-        .onChange(() => {
-            customUniforms.uTerrainColourRange.value = debugObject.uTerrainColourRange
-        })
+        void main() {
+            vec4 heightData = texture2D(uHeightMap, uv);
+            vHeight = heightData.r;
+            vec3 newPosition = position + normal * vHeight * 10.0; // Scale height
+            newPosition.z = vHeight * 0.2; // Scale height
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
+        }
+    `;
 
+    // Fragment shader
+    const fragmentShader = `
+        varying float vHeight;
 
-    const groundMaterial = new THREE.ShaderMaterial({
+        void main() {
+            gl_FragColor = vec4(vHeight, 1.0, 1.0, 1.0); // Grayscale color based on height
+        }
+    `;
+
+    // Create the material with the shaders and uniforms
+    const material = new THREE.ShaderMaterial({
         uniforms: customUniforms,
-        vertexShader: ground_vertex_shader,
-        fragmentShader: ground_fragment_shader,
-        // side: THREE.DoubleSide,
-    })
-
-    // // Make a ground material and set to the text file in static/textures/terrain/satellite_v2b.jpg
-    // const groundMaterial = new THREE.Material({
-    //     map: satellite_v2b_texture,
-    //     bumpMap: bumpTexture,
-    //     bumpScale: debugObject.bumpScale,
-    //     side: THREE.DoubleSide,
-    // })
-    // const ground_plane_geometry = new THREE.PlaneGeometry(100, 100, 1000, 1000)
-    // ground_plane_geometry.rotateX(-Math.PI / 2)
-    // debugger
-    // // deform the plane according to the height map in the bump texture
-    // for (let i = 0; i < ground_plane_geometry.attributes.position.count; i++)
-    // {
-    //     const x = ground_plane_geometry.attributes.position.getX(i)
-    //     const z = ground_plane_geometry.attributes.position.getZ(i)
-    //     const y = bumpTexture.data[z * bumpTexture.width + x] / 255 * debugObject.bumpScale
-    //     ground_plane_geometry.attributes.position.setY(i, y)
-    // }
+        vertexShader: vertexShader,
+        fragmentShader: fragmentShader
+    });
 
 
-    const ground_plane = new THREE.Mesh(
-        ground_plane_geometry,
-        groundMaterial,
-    )
-    ground_plane.rotateX(-Math.PI / 2)
-    ground_plane.position.y = 0
-    scene.add(ground_plane)
+    // Create a plane geometry and mesh
+    const geometry = new THREE.PlaneGeometry(10, 10, width - 1, height - 1);
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.rotation.x = -Math.PI * 0.4;
 
+    // Add the mesh to the scene
+    const scene = new THREE.Scene();
+    scene.add(mesh);
 
-    // const cube = new THREE.Mesh(
-    //     new THREE.BoxGeometry(10, 10, 10),
-    //     new THREE.MeshPhongMaterial({ color: 0x555555 })
-    // )
-    // scene.add(cube)
+    // Set up the camera and renderer
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.z = 20;
 
-    /**
-     * Simulate the sun moving across the sky
-     */
-    debugObject.sunColour = 0xf6f6f4
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
 
-    const sun = new THREE.Vector3()
-    let sunAngle = Math.PI / 4
-    const sunDistance = 100
-    const sunHeight = 20
-    const sunSpeed = 0.01
-    const sunLight = new THREE.DirectionalLight(new THREE.Color(debugObject.sunColour), 10)
-    sunLight.position.set(0, 0, 0)
-    scene.add(sunLight)
-
-    gui.addColor(debugObject, "sunColour")
-        .onChange(() => {
-            sunLight.color.set(debugObject.sunColour)
-        })
-
-    const update_sun = () => {
-        sun.x = Math.cos(sunAngle) * sunDistance
-        sun.z = Math.sin(sunAngle) * sunDistance
-        sun.y = sunHeight
-        sunLight.position.copy(sun)
-        sunAngle += sunSpeed
-    }
-    update_sun()
-
-    /**
-     * Water level
-     */
-    debugObject.waterLevel = 2
-    debugObject.waterColour = 0x2589b2
-
-    function calc_water_y ()
-    {
-        return ((debugObject.waterLevel - 13) / 100) * debugObject.bumpScale
+    // Render loop
+    function animate() {
+        requestAnimationFrame(animate);
+        renderer.render(scene, camera);
     }
 
-    gui.add(debugObject, "waterLevel")
-        .min(0).max(11).step(0.01).name("Water Level")
-        .onChange(() => {
-            water.position.y = calc_water_y()
-        })
-    gui.addColor(debugObject, "waterColour")
-        .onChange(() => {
-            water.material.color.set(debugObject.waterColour)
-        })
-
-    const water = new THREE.Mesh(
-        new THREE.PlaneGeometry(100, 100, 1000, 1000),
-        new THREE.MeshStandardMaterial({
-            color: new THREE.Color(debugObject.waterColour),
-            transparent: true,
-            opacity: 0.9,
-        })
-    )
-    water.rotateX(-Math.PI / 2)
-    water.position.y = calc_water_y()
-    scene.add(water)
-
-
-    /**
-     * Lights
-     */
-    // const ambientLight = new THREE.AmbientLight(0xffffff, 0.5)
-    // scene.add(ambientLight)
-
-    // const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5)
-    // directionalLight.position.set(2, 2, 2)
-    // scene.add(directionalLight)
-
-    // /**
-    //  * Mark the centre of the scene
-    //  */
-    // const sphere = new THREE.Mesh(
-    //     new THREE.SphereGeometry(1, 4, 4),
-    //     new THREE.MeshStandardMaterial({ color: 0x113355 })
-    // )
-    // scene.add(sphere)
-
-
-    /**
-     * Sizes
-     */
-    const sizes = {
-        width: window.innerWidth,
-        height: window.innerHeight
-    }
-
-    window.addEventListener('resize', () =>
-    {
-        // Update sizes
-        sizes.width = window.innerWidth
-        sizes.height = window.innerHeight
-
-        // Update camera
-        camera.aspect = sizes.width / sizes.height
-        camera.updateProjectionMatrix()
-
-        // Update renderer
-        renderer.setSize(sizes.width, sizes.height)
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-    })
-
-    /**
-     * Camera
-     */
-    // Base camera
-    const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 300)
-    camera.position.x = 20
-    camera.position.y = 20
-    camera.position.z = 30
-    scene.add(camera)
-
-    // Controls
-    const controls = new OrbitControls(camera, canvas)
-    controls.enableDamping = true
-
-    /**
-     * Renderer
-     */
-    const renderer = new THREE.WebGLRenderer({
-        canvas: canvas
-    })
-    renderer.setSize(sizes.width, sizes.height)
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-
-    /**
-     * Animate
-     */
-    // const clock = new THREE.Clock()
-    const timer = new Timer()
-
-    const tick = () =>
-    {
-        timer.update()
-        const elapsedTime = timer.getElapsed()
-
-        update_sun()
-
-        // Update controls
-        controls.update()
-
-        // Render
-        renderer.render(scene, camera)
-
-        // Call tick again on the next frame
-        window.requestAnimationFrame(tick)
-    }
-
-    tick()
+    animate()
 }

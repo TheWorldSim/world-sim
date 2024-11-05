@@ -19,9 +19,9 @@ export default class Terrain extends EventEmitter
             use_standard_material: false,
         }
         this.customUniforms = {
-            textureMap:  { value: null },
-            bumpTexture: { value: null },
-            bumpScale:   { value: 30.0 },
+            uTextureMap:  { value: null },
+            uBumpTexture: { value: null },
+            uBumpScale:   { value: 30.0 },
             uTerrainColourMin:   { value: -0.018 },
             uTerrainColourRange: { value: 0.52 },
         }
@@ -49,7 +49,7 @@ export default class Terrain extends EventEmitter
 
         this.textures.colour = this.resources.items.satellite_v2b_texture_colour
         this.textures.colour.colorSpace = THREE.SRGBColorSpace
-        this.textures.bump = this.resources.items.dtm_v1_texture_height_map
+        this.textures.bump = this.resources.items.dtm_texture_height_map
         this.textures.bump.wrapS = this.textures.bump.wrapT = THREE.RepeatWrapping
         // this.textures.color.repeat.set(1.5, 1.5)
         // this.textures.color.wrapS = THREE.RepeatWrapping
@@ -66,8 +66,8 @@ export default class Terrain extends EventEmitter
         const terrain_vertex_shader = this.resources.items.terrain_vertex_shader
         const terrain_fragment_shader = this.resources.items.terrain_fragment_shader
 
-        this.customUniforms.textureMap.value = this.textures.colour
-        this.customUniforms.bumpTexture.value = this.textures.bump
+        this.customUniforms.uTextureMap.value = this.textures.colour
+        this.customUniforms.uBumpTexture.value = this.textures.bump
 
         const material_custom = new THREE.ShaderMaterial({
             uniforms: this.customUniforms,
@@ -102,8 +102,8 @@ export default class Terrain extends EventEmitter
             }
 
             this.gui_debug_folder
-                .add(this.customUniforms.bumpScale, "value")
-                .min(1).max(230).step(1).name("Scale")
+                .add(this.customUniforms.uBumpScale, "value")
+                .min(10).max(230).step(0.1).name("Scale")
                 .onChange(() => {
                     use_shader_material()
                     this.trigger(MESSAGES.Terrain.scale_changed)
@@ -131,8 +131,8 @@ export default class Terrain extends EventEmitter
         this.scene.add(this.mesh)
     }
 
-    calc_water_y(water_level)
-    {
-        return ((water_level + 3) / 100) * this.customUniforms.bumpScale.value
-    }
+    // calc_water_y(water_level)
+    // {
+    //     return ((water_level + 3) / 100) * this.customUniforms.uBumpScale.value
+    // }
 }

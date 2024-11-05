@@ -1,10 +1,7 @@
 
 precision mediump float;
 
-// uniform sampler2D textureMap;
-// uniform float uTerrainColourMin;
-// uniform float uTerrainColourRange;
-
+varying float vHeight;
 varying vec2 vUv;
 
 float calc_strength(float d)
@@ -28,5 +25,5 @@ void main()
     float strength = x * y;
     // colourFromTexture.a = strength;
 
-	gl_FragColor = vec4(0.145, 0.537, 0.725, 0.9 * strength);
+	gl_FragColor = vec4(0.145, 0.537, 0.725, 0.95 * strength);
 }
