@@ -1,3 +1,6 @@
 [submodule "Assets/ResourcesThirdParty/Licensed"]
 	path = sim/energy-explorer/Assets/ResourcesThirdParty/Licensed
 	url = git@github.com:TheWorldSim/world-sim-licensed-third-party.git
+[submodule "sim/uk/london_havering/belhus_woods/src/watershed"]
+	path = sim/uk/london_havering/belhus_woods/src/watershed
+	url = git@github.com:AJamesPhillips/watershed-segmentation.git
