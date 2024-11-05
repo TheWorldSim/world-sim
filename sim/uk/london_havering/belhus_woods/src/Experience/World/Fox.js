@@ -48,7 +48,7 @@ export default class Fox
 
         this.model_angle = 0
         this.track_radius = 1
-        this.model.position.set(this.track_radius, 0, 0)
+        this.model.position.set(this.track_radius, 0.7, 0)
     }
 
     setAnimation()
