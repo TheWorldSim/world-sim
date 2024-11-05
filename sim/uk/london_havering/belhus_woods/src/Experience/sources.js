@@ -15,7 +15,7 @@ export default [
     {
         name: "dtm_texture_height_map",
         type: "texture",
-        path: "textures/terrain/dtm_v2.png"
+        path: "textures/terrain/dtm_v3.png"
     },
     {
         name: "satellite_v2b_texture_colour",

@@ -11,13 +11,13 @@ void main()
     // the bump map round the edges by moving the UV coordinates inwards.
     float fudge_offset = 0.001;
     float fudge_multiplier = 0.999;
-	vec4 bumpData = texture2D( uTerrainHeightMap, (uv * fudge_multiplier) + fudge_offset);
+	vec4 heightData = texture2D(uTerrainHeightMap, (uv * fudge_multiplier) + fudge_offset);
 
-	float vertical_displacement = bumpData.r; // assuming map is grayscale it doesn't matter if you use r, g, or b.
+	float vertical_displacement = heightData.r; // map is grayscale so we can use r, g or b
 
 	// move the position along the normal
     vec3 newPosition = position + normal * uBumpScale * vertical_displacement;
-    newPosition.z -= (uBumpScale / 5.0);
+    // newPosition.z -= (uBumpScale / 5.0);
 
 	gl_Position = projectionMatrix * modelViewMatrix * vec4( newPosition, 1.0 );
 

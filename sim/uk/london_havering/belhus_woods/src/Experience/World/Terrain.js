@@ -19,9 +19,9 @@ export default class Terrain extends EventEmitter
             use_standard_material: false,
         }
         this.customUniforms = {
-            uTextureMap:  { value: null },
+            uTextureMap:       { value: null },
             uTerrainHeightMap: { value: null },
-            uBumpScale:   { value: 30.0 },
+            uBumpScale:        { value: 6.5 },
             uTerrainColourMin:   { value: -0.018 },
             uTerrainColourRange: { value: 0.52 },
         }
@@ -103,7 +103,7 @@ export default class Terrain extends EventEmitter
 
             this.gui_debug_folder
                 .add(this.customUniforms.uBumpScale, "value")
-                .min(10).max(230).step(0.1).name("Scale")
+                .min(2).max(60).step(0.1).name("Scale")
                 .onChange(() => {
                     use_shader_material()
                     this.trigger(MESSAGES.Terrain.scale_changed)

@@ -29,7 +29,7 @@ export default class Water
             uHeightMap: { value: undefined },
             uBumpScale: { value: 1 }, // will get updated when we call onTerrainScaleChanged
             uTerrainHeightMap: { value: null },
-            uHeightOffset: { value: -0.1959 },
+            uHeightOffset: { value: 0 },
             // uWaterColour: { value: new THREE.Vector3(37/255, 137/255, 185/255) }, // 0x2589b2
         }
         this.onTerrainScaleChanged() // update uBumpScale
@@ -50,9 +50,14 @@ export default class Water
     async setGeometry()
     {
         const canvas_el = document.createElement("canvas")
-        const max_z_diff = 2
+        const max_z_diff = 9
         const magnify = Math.pow(2, -2)
-        const watershed = await get_watershed_from_image_el(canvas_el, this.resources.items.dtm_texture_height_map.image, max_z_diff, magnify)
+        const watershed = await get_watershed_from_image_el(
+            canvas_el,
+            this.resources.items.dtm_texture_height_map.image,
+            max_z_diff,
+            magnify
+        )
 
         const minima = get_minima_from_vertices(watershed.vertices, false)
         const map_minima_id_to_minima = {}
@@ -107,7 +112,7 @@ export default class Water
         {
             this.gui_debug_folder
                 .add(this.customUniforms.uHeightOffset, "value")
-                .min(-0.2).max(-0.15).step(0.0001).name("Height offset")
+                .min(-0.2).max(1).step(0.01).name("Height offset")
 
             // this.gui_debug_folder
             //     .add(this.customUniforms.uBumpScale2, "value")
