@@ -8,7 +8,7 @@ varying vec2 vUv;
 void main()
 {
     // These fudge factors are used to minimse the very high or low values in
-    // the bump map round the edges.
+    // the bump map round the edges by moving the UV coordinates inwards.
     float fudge_offset = 0.001;
     float fudge_multiplier = 0.999;
 	vec4 bumpData = texture2D( bumpTexture, (uv * fudge_multiplier) + fudge_offset);

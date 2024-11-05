@@ -33,6 +33,16 @@ export default [
         path: "shaders/terrain/fragment.glsl"
     },
     {
+        name: "water_vertex_shader",
+        type: "shader",
+        path: "shaders/water/vertex.glsl"
+    },
+    {
+        name: "water_fragment_shader",
+        type: "shader",
+        path: "shaders/water/fragment.glsl"
+    },
+    {
         name: "grassColorTexture",
         type: "texture",
         path: "textures/dirt/color.jpg"

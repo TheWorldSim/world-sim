@@ -8,7 +8,6 @@ export default class Terrain extends EventEmitter
     constructor()
     {
         super()
-        this.finised_initialising = false
 
         this.experience = new Experience()
         this.scene = this.experience.scene
@@ -36,7 +35,6 @@ export default class Terrain extends EventEmitter
             this.setTextures()
             this.setMaterial()
             this.setMesh()
-            this.finised_initialising = true
         })
     }
 
