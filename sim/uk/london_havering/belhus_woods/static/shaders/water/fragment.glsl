@@ -1,7 +1,8 @@
 precision mediump float;
 
-varying float vHeight;
+varying float vOpacity;
 varying vec2 vUv;
+
 
 float calc_strength(float d)
 {
@@ -10,6 +11,7 @@ float calc_strength(float d)
 
     return 1.0 - d2;
 }
+
 
 void main()
 {
@@ -21,7 +23,7 @@ void main()
     float x = calc_strength(vUv_abs.x);
     float y = calc_strength(vUv_abs.y);
 
-    float strength = x * y;
+    float strength = x * y * vOpacity;
     // colourFromTexture.a = strength;
 
 	gl_FragColor = vec4(0.145, 0.537, 0.725, 0.95 * strength);

@@ -27,8 +27,9 @@ export default class Water
 
         this.customUniforms = {
             uHeightMap: { value: undefined },
-            uBumpScale: { value: 1 }, // will get updated when we call onTerrainScaleChanged
+            // Provided to shader so that we can hide the water that is underground
             uTerrainHeightMap: { value: null },
+            uBumpScale: { value: 1 }, // will get updated when we call onTerrainScaleChanged
             uHeightOffset: { value: 0 },
             // uWaterColour: { value: new THREE.Vector3(37/255, 137/255, 185/255) }, // 0x2589b2
         }
@@ -113,10 +114,6 @@ export default class Water
             this.gui_debug_folder
                 .add(this.customUniforms.uHeightOffset, "value")
                 .min(-0.2).max(1).step(0.01).name("Height offset")
-
-            // this.gui_debug_folder
-            //     .add(this.customUniforms.uBumpScale2, "value")
-            //     .min(1).max(150).step(0.1).name("Scale")
         }
     }
 
