@@ -10,6 +10,25 @@ const MOVEMENT_CONTROLS = {
 }
 
 
+const TERRAIN_HEIGHT_MAP = {
+    none: "none",
+    height: "height",
+    watersheds: "watersheds",
+}
+TERRAIN_HEIGHT_MAP.next = (current) =>
+{
+    if (current === TERRAIN_HEIGHT_MAP.none) return TERRAIN_HEIGHT_MAP.height
+    if (current === TERRAIN_HEIGHT_MAP.height) return TERRAIN_HEIGHT_MAP.watersheds
+    return TERRAIN_HEIGHT_MAP.none
+}
+TERRAIN_HEIGHT_MAP.to_string = (current) =>
+{
+    if (current === TERRAIN_HEIGHT_MAP.none) return "Show height map"
+    if (current === TERRAIN_HEIGHT_MAP.height) return "Show watersheds"
+    return "Hide height map"
+}
+
+
 export default class UserControls extends EventEmitter
 {
     constructor(experience, sizes, camera)
@@ -20,6 +39,7 @@ export default class UserControls extends EventEmitter
             beavers_present: false,
             movement_controls: MOVEMENT_CONTROLS.truck_dolly,
             pointer_is_down: false,
+            terrain_height_map: TERRAIN_HEIGHT_MAP.none,
         }
         this.experience = experience
         this.sizes = sizes
@@ -101,6 +121,14 @@ export default class UserControls extends EventEmitter
             this.update_ui()
         })
 
+        this.toggle_terrain_height_map = this.add_div("", () =>
+        {
+            this.state.terrain_height_map = TERRAIN_HEIGHT_MAP.next(this.state.terrain_height_map)
+            this.trigger(MESSAGES.UserControls.terrain_height_map, [this.state.terrain_height_map])
+            this.update_ui()
+        })
+        this.toggle_terrain_height_map.style.fontSize = "10px"
+
         this.update_ui()
 
         this.on(MESSAGES.UserControls.movement_controls, (movement_controls) =>
@@ -138,6 +166,7 @@ export default class UserControls extends EventEmitter
         this.arrows_truck_dolly.classList.toggle("disabled", this.state.movement_controls === MOVEMENT_CONTROLS.tilt_pan)
         this.arrows_tilt_pan.classList.toggle("disabled", this.state.movement_controls === MOVEMENT_CONTROLS.truck_dolly)
         this.toggle_beavers.innerText = this.state.beavers_present ? "Remove beavers" : "Add beavers"
+        this.toggle_terrain_height_map.innerText = TERRAIN_HEIGHT_MAP.to_string(this.state.terrain_height_map)
     }
 
     listen_for_pointer()
