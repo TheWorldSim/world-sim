@@ -18,7 +18,7 @@ export default class Terrain extends EventEmitter
         this.debug_object = {
             use_standard_material: false,
         }
-        this.customUniforms = {
+        this.custom_uniforms = {
             uTextureMap:       { value: null },
             uTerrainHeightMap: { value: null },
             uBumpScale:        { value: 3.5 },
@@ -31,19 +31,19 @@ export default class Terrain extends EventEmitter
         // Wait for resources
         this.resources.on(MESSAGES.Resources.ready, () =>
         {
-            this.setGeometry()
-            this.setTextures()
-            this.setMaterial()
-            this.setMesh()
+            this.set_geometry()
+            this.set_textures()
+            this.set_material()
+            this.set_mesh()
         })
     }
 
-    setGeometry()
+    set_geometry()
     {
         this.geometry = new THREE.PlaneGeometry(this.size.x, this.size.z, 1000, 1000)
     }
 
-    setTextures()
+    set_textures()
     {
         this.textures = {}
 
@@ -61,16 +61,16 @@ export default class Terrain extends EventEmitter
         // this.textures.normal.wrapT = THREE.RepeatWrapping
     }
 
-    setMaterial()
+    set_material()
     {
         const terrain_vertex_shader = this.resources.items.terrain_vertex_shader
         const terrain_fragment_shader = this.resources.items.terrain_fragment_shader
 
-        this.customUniforms.uTextureMap.value = this.textures.colour
-        this.customUniforms.uTerrainHeightMap.value = this.textures.bump
+        this.custom_uniforms.uTextureMap.value = this.textures.colour
+        this.custom_uniforms.uTerrainHeightMap.value = this.textures.bump
 
         const material_custom = new THREE.ShaderMaterial({
-            uniforms: this.customUniforms,
+            uniforms: this.custom_uniforms,
             vertexShader: terrain_vertex_shader,
             fragmentShader: terrain_fragment_shader,
             transparent: true,
@@ -102,20 +102,20 @@ export default class Terrain extends EventEmitter
             }
 
             this.gui_debug_folder
-                .add(this.customUniforms.uBumpScale, "value")
+                .add(this.custom_uniforms.uBumpScale, "value")
                 .min(2).max(60).step(0.1).name("Scale")
                 .onChange(() => {
                     use_shader_material()
                     this.trigger(MESSAGES.Terrain.scale_changed)
                 })
             this.gui_debug_folder
-                .add(this.customUniforms.uTerrainColourMin, "value")
+                .add(this.custom_uniforms.uTerrainColourMin, "value")
                 .min(-0.1).max(0.1).step(0.001).name("Colour Min")
                 .onChange(() => {
                     use_shader_material()
                 })
             this.gui_debug_folder
-                .add(this.customUniforms.uTerrainColourRange, "value")
+                .add(this.custom_uniforms.uTerrainColourRange, "value")
                 .min(0).max(1.0).step(0.01).name("Colour Range")
                 .onChange(() => {
                     use_shader_material()
@@ -123,7 +123,7 @@ export default class Terrain extends EventEmitter
         }
     }
 
-    setMesh()
+    set_mesh()
     {
         this.mesh = new THREE.Mesh(this.geometry, this.material)
         this.mesh.rotation.x = - Math.PI * 0.5
@@ -145,6 +145,6 @@ export default class Terrain extends EventEmitter
 
     // calc_water_y(water_level)
     // {
-    //     return ((water_level + 3) / 100) * this.customUniforms.uBumpScale.value
+    //     return ((water_level + 3) / 100) * this.custom_uniforms.uBumpScale.value
     // }
 }
