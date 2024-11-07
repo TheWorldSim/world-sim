@@ -15,5 +15,6 @@ export const MESSAGES = {
     },
     UserControls: {
         movement_controls: "movement_controls",
+        pointer_down: "pointer_down",
     },
 }

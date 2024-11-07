@@ -129,6 +129,18 @@ export default class Terrain extends EventEmitter
         this.mesh.rotation.x = - Math.PI * 0.5
         this.mesh.receiveShadow = true
         this.scene.add(this.mesh)
+
+        // Set up a simple under mesh for capturing pointer events to move the
+        // camera around
+        this.simple_under_mesh = new THREE.Mesh(
+            new THREE.PlaneGeometry(this.size.x * 3, this.size.z * 3),
+            new THREE.MeshBasicMaterial({
+                // wireframe: true,
+                visible: false,
+            })
+        )
+        this.simple_under_mesh.rotation.x = - Math.PI * 0.5
+        this.scene.add(this.simple_under_mesh)
     }
 
     // calc_water_y(water_level)

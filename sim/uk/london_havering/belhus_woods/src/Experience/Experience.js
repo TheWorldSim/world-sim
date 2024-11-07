@@ -37,8 +37,9 @@ export default class Experience
         this.time = new Time()
         this.scene = new THREE.Scene()
         this.resources = new Resources(sources)
-        this.user_controls = new UserControls()
         this.camera = new Camera()
+        this.user_controls = new UserControls(this, this.sizes, this.camera)
+        this.camera.setup_listen_to_user_controls(this.user_controls)
         this.renderer = new Renderer()
         this.world = new World()
 

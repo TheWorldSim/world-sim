@@ -1,6 +1,8 @@
 import * as THREE from "three"
-import Experience from "./Experience.js"
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js"
+
+import Experience from "./Experience.js"
+import { MESSAGES } from "./Utils/messages.js"
 
 export default class Camera
 {
@@ -19,9 +21,9 @@ export default class Camera
     setInstance()
     {
         this.look_at_speed_ms = 3000
-        this.look_at = {
-            start_time: this.time.current,
-            end_time: this.time.current,
+        this.look_at_args = {
+            start_time: 0,
+            end_time: 0,
             current: new THREE.Vector3(),
             target: new THREE.Vector3(),
         }
@@ -43,7 +45,31 @@ export default class Camera
         this.controls.zoomSpeed = 1.5
         this.controls.rotateSpeed = 0.6
 
-        this.lookAt(new THREE.Vector3(0, 1, 0))
+        this.set_look_at_position(new THREE.Vector3(0, 1, 0), true)
+    }
+
+    setup_listen_to_user_controls(user_controls)
+    {
+        this.controls.enableRotate = user_controls.state.movement_controls === "tilt_pan"
+
+        user_controls.on(MESSAGES.UserControls.movement_controls, movement_controls =>
+        {
+            this.controls.enableRotate = movement_controls === "tilt_pan"
+        })
+
+        user_controls.on(MESSAGES.UserControls.pointer_down, (start_world_point, current_world_point) =>
+        {
+            if (this.controls.enableRotate) return
+
+            const delta_x = start_world_point.x - current_world_point.x
+            const delta_z = start_world_point.z - current_world_point.z
+
+            this.instance.position.x += delta_x
+            this.instance.position.z += delta_z
+
+            this.controls.target.x += delta_x
+            this.controls.target.z += delta_z
+        })
     }
 
     resize()
@@ -56,26 +82,26 @@ export default class Camera
     {
         this.controls.update()
 
-        if (this.look_at.end_time > this.time.current)
+        if (this.look_at_args.end_time > this.time.current)
         {
-            const elapsed_time = this.time.current - this.look_at.start_time
+            const elapsed_time = this.time.current - this.look_at_args.start_time
             const t = Math.min(elapsed_time / this.look_at_speed_ms, 1)
-            const look_at_position = this.look_at.current.lerp(this.look_at.target, t)
+            const look_at_position = this.look_at_args.current.lerp(this.look_at_args.target, t)
             this.#look_at_position(look_at_position)
 
             if (t > 1)
             {
-                this.look_at.start_time = 0
-                this.look_at.end_time = 0
+                this.look_at_args.start_time = 0
+                this.look_at_args.end_time = 0
             }
         }
     }
 
-    lookAt(position)
+    set_look_at_position(position, immediate = false)
     {
-        this.look_at = {
+        this.look_at_args = {
             start_time: this.time.current,
-            end_time: this.time.current + this.look_at_speed_ms,
+            end_time: this.time.current + (immediate ? 0 : this.look_at_speed_ms),
             current: this.controls.target.clone(),
             target: position,
         }
@@ -84,7 +110,7 @@ export default class Camera
     // private methods
     #look_at_position(position)
     {
-        this.instance.lookAt(position)
+        this.instance.set_look_at_position(position)
         this.controls.target.set(position.x, position.y, position.z)
     }
 }

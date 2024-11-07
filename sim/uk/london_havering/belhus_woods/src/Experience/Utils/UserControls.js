@@ -1,3 +1,5 @@
+import * as THREE from "three"
+
 import EventEmitter from "./EventEmitter.js"
 import { MESSAGES } from "./messages.js"
 
@@ -10,14 +12,19 @@ const MOVEMENT_CONTROLS = {
 
 export default class UserControls extends EventEmitter
 {
-    constructor()
+    constructor(experience, sizes, camera)
     {
         super()
 
         this.state = {
-            movement_controls: MOVEMENT_CONTROLS.tilt_pan,
+            movement_controls: MOVEMENT_CONTROLS.truck_dolly,
+            pointer_is_down: false,
         }
+        this.experience = experience
+        this.sizes = sizes
+        this.camera = camera
         this.create_ui()
+        this.listen_for_pointer()
     }
 
     create_ui()
@@ -97,5 +104,54 @@ export default class UserControls extends EventEmitter
     {
         this.arrows_truck_dolly.classList.toggle("disabled", this.state.movement_controls === MOVEMENT_CONTROLS.tilt_pan)
         this.arrows_tilt_pan.classList.toggle("disabled", this.state.movement_controls === MOVEMENT_CONTROLS.truck_dolly)
+    }
+
+    listen_for_pointer()
+    {
+        const raycaster = new THREE.Raycaster()
+        const screen_cursor = new THREE.Vector2()
+        let terrain_mesh = null
+        let start_world_point = null
+        let current_world_point = null
+
+
+        document.addEventListener("pointerdown", (event) =>
+        {
+            this.state.pointer_is_down = event.buttons === 1
+            start_world_point = null
+            current_world_point = null
+        })
+
+        document.addEventListener("pointerup", (event) =>
+        {
+            this.state.pointer_is_down = false
+            start_world_point = null
+            current_world_point = null
+        })
+
+        document.addEventListener("pointermove", (event) =>
+        {
+            if (!terrain_mesh)
+            {
+                if (this.experience.world?.terrain.simple_under_mesh)
+                {
+                    terrain_mesh = this.experience.world.terrain.simple_under_mesh
+                } else return
+            }
+
+            if (!this.state.pointer_is_down) return
+
+            screen_cursor.x = (event.clientX / this.sizes.width) * 2 - 1
+            screen_cursor.y = - (event.clientY / this.sizes.height) * 2 + 1
+
+            raycaster.setFromCamera(screen_cursor, this.camera.instance)
+            const intersections = raycaster.intersectObject(terrain_mesh)
+            if (!intersections.length) return
+
+            if (!start_world_point) start_world_point = intersections[0].point
+            current_world_point = intersections[0].point
+
+            this.trigger(MESSAGES.UserControls.pointer_down, [start_world_point, current_world_point])
+        })
     }
 }
