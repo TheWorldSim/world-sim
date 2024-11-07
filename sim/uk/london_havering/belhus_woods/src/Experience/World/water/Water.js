@@ -73,7 +73,7 @@ export default class Water
     {
         const canvas_el = document.createElement("canvas")
         const magnify = Math.pow(2, -2)
-        this.initial_watershed_input_data = extract_image_data(canvas_el, img_el, magnify)
+        this.initial_watershed_input_data = extract_image_data(canvas_el, img_el, magnify, true, true)
 
         this.intial_height_data_args = this.calc_height_data_args_from_input_data(this.initial_watershed_input_data)
     }
@@ -94,13 +94,7 @@ export default class Water
             const minima = map_minima_id_to_minima[lowest_minimum]
             const z = minima.z
 
-            // We can't just use i as the index because the height map is flipped
-            // so we need to calculate the correct index
-            const x_row = i % watershed.width
-            const height_row = (watershed.height - Math.floor(i / watershed.width)) - 1
-            const index = x_row + (height_row * watershed.width)
-
-            height_data[index] = z
+            height_data[i] = z
         })
 
         return {
