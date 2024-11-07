@@ -3,7 +3,8 @@ import * as THREE from "three"
 import Experience from "../../Experience.js"
 import { MESSAGES } from "../../Utils/messages.js"
 import {
-    get_watershed_from_image_el,
+    construct_watershed,
+    extract_image_data,
     get_minima_from_vertices,
 } from "../../../watershed/src/watershed.js"
 
@@ -58,12 +59,8 @@ export default class Water
         const max_z_diff = 9
         const magnify = Math.pow(2, -2)
         const img_el = this.resources.items.dtm_texture_height_map.image
-        const watershed = get_watershed_from_image_el(
-            canvas_el,
-            img_el,
-            max_z_diff,
-            magnify
-        )
+        const watershed_input_data = extract_image_data(canvas_el, img_el, magnify)
+        const watershed = construct_watershed(watershed_input_data, max_z_diff)
 
         const minima = get_minima_from_vertices(watershed.vertices, false)
         const map_minima_id_to_minima = {}
