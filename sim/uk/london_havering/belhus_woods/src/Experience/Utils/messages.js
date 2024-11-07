@@ -18,4 +18,7 @@ export const MESSAGES = {
         movement_controls: "movement_controls",
         pointer_down: "pointer_down",
     },
+    Beaver: {
+        dam_status_changed: "dam_status_changed",
+    },
 }

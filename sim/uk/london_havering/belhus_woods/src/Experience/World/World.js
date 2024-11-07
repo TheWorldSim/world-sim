@@ -3,6 +3,8 @@ import Environment from "./Environment.js"
 import Terrain from "./Terrain.js"
 import Fox from "./Fox.js"
 import Water from "./water/Water.js"
+import Beaver from "./beavers/Beaver.js"
+
 
 export default class World
 {
@@ -15,10 +17,12 @@ export default class World
         this.fox = new Fox()
         this.environment = new Environment()
         this.water = new Water(this.terrain)
+        this.beaver = new Beaver()
     }
 
     update()
     {
         this.fox?.update()
+        this.beaver?.update()
     }
 }
