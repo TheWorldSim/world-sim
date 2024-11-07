@@ -55,13 +55,23 @@ export default class Water
 
     set_geometry()
     {
+        const img_el = this.resources.items.dtm_texture_height_map.image
+        const height_map_texture = this.calc_geometry_initial_height_map_texture(img_el)
+        this.custom_uniforms.uHeightMap.value = height_map_texture
+
+        this.custom_uniforms.uTerrainHeightMap.value = this.resources.items.dtm_texture_height_map
+
+        this.geometry = new THREE.PlaneGeometry(this.size.x, this.size.z, 1000, 1000)
+    }
+
+    calc_geometry_initial_height_map_texture(img_el)
+    {
         const canvas_el = document.createElement("canvas")
         const max_z_diff = 9
         const magnify = Math.pow(2, -2)
-        const img_el = this.resources.items.dtm_texture_height_map.image
         const watershed_input_data = extract_image_data(canvas_el, img_el, magnify)
-        const watershed = construct_watershed(watershed_input_data, max_z_diff)
 
+        const watershed = construct_watershed(watershed_input_data, max_z_diff)
         const minima = get_minima_from_vertices(watershed.vertices, false)
         const map_minima_id_to_minima = {}
         minima.forEach(m => map_minima_id_to_minima[m.minimum_id] = m)
@@ -72,22 +82,21 @@ export default class Water
         {
             const lowest_minimum = Math.min(...vertex.group_ids)
             const minima = map_minima_id_to_minima[lowest_minimum]
-            // const z = vertex.z
             const z = minima.z
 
+            // We can't just use i as the index because the height map is flipped
+            // so we need to calculate the correct index
             const x_row = i % watershed.width
             const height_row = (watershed.height - Math.floor(i / watershed.width)) - 1
             const index = x_row + (height_row * watershed.width)
-            height_data[index] = z //(z - 39) * (255 / (93 - 39))
+
+            height_data[index] = z
         })
 
         const height_map_texture = new THREE.DataTexture(height_data, watershed.width, watershed.height, THREE.RedFormat, THREE.UnsignedByteType)
         height_map_texture.needsUpdate = true
-        this.custom_uniforms.uHeightMap.value = height_map_texture
 
-        this.custom_uniforms.uTerrainHeightMap.value = this.resources.items.dtm_texture_height_map
-
-        this.geometry = new THREE.PlaneGeometry(this.size.x, this.size.z, 1000, 1000)
+        return height_map_texture
     }
 
     set_textures()
