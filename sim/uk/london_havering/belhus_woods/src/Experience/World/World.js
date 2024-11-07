@@ -17,7 +17,7 @@ export default class World
         this.fox = new Fox()
         this.environment = new Environment()
         this.water = new Water(this.terrain)
-        this.beaver = new Beaver()
+        this.beaver = new Beaver(this.water)
     }
 
     update()
