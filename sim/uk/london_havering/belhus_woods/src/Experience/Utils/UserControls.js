@@ -17,6 +17,7 @@ export default class UserControls extends EventEmitter
         super()
 
         this.state = {
+            beavers_present: false,
             movement_controls: MOVEMENT_CONTROLS.truck_dolly,
             pointer_is_down: false,
         }
@@ -45,28 +46,41 @@ export default class UserControls extends EventEmitter
                 position: fixed;
                 bottom: 0;
                 left: 0;
-                padding: 10px;
-                margin: 5px;
+                margin: 10px;
                 display: flex;
-                flex-direction: column;
-                gap: 20px;
-                background-color: rgba(255, 255, 255, 0.5);
-                border-radius: 10px;
+                flex-direction: row;
+                gap: 10px;
             }
 
-            .user_controls img {
-                width: 50px;
-                height: 50px;
+            .user_controls > img, .user_controls > div {
+                width: 40px;
+                height: 40px;
                 cursor: pointer;
                 opacity: 0.8;
+                background-color: rgba(255, 255, 255, 0.5);
+                border-radius: 10px;
+                padding: 10px;
             }
 
-            .user_controls img:hover {
+            .user_controls > div {
+                width: 60px;
+                height: 60px;
+                padding: 0px;
+            }
+
+            .user_controls > img:hover, .user_controls > div:hover {
                 opacity: 1.0;
             }
 
-            .user_controls img.disabled {
+            .user_controls > img.disabled {
                 display: none;
+            }
+
+            .user_controls > div {
+                font-size: 13px;
+                font-family: sans-serif;
+                align-content: center;
+                text-align: center;
             }
         `
 
@@ -78,6 +92,13 @@ export default class UserControls extends EventEmitter
         this.arrows_tilt_pan = this.add_image("./textures/symbols/arrows_tilt_pan_thin.png", () =>
         {
             this.trigger(MESSAGES.UserControls.movement_controls, [MOVEMENT_CONTROLS.truck_dolly])
+        })
+
+        this.toggle_beavers = this.add_div("Beavers", () =>
+        {
+            this.state.beavers_present = !this.state.beavers_present
+            this.trigger(MESSAGES.UserControls.beaver_presence, [this.state.beavers_present])
+            this.update_ui()
         })
 
         this.update_ui()
@@ -100,10 +121,23 @@ export default class UserControls extends EventEmitter
         return image_el
     }
 
+    add_div(text, callback)
+    {
+        const div_el = document.createElement("div")
+        this.container_el.appendChild(div_el)
+
+        div_el.innerText = text
+        div_el.addEventListener("click", callback)
+        // div_el.classList.add("disabled")
+
+        return div_el
+    }
+
     update_ui()
     {
         this.arrows_truck_dolly.classList.toggle("disabled", this.state.movement_controls === MOVEMENT_CONTROLS.tilt_pan)
         this.arrows_tilt_pan.classList.toggle("disabled", this.state.movement_controls === MOVEMENT_CONTROLS.truck_dolly)
+        this.toggle_beavers.innerText = this.state.beavers_present ? "Remove beavers" : "Add beavers"
     }
 
     listen_for_pointer()

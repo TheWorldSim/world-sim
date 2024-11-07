@@ -14,6 +14,7 @@ export const MESSAGES = {
         tick: "tick",
     },
     UserControls: {
+        beaver_presence: "beaver_presence",
         movement_controls: "movement_controls",
         pointer_down: "pointer_down",
     },
