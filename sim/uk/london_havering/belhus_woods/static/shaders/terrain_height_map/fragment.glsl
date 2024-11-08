@@ -6,7 +6,7 @@ varying float vHeight;
 
 float calc_strength(float d)
 {
-    float distance_theshold = 0.8;
+    float distance_theshold = 0.95;
     float d2 = max(0.0, d - distance_theshold) * (1.0 / (1.0 - distance_theshold));
 
     return 1.0 - d2;
