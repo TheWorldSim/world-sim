@@ -2,26 +2,16 @@ import * as THREE from "three"
 
 import EventEmitter from "./EventEmitter.js"
 import { MESSAGES } from "./messages.js"
+import { MOVEMENT_CONTROLS, TERRAIN_HEIGHT_MAP } from "../constants.js"
 
 
-const MOVEMENT_CONTROLS = {
-    tilt_pan: "tilt_pan",
-    truck_dolly: "truck_dolly",
-}
-
-
-const TERRAIN_HEIGHT_MAP = {
-    none: "none",
-    height: "height",
-    watersheds: "watersheds",
-}
-TERRAIN_HEIGHT_MAP.next = (current) =>
+const next_terrain_height_map = (current) =>
 {
     if (current === TERRAIN_HEIGHT_MAP.none) return TERRAIN_HEIGHT_MAP.height
     if (current === TERRAIN_HEIGHT_MAP.height) return TERRAIN_HEIGHT_MAP.watersheds
     return TERRAIN_HEIGHT_MAP.none
 }
-TERRAIN_HEIGHT_MAP.to_string = (current) =>
+const terrain_height_map_to_string = (current) =>
 {
     if (current === TERRAIN_HEIGHT_MAP.none) return "Show height map"
     if (current === TERRAIN_HEIGHT_MAP.height) return "Show watersheds"
@@ -123,7 +113,7 @@ export default class UserControls extends EventEmitter
 
         this.toggle_terrain_height_map = this.add_div("", () =>
         {
-            this.state.terrain_height_map = TERRAIN_HEIGHT_MAP.next(this.state.terrain_height_map)
+            this.state.terrain_height_map = next_terrain_height_map(this.state.terrain_height_map)
             this.trigger(MESSAGES.UserControls.terrain_height_map, [this.state.terrain_height_map])
             this.update_ui()
         })
@@ -166,7 +156,7 @@ export default class UserControls extends EventEmitter
         this.arrows_truck_dolly.classList.toggle("disabled", this.state.movement_controls === MOVEMENT_CONTROLS.tilt_pan)
         this.arrows_tilt_pan.classList.toggle("disabled", this.state.movement_controls === MOVEMENT_CONTROLS.truck_dolly)
         this.toggle_beavers.innerText = this.state.beavers_present ? "Remove beavers" : "Add beavers"
-        this.toggle_terrain_height_map.innerText = TERRAIN_HEIGHT_MAP.to_string(this.state.terrain_height_map)
+        this.toggle_terrain_height_map.innerText = terrain_height_map_to_string(this.state.terrain_height_map)
     }
 
     listen_for_pointer()

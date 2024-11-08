@@ -1,4 +1,3 @@
-import UserControls from "./UserControls";
 
 export const MESSAGES = {
     Resources: {

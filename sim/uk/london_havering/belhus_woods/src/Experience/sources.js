@@ -33,6 +33,26 @@ export default [
         path: "shaders/terrain/fragment.glsl"
     },
     {
+        name: "terrain_height_map_vertex_shader",
+        type: "shader",
+        path: "shaders/terrain_height_map/vertex.glsl"
+    },
+    {
+        name: "terrain_height_map_fragment_shader",
+        type: "shader",
+        path: "shaders/terrain_height_map/fragment.glsl"
+    },
+    {
+        name: "watersheds_vertex_shader",
+        type: "shader",
+        path: "shaders/watersheds/vertex.glsl"
+    },
+    {
+        name: "watersheds_fragment_shader",
+        type: "shader",
+        path: "shaders/watersheds/fragment.glsl"
+    },
+    {
         name: "water_vertex_shader",
         type: "shader",
         path: "shaders/water/vertex.glsl"

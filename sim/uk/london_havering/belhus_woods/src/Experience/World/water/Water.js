@@ -1,6 +1,7 @@
 import * as THREE from "three"
 
 import Experience from "../../Experience.js"
+import { TERRAIN_HEIGHT_MAP } from "../../constants.js"
 import { MESSAGES } from "../../Utils/messages.js"
 import {
     construct_watershed,
@@ -23,6 +24,7 @@ export default class Water
         this.experience = new Experience()
         this.scene = this.experience.scene
         this.debug = this.experience.debug
+        this.user_controls = this.experience.user_controls
 
         this.gui_debug_folder = this.debug.active && this.debug.ui.addFolder("Water")
         // this.gui_debug_folder.close()
@@ -30,6 +32,7 @@ export default class Water
             use_standard_material: true,
         }
 
+        this.max_z_diff = 5
         this.custom_uniforms = {
             uHeightMap: { value: undefined },
             // Provided to shader so that we can hide the water that is underground
@@ -48,9 +51,28 @@ export default class Water
             this.set_material()
             this.set_mesh()
             this.finised_initialising = true
+
+            // // temporary
+            // this.render_watersheds()
         })
 
         this.terrain.on(MESSAGES.Terrain.scale_changed, this.on_terrain_scale_change.bind(this))
+        this.user_controls.on(MESSAGES.UserControls.terrain_height_map, (value) =>
+        {
+            if (value === TERRAIN_HEIGHT_MAP.height)
+            {
+                this.render_watershed_input_data()
+            }
+            else if (value === TERRAIN_HEIGHT_MAP.watersheds)
+            {
+                this.hide_watershed_input_data()
+                this.render_watersheds()
+            }
+            else
+            {
+                this.hide_watersheds()
+            }
+        })
     }
 
     set_geometry()
@@ -80,8 +102,7 @@ export default class Water
 
     calc_height_data_args_from_input_data(watershed_input_data)
     {
-        const max_z_diff = 9
-        const watershed = construct_watershed(watershed_input_data, max_z_diff)
+        const watershed = construct_watershed(watershed_input_data, this.max_z_diff)
         const minima = get_minima_from_vertices(watershed.vertices, false)
         const map_minima_id_to_minima = {}
         minima.forEach(m => map_minima_id_to_minima[m.minimum_id] = m)
@@ -199,4 +220,152 @@ export default class Water
     {
         this.custom_uniforms.uBumpScale.value = this.terrain.custom_uniforms.uBumpScale.value
     }
+
+    render_watershed_input_data()
+    {
+        this.hide_watershed_input_data()
+
+        const terrain_height_map_vertex_shader = this.resources.items.terrain_height_map_vertex_shader
+        const terrain_height_map_fragment_shader = this.resources.items.terrain_height_map_fragment_shader
+
+        const watershed_input_data = (this.modified_watershed_input_data || this.initial_watershed_input_data)
+        const terrain_watershed_input_height_map_texture = new THREE.DataTexture(
+            watershed_input_data.image_data,
+            watershed_input_data.width,
+            watershed_input_data.height,
+            THREE.RedFormat,
+            THREE.UnsignedByteType,
+        )
+        terrain_watershed_input_height_map_texture.needsUpdate = true
+        const uniforms = {
+            uTerrainWatershedInputHeightMap: new THREE.Uniform(terrain_watershed_input_height_map_texture),
+            uBumpScale: new THREE.Uniform(3),
+        }
+
+        this.watershed_input_data_mesh = new THREE.Mesh(
+            new THREE.PlaneGeometry(
+                this.size.x,
+                this.size.z,
+                1000,
+                1000,
+            ),
+            new THREE.ShaderMaterial({
+                uniforms,
+                vertexShader: terrain_height_map_vertex_shader,
+                fragmentShader: terrain_height_map_fragment_shader,
+                transparent: true,
+            }),
+        )
+
+        this.watershed_input_data_mesh.position.y = 3
+        this.watershed_input_data_mesh.rotation.x = - Math.PI * 0.5
+        this.scene.add(this.watershed_input_data_mesh)
+    }
+
+    hide_watershed_input_data()
+    {
+        if (this.watershed_input_data_mesh)
+        {
+            this.watershed_input_data_mesh.geometry.dispose()
+            this.watershed_input_data_mesh.material.dispose()
+            this.scene.remove(this.watershed_input_data_mesh)
+        }
+    }
+
+    render_watersheds()
+    {
+        this.hide_watersheds()
+
+        const watersheds_vertex_shader = this.resources.items.watersheds_vertex_shader
+        const watersheds_fragment_shader = this.resources.items.watersheds_fragment_shader
+
+        const watershed_input_data = (this.modified_watershed_input_data || this.initial_watershed_input_data)
+
+        const watershed = construct_watershed(watershed_input_data, this.max_z_diff)
+        // const minima = get_minima_from_vertices(watershed.vertices, false)
+        // const map_minima_id_to_minima = {}
+        // minima.forEach(m => map_minima_id_to_minima[m.minimum_id] = m)
+
+        const size = watershed.width * watershed.height
+        const vertices_by_watershed = new Uint8Array(size * 4)
+        watershed.vertices.forEach((vertex, i) =>
+        {
+            const stride = i * 4
+            vertices_by_watershed[stride + 3] = 180
+
+            if (vertex.group_ids.size > 1)
+            {
+                vertices_by_watershed[stride    ] = 255
+                vertices_by_watershed[stride + 1] = 255
+                vertices_by_watershed[stride + 2] = 255
+                return
+            }
+
+            const id = [...vertex.group_ids][0]
+            const colour = colour_for_group_id(id, watershed.area_count)
+
+            vertices_by_watershed[stride    ] = colour.r
+            vertices_by_watershed[stride + 1] = colour.g
+            vertices_by_watershed[stride + 2] = colour.b
+        })
+
+        const vertices_by_watershed_group_texture = new THREE.DataTexture(
+            vertices_by_watershed,
+            watershed_input_data.width,
+            watershed_input_data.height,
+            THREE.RGBAFormat,
+            THREE.UnsignedByteType,
+        )
+        // const vertices_by_watershed_group_texture = new THREE.DataTexture(
+        //     new Uint8Array([255, 50, 255, 255]),
+        //     1,
+        //     1,
+        //     THREE.RGBAFormat,
+        //     THREE.UnsignedByteType,
+        // )
+        vertices_by_watershed_group_texture.needsUpdate = true
+        const uniforms = {
+            uVerticesByWatershedGroupMap: new THREE.Uniform(vertices_by_watershed_group_texture),
+        }
+
+        this.watersheds_mesh = new THREE.Mesh(
+            new THREE.PlaneGeometry(
+                this.size.x,
+                this.size.z,
+                1000,
+                1000,
+            ),
+            new THREE.ShaderMaterial({
+                uniforms,
+                vertexShader: watersheds_vertex_shader,
+                fragmentShader: watersheds_fragment_shader,
+                transparent: true,
+            }),
+        )
+
+        this.watersheds_mesh.position.y = 3
+        this.watersheds_mesh.rotation.x = - Math.PI * 0.5
+        this.scene.add(this.watersheds_mesh)
+    }
+
+    hide_watersheds()
+    {
+        if (this.watersheds_mesh)
+        {
+            this.watersheds_mesh.geometry.dispose()
+            this.watersheds_mesh.material.dispose()
+            this.scene.remove(this.watersheds_mesh)
+        }
+    }
+}
+
+
+function colour_for_group_id(group_id, total_groups)
+{
+    const hue = (group_id / total_groups) * Math.PI * 2
+    const r = Math.sin(hue) * 127 + 128
+    const g = Math.sin(hue + Math.PI * 2 / 3) * 127 + 128
+    const b = Math.sin(hue + Math.PI * 4 / 3) * 127 + 128
+
+    return new THREE.Color(r, g, b)
 }
