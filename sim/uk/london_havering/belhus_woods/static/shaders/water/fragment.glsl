@@ -15,6 +15,8 @@ float calc_strength(float d)
 
 void main()
 {
+    if (vOpacity == 0.0) discard; // Alpha test
+
     // vec4 colourFromTexture = (texture2D(textureMap, vUv) - uTerrainColourMin) / uTerrainColourRange;
 
     // As we approach the edge of the terrain, the colour will become more transparent

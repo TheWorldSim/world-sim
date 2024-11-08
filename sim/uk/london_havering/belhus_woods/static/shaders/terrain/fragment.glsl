@@ -17,8 +17,6 @@ float calc_strength(float d)
 
 void main()
 {
-    vec4 colourFromTexture = (texture2D(uTextureMap, vUv) - uTerrainColourMin) / uTerrainColourRange;
-
     // As we approach the edge of the terrain, the colour will become more transparent
     vec2 vUv_0_centered = vUv - vec2(0.5);  // get uv in the range [-0.5, 0.5]
     vec2 vUv_abs = abs(vUv_0_centered) * 2.0;  // get uv in the range [0, 1]
@@ -26,6 +24,9 @@ void main()
     float y = calc_strength(vUv_abs.y);
 
     float strength = x * y;
+    if (strength < 0.01) discard; // Alpha test
+
+    vec4 colourFromTexture = (texture2D(uTextureMap, vUv) - uTerrainColourMin) / uTerrainColourRange;
     colourFromTexture.a = strength;
 
 	gl_FragColor = colourFromTexture;
