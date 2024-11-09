@@ -34,7 +34,7 @@ export default class Water
 
         this.max_z_diff = 5
         this.custom_uniforms = {
-            uHeightMap: { value: undefined },
+            uMinWatershedHeightMap: { value: undefined },
             // Provided to shader so that we can hide the water that is underground
             uTerrainHeightMap: { value: null },
             uBumpScale: { value: 1 }, // will get updated when we call on_terrain_scale_change
@@ -108,37 +108,40 @@ export default class Water
         minima.forEach(m => map_minima_id_to_minima[m.minimum_id] = m)
 
         const size = watershed.width * watershed.height
-        const height_data = new Uint8Array(size)
+        const min_watershed_height_data = new Uint8Array(size)
+        // const height_data = new Uint8Array(size)
         watershed.vertices.forEach((vertex, i) =>
         {
             const lowest_minimum = Math.min(...vertex.group_ids)
             const minima = map_minima_id_to_minima[lowest_minimum]
             const z = minima.z
 
-            height_data[i] = z
+            min_watershed_height_data[i] = z
         })
 
         return {
-            height_data,
-            width: watershed.width,
-            height: watershed.height,
+            min_watershed_height_data,
+            size: {
+                width: watershed.width,
+                height: watershed.height,
+            }
         }
     }
 
     set_height_map_texture(height_data_args)
     {
-        this.custom_uniforms.uHeightMap.value?.dispose()
+        this.custom_uniforms.uMinWatershedHeightMap.value?.dispose()
 
         const height_map_texture = new THREE.DataTexture(
-            height_data_args.height_data,
-            height_data_args.width,
-            height_data_args.height,
+            height_data_args.min_watershed_height_data,
+            height_data_args.size.width,
+            height_data_args.size.height,
             THREE.RedFormat,
             THREE.UnsignedByteType,
         )
         height_map_texture.needsUpdate = true
 
-        this.custom_uniforms.uHeightMap.value = height_map_texture
+        this.custom_uniforms.uMinWatershedHeightMap.value = height_map_texture
     }
 
     // This function also allows us to reset the height map data to the initial
