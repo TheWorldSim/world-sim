@@ -5,18 +5,12 @@ uniform float uBumpScale;
 // varying float vAmount;
 varying vec2 vUv;
 
+
+#include <calculate_new_position_from_height_map>
+
 void main()
 {
-    // These fudge factors are used to minimse the very high or low values in
-    // the bump map round the edges by moving the UV coordinates inwards.
-    float fudge_offset = 0.001;
-    float fudge_multiplier = 0.999;
-	vec4 heightData = texture2D(uTerrainHeightMap, (uv * fudge_multiplier) + fudge_offset);
-
-	float vertical_displacement = heightData.r; // map is grayscale so we can use r, g or b
-
-	// move the position along the normal
-    vec3 newPosition = position + normal * uBumpScale * vertical_displacement;
+    vec3 newPosition = calculateNewPosition(uBumpScale, uTerrainHeightMap);
     // newPosition.z -= (uBumpScale / 5.0);
 
 	gl_Position = projectionMatrix * modelViewMatrix * vec4( newPosition, 1.0 );

@@ -1,3 +1,5 @@
+import * as THREE from "three"
+
 export default [
     // {
     //     name: "environmentMapTexture",
@@ -78,3 +80,25 @@ export default [
         path: "models/Fox/glTF/Fox.gltf"
     },
 ]
+
+
+export function define_shader_chunks()
+{
+    THREE.ShaderChunk["calculate_new_position_from_height_map"] = `
+        vec3 calculateNewPosition(float bumpScale, sampler2D heightMap)
+        {
+            // These fudge factors are used to minimize the very high or low values in
+            // the bump map around the edges by moving the UV coordinates inwards.
+            float fudge_offset = 0.001;
+            float fudge_multiplier = 0.999;
+            vec4 heightData = texture2D(heightMap, (uv * fudge_multiplier) + fudge_offset);
+
+            float vertical_displacement = heightData.r; // map is grayscale so we can use r, g or b
+
+            // Move the position along the normal
+            vec3 newPosition = position + normal * bumpScale * vertical_displacement;
+
+            return newPosition;
+        }
+    `
+}
