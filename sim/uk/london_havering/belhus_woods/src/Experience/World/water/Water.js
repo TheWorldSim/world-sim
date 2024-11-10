@@ -10,6 +10,8 @@ import {
 } from "../../../watershed/src/watershed.js"
 
 
+const DEBUG_LAYER_HEIGHT_OFFSET = 0.5
+
 export default class Water
 {
     constructor(terrain)
@@ -37,10 +39,13 @@ export default class Water
             uMinWatershedHeightMap: { value: undefined },
             // Provided to shader so that we can hide the water that is underground
             uTerrainHeightMap: { value: null },
-            uBumpScale: { value: 1 }, // will get updated when we call on_terrain_scale_change
+            uBumpScale: new THREE.Uniform(), // will get updated when we call on_terrain_scale_change
             uHeightOffset: { value: 0 },
             // uWaterColour: { value: new THREE.Vector3(37/255, 137/255, 185/255) }, // 0x2589b2
         }
+        this.watershed_input_data_custom_uniforms = { uBumpScale: new THREE.Uniform() }
+        this.watershed_custom_uniforms = { uBumpScale: new THREE.Uniform() }
+
         this.on_terrain_scale_change() // update uBumpScale
 
         // Wait for resources
@@ -81,7 +86,8 @@ export default class Water
         this.calc_geometry_initial_height_data(img_el)
         this.set_height_map_texture(this.intial_height_data_args)
 
-        this.custom_uniforms.uTerrainHeightMap.value = this.resources.items.dtm_texture_height_map
+        this.custom_uniforms.uTerrainHeightMap = new THREE.Uniform(this.resources.items.dtm_texture_height_map)
+        this.watershed_custom_uniforms.uTerrainHeightMap = new THREE.Uniform(this.resources.items.dtm_texture_height_map)
 
         this.geometry = new THREE.PlaneGeometry(
             this.size.x,
@@ -109,14 +115,12 @@ export default class Water
 
         const size = watershed.width * watershed.height
         const min_watershed_height_data = new Uint8Array(size)
-        // const height_data = new Uint8Array(size)
         watershed.vertices.forEach((vertex, i) =>
         {
             const lowest_minimum = Math.min(...vertex.group_ids)
             const minima = map_minima_id_to_minima[lowest_minimum]
-            const z = minima.z
 
-            min_watershed_height_data[i] = z
+            min_watershed_height_data[i] = minima.z
         })
 
         return {
@@ -132,16 +136,17 @@ export default class Water
     {
         this.custom_uniforms.uMinWatershedHeightMap.value?.dispose()
 
-        const height_map_texture = new THREE.DataTexture(
+        const min_watershed_height_map_texture = new THREE.DataTexture(
             height_data_args.min_watershed_height_data,
             height_data_args.size.width,
             height_data_args.size.height,
             THREE.RedFormat,
             THREE.UnsignedByteType,
         )
-        height_map_texture.needsUpdate = true
 
-        this.custom_uniforms.uMinWatershedHeightMap.value = height_map_texture
+        min_watershed_height_map_texture.needsUpdate = true
+
+        this.custom_uniforms.uMinWatershedHeightMap.value = min_watershed_height_map_texture
     }
 
     // This function also allows us to reset the height map data to the initial
@@ -221,7 +226,10 @@ export default class Water
 
     on_terrain_scale_change()
     {
-        this.custom_uniforms.uBumpScale.value = this.terrain.custom_uniforms.uBumpScale.value
+        const new_value = this.terrain.custom_uniforms.uBumpScale.value
+        this.custom_uniforms.uBumpScale.value = new_value
+        this.watershed_input_data_custom_uniforms.uBumpScale.value = new_value
+        this.watershed_custom_uniforms.uBumpScale.value = new_value
     }
 
     render_watershed_input_data()
@@ -240,10 +248,7 @@ export default class Water
             THREE.UnsignedByteType,
         )
         terrain_watershed_input_height_map_texture.needsUpdate = true
-        const uniforms = {
-            uTerrainWatershedInputHeightMap: new THREE.Uniform(terrain_watershed_input_height_map_texture),
-            uBumpScale: new THREE.Uniform(3),
-        }
+        this.watershed_input_data_custom_uniforms.uTerrainWatershedInputHeightMap = new THREE.Uniform(terrain_watershed_input_height_map_texture)
 
         this.watershed_input_data_mesh = new THREE.Mesh(
             new THREE.PlaneGeometry(
@@ -253,14 +258,14 @@ export default class Water
                 1000,
             ),
             new THREE.ShaderMaterial({
-                uniforms,
+                uniforms: this.watershed_input_data_custom_uniforms,
                 vertexShader: terrain_height_map_vertex_shader,
                 fragmentShader: terrain_height_map_fragment_shader,
                 transparent: true,
             }),
         )
 
-        this.watershed_input_data_mesh.position.y = 3
+        this.watershed_input_data_mesh.position.y = DEBUG_LAYER_HEIGHT_OFFSET
         this.watershed_input_data_mesh.rotation.x = - Math.PI * 0.5
         this.scene.add(this.watershed_input_data_mesh)
     }
@@ -327,9 +332,7 @@ export default class Water
         //     THREE.UnsignedByteType,
         // )
         vertices_by_watershed_group_texture.needsUpdate = true
-        const uniforms = {
-            uVerticesByWatershedGroupMap: new THREE.Uniform(vertices_by_watershed_group_texture),
-        }
+        this.watershed_custom_uniforms.uVerticesByWatershedGroupMap = new THREE.Uniform(vertices_by_watershed_group_texture)
 
         this.watersheds_mesh = new THREE.Mesh(
             new THREE.PlaneGeometry(
@@ -339,14 +342,14 @@ export default class Water
                 1000,
             ),
             new THREE.ShaderMaterial({
-                uniforms,
+                uniforms: this.watershed_custom_uniforms,
                 vertexShader: watersheds_vertex_shader,
                 fragmentShader: watersheds_fragment_shader,
                 transparent: true,
             }),
         )
 
-        this.watersheds_mesh.position.y = 3
+        this.watersheds_mesh.position.y = DEBUG_LAYER_HEIGHT_OFFSET
         this.watersheds_mesh.rotation.x = - Math.PI * 0.5
         this.scene.add(this.watersheds_mesh)
     }
