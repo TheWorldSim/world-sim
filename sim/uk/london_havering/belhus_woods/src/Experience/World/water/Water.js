@@ -37,11 +37,13 @@ export default class Water
         this.max_z_diff = 5
         this.water_custom_uniforms = {
             uMinWatershedHeightMap: { value: undefined },
+            uMaxWatershedHeightMap: { value: undefined },
             // Provided to shader so that we can hide the water that is underground
             uTerrainHeightMap: { value: null },
             // uBumpScale will get updated when we call on_terrain_scale_change
             uBumpScale: new THREE.Uniform(),
-            uHeightOffset: { value: 0 },
+            uHeightOffset: new THREE.Uniform(0.017),
+            uHeightMinMaxMix: new THREE.Uniform(0),
             // uWaterColour: { value: new THREE.Vector3(37/255, 137/255, 185/255) }, // 0x2589b2
         }
         this.watershed_input_data_custom_uniforms = {
@@ -129,14 +131,17 @@ export default class Water
 
         const size = watershed.width * watershed.height
         const min_watershed_height_data = new Uint8Array(size)
+        const max_watershed_height_data = new Uint8Array(size)
         watershed.vertices.forEach((vertex, i) =>
         {
             const minimum = get_minimum_for_vertex(vertex)
             min_watershed_height_data[i] = minimum.z
+            max_watershed_height_data[i] = minimum.z + 10.0
         })
 
         return {
             min_watershed_height_data,
+            max_watershed_height_data,
             size: {
                 width: watershed.width,
                 height: watershed.height,
@@ -147,6 +152,7 @@ export default class Water
     set_height_map_texture(height_data_args)
     {
         this.water_custom_uniforms.uMinWatershedHeightMap.value?.dispose()
+        this.water_custom_uniforms.uMaxWatershedHeightMap.value?.dispose()
 
         const min_watershed_height_map_texture = new THREE.DataTexture(
             height_data_args.min_watershed_height_data,
@@ -156,9 +162,19 @@ export default class Water
             THREE.UnsignedByteType,
         )
 
+        const max_watershed_height_map_texture = new THREE.DataTexture(
+            height_data_args.max_watershed_height_data,
+            height_data_args.size.width,
+            height_data_args.size.height,
+            THREE.RedFormat,
+            THREE.UnsignedByteType,
+        )
+
         min_watershed_height_map_texture.needsUpdate = true
+        max_watershed_height_map_texture.needsUpdate = true
 
         this.water_custom_uniforms.uMinWatershedHeightMap.value = min_watershed_height_map_texture
+        this.water_custom_uniforms.uMaxWatershedHeightMap.value = max_watershed_height_map_texture
     }
 
     // This function also allows us to reset the height map data to the initial
@@ -209,7 +225,11 @@ export default class Water
         {
             this.gui_debug_folder
                 .add(this.water_custom_uniforms.uHeightOffset, "value")
-                .min(-0.2).max(1).step(0.01).name("Height offset")
+                .min(-0.1).max(0.1).step(0.001).name("Height offset")
+
+            this.gui_debug_folder
+                .add(this.water_custom_uniforms.uHeightMinMaxMix, "value")
+                .min(-1).max(1).step(0.01).name("Height min max mix")
         }
     }
 
