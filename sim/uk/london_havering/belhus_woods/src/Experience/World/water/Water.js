@@ -35,16 +35,26 @@ export default class Water
         }
 
         this.max_z_diff = 5
-        this.custom_uniforms = {
+        this.water_custom_uniforms = {
             uMinWatershedHeightMap: { value: undefined },
             // Provided to shader so that we can hide the water that is underground
             uTerrainHeightMap: { value: null },
-            uBumpScale: new THREE.Uniform(), // will get updated when we call on_terrain_scale_change
+            // uBumpScale will get updated when we call on_terrain_scale_change
+            uBumpScale: new THREE.Uniform(),
             uHeightOffset: { value: 0 },
             // uWaterColour: { value: new THREE.Vector3(37/255, 137/255, 185/255) }, // 0x2589b2
         }
-        this.watershed_input_data_custom_uniforms = { uBumpScale: new THREE.Uniform() }
-        this.watershed_custom_uniforms = { uBumpScale: new THREE.Uniform() }
+        this.watershed_input_data_custom_uniforms = {
+            uTerrainWatershedInputHeightMap: { value: undefined },
+            // uBumpScale will get updated when we call on_terrain_scale_change
+            uBumpScale: new THREE.Uniform(),
+        }
+        this.watershed_custom_uniforms = {
+            uTerrainHeightMap: { value: undefined },
+            // uBumpScale will get updated when we call on_terrain_scale_change
+            uBumpScale: new THREE.Uniform(),
+            uVerticesByWatershedGroupMap: { value: undefined },
+        }
 
         this.on_terrain_scale_change() // update uBumpScale
 
@@ -86,7 +96,7 @@ export default class Water
         this.calc_geometry_initial_height_data(img_el)
         this.set_height_map_texture(this.intial_height_data_args)
 
-        this.custom_uniforms.uTerrainHeightMap = new THREE.Uniform(this.resources.items.dtm_texture_height_map)
+        this.water_custom_uniforms.uTerrainHeightMap = new THREE.Uniform(this.resources.items.dtm_texture_height_map)
         this.watershed_custom_uniforms.uTerrainHeightMap = new THREE.Uniform(this.resources.items.dtm_texture_height_map)
 
         this.geometry = new THREE.PlaneGeometry(
@@ -134,7 +144,7 @@ export default class Water
 
     set_height_map_texture(height_data_args)
     {
-        this.custom_uniforms.uMinWatershedHeightMap.value?.dispose()
+        this.water_custom_uniforms.uMinWatershedHeightMap.value?.dispose()
 
         const min_watershed_height_map_texture = new THREE.DataTexture(
             height_data_args.min_watershed_height_data,
@@ -146,7 +156,7 @@ export default class Water
 
         min_watershed_height_map_texture.needsUpdate = true
 
-        this.custom_uniforms.uMinWatershedHeightMap.value = min_watershed_height_map_texture
+        this.water_custom_uniforms.uMinWatershedHeightMap.value = min_watershed_height_map_texture
     }
 
     // This function also allows us to reset the height map data to the initial
@@ -184,7 +194,7 @@ export default class Water
         // this.custom_uniforms.bumpTexture.value = this.textures.bump
 
         this.material = new THREE.ShaderMaterial({
-            uniforms: this.custom_uniforms,
+            uniforms: this.water_custom_uniforms,
             vertexShader: water_vertex_shader,
             fragmentShader: water_fragment_shader,
             transparent: true,
@@ -196,7 +206,7 @@ export default class Water
         if (this.gui_debug_folder)
         {
             this.gui_debug_folder
-                .add(this.custom_uniforms.uHeightOffset, "value")
+                .add(this.water_custom_uniforms.uHeightOffset, "value")
                 .min(-0.2).max(1).step(0.01).name("Height offset")
         }
     }
@@ -227,7 +237,7 @@ export default class Water
     on_terrain_scale_change()
     {
         const new_value = this.terrain.custom_uniforms.uBumpScale.value
-        this.custom_uniforms.uBumpScale.value = new_value
+        this.water_custom_uniforms.uBumpScale.value = new_value
         this.watershed_input_data_custom_uniforms.uBumpScale.value = new_value
         this.watershed_custom_uniforms.uBumpScale.value = new_value
     }
