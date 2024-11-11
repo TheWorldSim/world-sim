@@ -6,8 +6,8 @@ import { MESSAGES } from "../../Utils/messages.js"
 import {
     construct_watershed,
     extract_image_data,
-    get_minima_from_vertices,
-} from "../../../watershed/src/watershed.js"
+    factory_get_minimum_for_vertex,
+} from "../../../watershed/dist/watershed.js"
 
 
 const DEBUG_LAYER_HEIGHT_OFFSET = 0.5
@@ -119,18 +119,20 @@ export default class Water
     calc_height_data_args_from_input_data(watershed_input_data)
     {
         const watershed = construct_watershed(watershed_input_data, this.max_z_diff)
-        const minima = get_minima_from_vertices(watershed.vertices, false)
-        const map_minima_id_to_minima = {}
-        minima.forEach(m => map_minima_id_to_minima[m.minimum_id] = m)
+        // We might want to get the highest minimum for vertices that
+        // are members of multiple watersheds as perhaps the water level of
+        // these boundary vertices will more likely be determined by the
+        // minimum of the higher watershed as this will likely also be the
+        // minimum which is closest to that vertex.
+        const get_lowest_minimum_for_vertex = false
+        const get_minimum_for_vertex = factory_get_minimum_for_vertex(watershed.vertices, get_lowest_minimum_for_vertex)
 
         const size = watershed.width * watershed.height
         const min_watershed_height_data = new Uint8Array(size)
         watershed.vertices.forEach((vertex, i) =>
         {
-            const lowest_minimum = Math.min(...vertex.group_ids)
-            const minima = map_minima_id_to_minima[lowest_minimum]
-
-            min_watershed_height_data[i] = minima.z
+            const minimum = get_minimum_for_vertex(vertex)
+            min_watershed_height_data[i] = minimum.z
         })
 
         return {
