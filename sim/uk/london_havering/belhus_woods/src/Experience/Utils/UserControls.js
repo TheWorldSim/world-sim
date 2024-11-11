@@ -168,6 +168,14 @@ export default class UserControls extends EventEmitter
         let current_world_point = null
 
 
+        // Prevent the screen from moving when the user drags a slide in the
+        // lil-gui
+        const lil_gui_el = document.getElementsByClassName("lil-gui")[0]
+        lil_gui_el?.addEventListener("pointerdown", (event) =>
+        {
+            event.stopPropagation()
+        })
+
         document.addEventListener("pointerdown", (event) =>
         {
             this.state.pointer_is_down = event.buttons === 1
