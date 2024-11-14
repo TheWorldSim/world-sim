@@ -33,7 +33,7 @@ export default class Water
         this.gui_debug_folder = this.debug.active && this.debug.ui.addFolder("Water")
         // this.gui_debug_folder.close()
         this.debug_object = {
-            use_standard_material: true,
+            exit_water_height: 20,
         }
 
         this.max_z_diff = 5
@@ -123,7 +123,11 @@ export default class Water
     calc_height_data_args_from_input_data(watershed_input_data)
     {
         const watersheds = construct_watersheds(watershed_input_data, this.max_z_diff)
-        const exits = [{ x: 0, y: watersheds.input_height/2, z: 111 }]
+        const exits = [{
+            x: 0,
+            y: watersheds.input_height/2,
+            z: this.debug_object.exit_water_height,
+        }]
         const watersheds_graph = calculate_watersheds_graph(watersheds, exits)
         // // We might want to get the highest minimum for vertices that
         // // are members of multiple watersheds as perhaps the water level of
@@ -234,6 +238,15 @@ export default class Water
             this.gui_debug_folder
                 .add(this.water_custom_uniforms.uHeightMinMaxMix, "value")
                 .min(-0.15).max(0.5).step(0.01).name("Height min max mix")
+
+            // this.gui_debug_folder
+            //     .add(this.debug_object, "exit_water_height")
+            //     .min(0).max(100).step(0.5).name("Exit water height")
+            //     .onChange(() =>
+            //     {
+            //         this.intial_height_data_args = this.calc_height_data_args_from_input_data(this.initial_watershed_input_data)
+            //         this.set_height_map_texture(this.intial_height_data_args)
+            //     })
         }
     }
 
