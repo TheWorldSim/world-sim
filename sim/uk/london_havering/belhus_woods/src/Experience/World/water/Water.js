@@ -4,10 +4,12 @@ import Experience from "../../Experience.js"
 import { TERRAIN_HEIGHT_MAP } from "../../constants.js"
 import { MESSAGES } from "../../Utils/messages.js"
 import {
-    construct_watershed,
+    construct_watersheds,
     extract_image_data,
-    factory_get_minimum_for_vertex,
-} from "../../../watershed/dist/watershed.js"
+} from "../../../watershed/dist/watersheds.js"
+import {
+    calculate_watersheds_graph
+} from "../../../watershed/dist/watersheds_graph/watersheds_graph.js"
 
 
 const DEBUG_LAYER_HEIGHT_OFFSET = 0.5
@@ -120,31 +122,33 @@ export default class Water
 
     calc_height_data_args_from_input_data(watershed_input_data)
     {
-        const watershed = construct_watershed(watershed_input_data, this.max_z_diff)
-        // We might want to get the highest minimum for vertices that
-        // are members of multiple watersheds as perhaps the water level of
-        // these boundary vertices will more likely be determined by the
-        // minimum of the higher watershed as this will likely also be the
-        // minimum which is closest to that vertex.
-        const get_lowest_minimum_for_vertex = false
-        const get_minimum_for_vertex = factory_get_minimum_for_vertex(watershed.vertices, get_lowest_minimum_for_vertex)
+        const watersheds = construct_watersheds(watershed_input_data, this.max_z_diff)
+        const exits = [{ x: 0, y: watersheds.input_height/2, z: 111 }]
+        const watersheds_graph = calculate_watersheds_graph(watersheds, exits)
+        // // We might want to get the highest minimum for vertices that
+        // // are members of multiple watersheds as perhaps the water level of
+        // // these boundary vertices will more likely be determined by the
+        // // minimum of the higher watershed as this will likely also be the
+        // // minimum which is closest to that vertex.
+        // const get_lowest_minimum_for_vertex = false
+        // const get_minimum_for_vertex = factory_get_minimum_for_vertex(watershed.vertices, get_lowest_minimum_for_vertex)
 
-        const size = watershed.width * watershed.height
+        const size = watersheds.input_width * watersheds.input_height
         const min_watershed_height_data = new Uint8Array(size)
         const max_watershed_height_data = new Uint8Array(size)
-        watershed.vertices.forEach((vertex, i) =>
+        watersheds.vertices.forEach((vertex, i) =>
         {
-            const minimum = get_minimum_for_vertex(vertex)
-            min_watershed_height_data[i] = minimum.z
-            max_watershed_height_data[i] = minimum.z + 10.0
+            const heights_info = watersheds_graph.get_watershed_heights_info(vertex)
+            min_watershed_height_data[i] = heights_info.ground_z
+            max_watershed_height_data[i] = heights_info.max_z
         })
 
         return {
             min_watershed_height_data,
             max_watershed_height_data,
             size: {
-                width: watershed.width,
-                height: watershed.height,
+                width: watersheds.input_width,
+                height: watersheds.input_height,
             }
         }
     }
@@ -229,7 +233,7 @@ export default class Water
 
             this.gui_debug_folder
                 .add(this.water_custom_uniforms.uHeightMinMaxMix, "value")
-                .min(-1).max(1).step(0.01).name("Height min max mix")
+                .min(-0.15).max(0.5).step(0.01).name("Height min max mix")
         }
     }
 
@@ -321,19 +325,19 @@ export default class Water
 
         const watershed_input_data = (this.modified_watershed_input_data || this.initial_watershed_input_data)
 
-        const watershed = construct_watershed(watershed_input_data, this.max_z_diff)
+        const watershed = construct_watersheds(watershed_input_data, this.max_z_diff)
         // const minima = get_minima_from_vertices(watershed.vertices, false)
         // const map_minima_id_to_minima = {}
         // minima.forEach(m => map_minima_id_to_minima[m.minimum_id] = m)
 
-        const size = watershed.width * watershed.height
+        const size = watershed.input_width * watershed.input_height
         const vertices_by_watershed = new Uint8Array(size * 4)
         watershed.vertices.forEach((vertex, i) =>
         {
             const stride = i * 4
             vertices_by_watershed[stride + 3] = 180
 
-            if (vertex.group_ids.size > 1)
+            if (vertex.watershed_ids.size > 1)
             {
                 vertices_by_watershed[stride    ] = 255
                 vertices_by_watershed[stride + 1] = 255
@@ -341,8 +345,8 @@ export default class Water
                 return
             }
 
-            const id = [...vertex.group_ids][0]
-            const colour = colour_for_group_id(id, watershed.area_count)
+            const id = [...vertex.watershed_ids][0]
+            const colour = colour_for_watershed_id(id, watershed.watershed_count)
 
             vertices_by_watershed[stride    ] = colour.r
             vertices_by_watershed[stride + 1] = colour.g
@@ -398,9 +402,9 @@ export default class Water
 }
 
 
-function colour_for_group_id(group_id, total_groups)
+function colour_for_watershed_id(watershed_id, total_watersheds)
 {
-    const hue = (group_id / total_groups) * Math.PI * 2
+    const hue = (watershed_id / total_watersheds) * Math.PI * 2
     const r = Math.sin(hue) * 127 + 128
     const g = Math.sin(hue + Math.PI * 2 / 3) * 127 + 128
     const b = Math.sin(hue + Math.PI * 4 / 3) * 127 + 128
