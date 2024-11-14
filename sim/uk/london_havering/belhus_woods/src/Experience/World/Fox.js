@@ -15,10 +15,7 @@ export default class Fox
         this.debug = this.experience.debug
 
         // Debug
-        if(this.debug.active)
-        {
-            this.debugFolder = this.debug.ui.addFolder("fox")
-        }
+        this.debugFolder = this.debug.ui.addFolder("fox")
 
         this.resources.on(MESSAGES.Resources.ready, () =>
         {
@@ -82,27 +79,24 @@ export default class Fox
         }
 
         // Debug
-        if(this.debug.active)
-        {
-            const debugObject = {
-                playIdle: () => {
-                    if (this.animation.actions.current == this.animation.actions.running)
-                    {
-                        this.animation.play("walking")
-                        setTimeout(() => { this.animation.play("idle") }, 500)
-                    }
-                    else
-                    {
-                        this.animation.play("idle")
-                    }
-                },
-                playWalking: () => { this.animation.play("walking") },
-                playRunning: () => { this.animation.play("running") }
-            }
-            this.debugFolder.add(debugObject, "playIdle")
-            this.debugFolder.add(debugObject, "playWalking")
-            this.debugFolder.add(debugObject, "playRunning")
+        const debugObject = {
+            playIdle: () => {
+                if (this.animation.actions.current == this.animation.actions.running)
+                {
+                    this.animation.play("walking")
+                    setTimeout(() => { this.animation.play("idle") }, 500)
+                }
+                else
+                {
+                    this.animation.play("idle")
+                }
+            },
+            playWalking: () => { this.animation.play("walking") },
+            playRunning: () => { this.animation.play("running") }
         }
+        this.debugFolder.add(debugObject, "playIdle")
+        this.debugFolder.add(debugObject, "playWalking")
+        this.debugFolder.add(debugObject, "playRunning")
     }
 
     update()

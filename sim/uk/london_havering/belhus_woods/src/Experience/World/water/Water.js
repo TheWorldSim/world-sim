@@ -30,7 +30,7 @@ export default class Water
         this.debug = this.experience.debug
         this.user_controls = this.experience.user_controls
 
-        this.gui_debug_folder = this.debug.active && this.debug.ui.addFolder("Water")
+        this.gui_debug_folder = this.debug.ui.addFolder("Water")
         // this.gui_debug_folder.close()
         this.debug_object = {
             exit_water_height: 20,

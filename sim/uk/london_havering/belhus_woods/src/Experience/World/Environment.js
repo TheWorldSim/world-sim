@@ -14,11 +14,8 @@ export default class Environment
         }
 
         // Debug
-        if(this.debug.active)
-        {
-            this.debugFolder = this.debug.ui.addFolder("environment")
-            this.debugFolder.close()
-        }
+        this.debugFolder = this.debug.ui.addFolder("environment")
+        this.debugFolder.close()
 
         this.setSunLight()
         this.setBackground()
@@ -43,53 +40,50 @@ export default class Environment
         this.change_camera_size(this.debug_object.camera_size)
 
         // Debug
-        if(this.debug.active)
-        {
-            const sunlight_folder = this.debugFolder.addFolder("Sun light")
+        const sunlight_folder = this.debugFolder.addFolder("Sun light")
 
-            sunlight_folder
-                .add(this.sunLight, "intensity")
-                .name("Intensity")
-                .min(0)
-                .max(10)
-                .step(0.001)
+        sunlight_folder
+            .add(this.sunLight, "intensity")
+            .name("Intensity")
+            .min(0)
+            .max(10)
+            .step(0.001)
 
-            sunlight_folder
-                .add(this.sunLight.position, "x")
-                .name("X")
-                .min(-5)
-                .max(20)
-                .step(0.001)
+        sunlight_folder
+            .add(this.sunLight.position, "x")
+            .name("X")
+            .min(-5)
+            .max(20)
+            .step(0.001)
 
-            sunlight_folder
-                .add(this.sunLight.position, "y")
-                .name("Y")
-                .min(-5)
-                .max(20)
-                .step(0.001)
+        sunlight_folder
+            .add(this.sunLight.position, "y")
+            .name("Y")
+            .min(-5)
+            .max(20)
+            .step(0.001)
 
-            sunlight_folder
-                .add(this.sunLight.position, "z")
-                .name("Z")
-                .min(-5)
-                .max(20)
-                .step(0.001)
+        sunlight_folder
+            .add(this.sunLight.position, "z")
+            .name("Z")
+            .min(-5)
+            .max(20)
+            .step(0.001)
 
-            sunlight_folder
-                .add(this.debug_object, "camera_size")
-                .name("Size")
-                .min(1)
-                .max(20)
-                .step(0.1)
-                .onChange(() =>
-                {
-                    this.change_camera_size(this.debug_object.camera_size)
-                })
+        sunlight_folder
+            .add(this.debug_object, "camera_size")
+            .name("Size")
+            .min(1)
+            .max(20)
+            .step(0.1)
+            .onChange(() =>
+            {
+                this.change_camera_size(this.debug_object.camera_size)
+            })
 
-            sunlight_folder
-                .add(this.camera_helper, "visible")
-                .name("Toggle camera helper")
-        }
+        sunlight_folder
+            .add(this.camera_helper, "visible")
+            .name("Toggle camera helper")
     }
 
     change_camera_size (camera_size)
@@ -105,11 +99,7 @@ export default class Environment
     setBackground()
     {
         this.scene.background = new THREE.Color(0x95b6da); // Hexadecimal color value
-        if (this.debug.active)
-        {
-            this.debug.ui.addColor(this.scene, "background").name("Background")
-        }
-        // this.
+        this.debug.ui.addColor(this.scene, "background").name("Background")
     }
 
     // setEnvironmentMap()

@@ -21,7 +21,7 @@ const terrain_height_map_to_string = (current) =>
 
 export default class UserControls extends EventEmitter
 {
-    constructor(experience, sizes, camera)
+    constructor(experience, debug, sizes, camera)
     {
         super()
 
@@ -32,6 +32,7 @@ export default class UserControls extends EventEmitter
             terrain_height_map: TERRAIN_HEIGHT_MAP.none,
         }
         this.experience = experience
+        this.debug = debug
         this.sizes = sizes
         this.camera = camera
         this.create_ui()
@@ -40,19 +41,26 @@ export default class UserControls extends EventEmitter
 
     create_ui()
     {
-        // Setup
-        const root_el = document.getElementsByTagName("body")[0]
+        const body_el = document.getElementsByTagName("body")[0]
+        this.create_buttons_drawer(body_el)
+        this.create_menu(body_el)
+    }
 
-        this.container_el = document.createElement("div")
-        root_el.appendChild(this.container_el)
-        this.container_el.className = "user_controls"
+    // Create the buttons drawer at the bottom of the screen
+    create_buttons_drawer(body_el)
+    {
+        // Setup
+        const container_el = document.createElement("div")
+        body_el.appendChild(container_el)
+        container_el.className = "user_controls_drawer"
 
         // style sheet
         const style_el = document.createElement("style")
-        this.container_el.appendChild(style_el)
+        style_el.id = "user_controls_drawer_style"
+        container_el.appendChild(style_el)
         // Add styles
         style_el.innerHTML = `
-            .user_controls {
+            .user_controls_drawer {
                 position: fixed;
                 bottom: 0;
                 left: 0;
@@ -62,7 +70,7 @@ export default class UserControls extends EventEmitter
                 gap: 10px;
             }
 
-            .user_controls > img, .user_controls > div {
+            .user_controls_drawer > img, .user_controls_drawer > div {
                 width: 60px;
                 height: 60px;
                 cursor: pointer;
@@ -72,19 +80,19 @@ export default class UserControls extends EventEmitter
                 padding: 10px;
             }
 
-            .user_controls > div {
+            .user_controls_drawer > div {
                 padding: 0px;
             }
 
-            .user_controls > img:hover, .user_controls > div:hover {
+            .user_controls_drawer > img:hover, .user_controls_drawer > div:hover {
                 opacity: 1.0;
             }
 
-            .user_controls > img.disabled {
+            .user_controls_drawer > img.disabled {
                 display: none;
             }
 
-            .user_controls > div {
+            .user_controls_drawer > div {
                 font-size: 13px;
                 font-family: sans-serif;
                 align-content: center;
@@ -92,24 +100,24 @@ export default class UserControls extends EventEmitter
             }
         `
 
-        this.arrows_truck_dolly = this.add_image("./textures/symbols/arrows_truck_dolly_thin.png", () =>
+        this.arrows_truck_dolly = add_image(container_el, "./textures/symbols/arrows_truck_dolly_thin.png", () =>
         {
             this.trigger(MESSAGES.UserControls.movement_controls, [MOVEMENT_CONTROLS.tilt_pan])
         })
 
-        this.arrows_tilt_pan = this.add_image("./textures/symbols/arrows_tilt_pan_thin.png", () =>
+        this.arrows_tilt_pan = add_image(container_el, "./textures/symbols/arrows_tilt_pan_thin.png", () =>
         {
             this.trigger(MESSAGES.UserControls.movement_controls, [MOVEMENT_CONTROLS.truck_dolly])
         })
 
-        this.toggle_beavers = this.add_div("Beavers", () =>
+        this.toggle_beavers = add_div(container_el, "Beavers", () =>
         {
             this.state.beavers_present = !this.state.beavers_present
             this.trigger(MESSAGES.UserControls.beaver_presence, [this.state.beavers_present])
             this.update_ui()
         })
 
-        this.toggle_terrain_height_map = this.add_div("", () =>
+        this.toggle_terrain_height_map = add_div(container_el, "", () =>
         {
             this.state.terrain_height_map = next_terrain_height_map(this.state.terrain_height_map)
             this.trigger(MESSAGES.UserControls.terrain_height_map, [this.state.terrain_height_map])
@@ -126,27 +134,67 @@ export default class UserControls extends EventEmitter
         })
     }
 
-    add_image(src, callback)
+    create_menu(body_el)
     {
-        const image_el = document.createElement("img")
-        this.container_el.appendChild(image_el)
-        image_el.src = src
-        image_el.addEventListener("click", callback)
-        image_el.classList.add("disabled")
+        const menu_el = document.createElement("div")
+        body_el.appendChild(menu_el)
+        menu_el.className = "user_controls_menu dropdown"
+        menu_el.innerHTML = `
+            <button
+                class="btn btn-secondary dropdown-toggle"
+                type="button"
+                id="dropdownMenuButton"
+                data-bs-toggle="dropdown"
+                aria-haspopup="true"
+                aria-expanded="false"
+            >
+                Menu
+            </button>
+            <ul id="dropdown_menu" class="dropdown-menu" aria-labelledby="dropdownMenuButton"></ul>
+        `
 
-        return image_el
+        const dropdown_menu_el = document.getElementById("dropdown_menu")
+
+        this.add_menu_item_toggle_debug(dropdown_menu_el)
+
+        // style sheet
+        const style_el = document.createElement("style")
+        body_el.appendChild(style_el)
+        style_el.id = "user_controls_menu_style"
+        // Add styles
+        style_el.innerHTML = `
+            .user_controls_menu {
+                position: fixed;
+                top: 0;
+                right: 0;
+                width: 100px;
+                z-index: 1002; /* Above the lil-gui */
+                text-align: right; /* Align the dropdown to the right */
+                margin: 10px;
+                cursor: pointer;
+            }
+        `
     }
 
-    add_div(text, callback)
+    add_menu_item_toggle_debug(dropdown_menu_el)
     {
-        const div_el = document.createElement("div")
-        this.container_el.appendChild(div_el)
+        function get_menu_item_text(debug_is_active)
+        {
+            return debug_is_active ? "Hide debug options" : "Show debug options"
+        }
 
-        div_el.innerText = text
-        div_el.addEventListener("click", callback)
-        // div_el.classList.add("disabled")
+        const toggle_debug = (menu_item_el) =>
+        {
+            this.debug.toggle_debug()
+            menu_item_el.innerText = get_menu_item_text(this.debug.is_active())
+        }
 
-        return div_el
+        add_menu_item(dropdown_menu_el, "", (menu_item_el) =>
+        {
+            menu_item_el.innerText = get_menu_item_text(this.debug.is_active())
+
+            return () => toggle_debug(menu_item_el)
+        })
     }
 
     update_ui()
@@ -213,4 +261,39 @@ export default class UserControls extends EventEmitter
             this.trigger(MESSAGES.UserControls.pointer_down, [start_world_point, current_world_point])
         })
     }
+}
+
+
+
+function add_image(container_el, src, callback)
+{
+    const image_el = document.createElement("img")
+    container_el.appendChild(image_el)
+    image_el.src = src
+    image_el.addEventListener("click", callback)
+    image_el.classList.add("disabled")
+
+    return image_el
+}
+
+function add_div(container_el, text, callback)
+{
+    const div_el = document.createElement("div")
+    container_el.appendChild(div_el)
+
+    div_el.innerText = text
+    div_el.addEventListener("click", callback)
+    // div_el.classList.add("disabled")
+
+    return div_el
+}
+
+function add_menu_item(dropdown_menu_el, text, factory_callback)
+{
+    const li_el = document.createElement("li")
+    dropdown_menu_el.appendChild(li_el)
+    li_el.className = "dropdown-item"
+    li_el.innerText = text
+    li_el.addEventListener("click", factory_callback(li_el))
+    return li_el
 }

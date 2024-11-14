@@ -13,7 +13,7 @@ export default class Terrain extends EventEmitter
         this.scene = this.experience.scene
         this.resources = this.experience.resources
         this.debug = this.experience.debug
-        this.gui_debug_folder = this.debug.active && this.debug.ui.addFolder("Terrain")
+        this.gui_debug_folder = this.debug.ui.addFolder("Terrain")
         // this.gui_debug_folder.close()
         this.debug_object = {
             use_standard_material: false,
