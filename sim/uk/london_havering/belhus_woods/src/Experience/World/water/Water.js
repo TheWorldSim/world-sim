@@ -25,10 +25,9 @@ export default class Water
         this.terrain = terrain
         this.size = terrain.size
 
-        this.experience = new Experience()
-        this.scene = this.experience.scene
-        this.debug = this.experience.debug
-        this.user_controls = this.experience.user_controls
+        this.scene = experience.scene
+        this.debug = experience.debug
+        this.user_controls = experience.user_controls
 
         this.max_z_diff = 5
         this.water_custom_uniforms = {
@@ -70,21 +69,12 @@ export default class Water
         })
 
         this.terrain.on(MESSAGES.Terrain.scale_changed, this.on_terrain_scale_change.bind(this))
+
+        this.user_controls_terrain_height_map = null
         this.user_controls.on(MESSAGES.UserControls.terrain_height_map, (value) =>
         {
-            if (value === TERRAIN_HEIGHT_MAP.height)
-            {
-                this.render_watershed_input_data()
-            }
-            else if (value === TERRAIN_HEIGHT_MAP.watersheds)
-            {
-                this.hide_watershed_input_data()
-                this.render_watersheds()
-            }
-            else
-            {
-                this.hide_watersheds()
-            }
+            this.user_controls_terrain_height_map = value
+            this.render_correct_height_map()
         })
 
 
@@ -201,6 +191,7 @@ export default class Water
     {
         this.modified_watershed_input_data = null
         this.set_height_map_texture(this.initial_height_data_args)
+        this.render_correct_height_map()
     }
 
     alter_height_map_texture(modifier)
@@ -213,6 +204,7 @@ export default class Water
         this.modified_watershed_input_data = modifier(modified_watershed_input_data)
         const height_data_args = this.calc_height_data_args_from_input_data(this.modified_watershed_input_data)
         this.set_height_map_texture(height_data_args)
+        this.render_correct_height_map()
     }
 
     set_textures()
@@ -300,6 +292,24 @@ export default class Water
         this.water_custom_uniforms.uBumpScale.value = new_value
         this.watershed_input_data_custom_uniforms.uBumpScale.value = new_value
         this.watershed_custom_uniforms.uBumpScale.value = new_value
+    }
+
+    render_correct_height_map()
+    {
+        const value = this.user_controls_terrain_height_map
+        if (value === TERRAIN_HEIGHT_MAP.height)
+        {
+            this.render_watershed_input_data()
+        }
+        else if (value === TERRAIN_HEIGHT_MAP.watersheds)
+        {
+            this.hide_watershed_input_data()
+            this.render_watersheds()
+        }
+        else
+        {
+            this.hide_watersheds()
+        }
     }
 
     render_watershed_input_data()
