@@ -15,7 +15,8 @@ export default class Fox
         this.debug = this.experience.debug
 
         // Debug
-        this.debugFolder = this.debug.ui.addFolder("fox")
+        this.debug_gui_folder = this.debug.ui.addFolder("Fox")
+        this.debug_gui_folder.close()
 
         this.resources.on(MESSAGES.Resources.ready, () =>
         {
@@ -94,9 +95,9 @@ export default class Fox
             playWalking: () => { this.animation.play("walking") },
             playRunning: () => { this.animation.play("running") }
         }
-        this.debugFolder.add(debugObject, "playIdle")
-        this.debugFolder.add(debugObject, "playWalking")
-        this.debugFolder.add(debugObject, "playRunning")
+        this.debug_gui_folder.add(debugObject, "playIdle")
+        this.debug_gui_folder.add(debugObject, "playWalking")
+        this.debug_gui_folder.add(debugObject, "playRunning")
     }
 
     update()

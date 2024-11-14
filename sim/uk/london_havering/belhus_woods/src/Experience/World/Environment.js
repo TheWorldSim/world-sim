@@ -14,8 +14,8 @@ export default class Environment
         }
 
         // Debug
-        this.debugFolder = this.debug.ui.addFolder("environment")
-        this.debugFolder.close()
+        this.debug_gui_folder = this.debug.ui.addFolder("Environment")
+        this.debug_gui_folder.close()
 
         this.setSunLight()
         this.setBackground()
@@ -40,7 +40,8 @@ export default class Environment
         this.change_camera_size(this.debug_object.camera_size)
 
         // Debug
-        const sunlight_folder = this.debugFolder.addFolder("Sun light")
+        const sunlight_folder = this.debug_gui_folder.addFolder("Sun light")
+        sunlight_folder.close()
 
         sunlight_folder
             .add(this.sunLight, "intensity")
@@ -99,7 +100,7 @@ export default class Environment
     setBackground()
     {
         this.scene.background = new THREE.Color(0x95b6da); // Hexadecimal color value
-        this.debug.ui.addColor(this.scene, "background").name("Background")
+        this.debug_gui_folder.addColor(this.scene, "background").name("Background")
     }
 
     // setEnvironmentMap()
@@ -128,7 +129,7 @@ export default class Environment
     //     // Debug
     //     if(this.debug.active)
     //     {
-    //         this.debugFolder
+    //         this.debug_gui_folder
     //             .add(this.environmentMap, "intensity")
     //             .name("envMapIntensity")
     //             .min(0)
