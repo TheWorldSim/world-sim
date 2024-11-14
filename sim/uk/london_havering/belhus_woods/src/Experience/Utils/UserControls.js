@@ -63,8 +63,8 @@ export default class UserControls extends EventEmitter
             }
 
             .user_controls > img, .user_controls > div {
-                width: 40px;
-                height: 40px;
+                width: 60px;
+                height: 60px;
                 cursor: pointer;
                 opacity: 0.8;
                 background-color: rgba(255, 255, 255, 0.5);
@@ -73,8 +73,6 @@ export default class UserControls extends EventEmitter
             }
 
             .user_controls > div {
-                width: 60px;
-                height: 60px;
                 padding: 0px;
             }
 
