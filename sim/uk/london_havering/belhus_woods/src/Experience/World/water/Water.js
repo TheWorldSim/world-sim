@@ -30,12 +30,6 @@ export default class Water
         this.debug = this.experience.debug
         this.user_controls = this.experience.user_controls
 
-        this.gui_debug_folder = this.debug.ui.addFolder("Water")
-        // this.gui_debug_folder.close()
-        this.debug_object = {
-            exit_water_height: 20,
-        }
-
         this.max_z_diff = 5
         this.water_custom_uniforms = {
             uMinWatershedHeightMap: { value: undefined },
@@ -92,13 +86,22 @@ export default class Water
                 this.hide_watersheds()
             }
         })
+
+
+        this.debug_object = {
+            exit_water_height: 20,
+            model_watersheds: false,
+        }
+        this.debug_gui_folder = this.debug.ui.addFolder("Water")
+        this.setup_debug_gui()
     }
 
     set_geometry()
     {
         const img_el = this.resources.items.dtm_texture_height_map.image
-        this.calc_geometry_initial_height_data(img_el)
-        this.set_height_map_texture(this.intial_height_data_args)
+        this.calc_geometry_initial_watershed_input_data(img_el)
+        this.initial_height_data_args = this.calc_height_data_args_from_input_data(this.initial_watershed_input_data)
+        this.set_height_map_texture(this.initial_height_data_args)
 
         this.water_custom_uniforms.uTerrainHeightMap = new THREE.Uniform(this.resources.items.dtm_texture_height_map)
         this.watershed_custom_uniforms.uTerrainHeightMap = new THREE.Uniform(this.resources.items.dtm_texture_height_map)
@@ -111,38 +114,45 @@ export default class Water
         )
     }
 
-    calc_geometry_initial_height_data(img_el)
+    calc_geometry_initial_watershed_input_data(img_el)
     {
         const canvas_el = document.createElement("canvas")
         const magnify = Math.pow(2, -2)
         this.initial_watershed_input_data = extract_image_data(canvas_el, img_el, magnify, true, true)
-
-        this.intial_height_data_args = this.calc_height_data_args_from_input_data(this.initial_watershed_input_data)
     }
 
     calc_height_data_args_from_input_data(watershed_input_data)
     {
-        const watersheds = construct_watersheds(watershed_input_data, this.max_z_diff)
-        const exits = [{
-            x: 0,
-            y: watersheds.input_height/2,
-            z: this.debug_object.exit_water_height,
-        }]
-        const watersheds_graph = calculate_watersheds_graph(watersheds, exits)
-        // // We might want to get the highest minimum for vertices that
-        // // are members of multiple watersheds as perhaps the water level of
-        // // these boundary vertices will more likely be determined by the
-        // // minimum of the higher watershed as this will likely also be the
-        // // minimum which is closest to that vertex.
-        // const get_lowest_minimum_for_vertex = false
-        // const get_minimum_for_vertex = factory_get_minimum_for_vertex(watershed.vertices, get_lowest_minimum_for_vertex)
-
-        const size = watersheds.input_width * watersheds.input_height
+        const size = watershed_input_data.width * watershed_input_data.height
         const min_watershed_height_data = new Uint8Array(size)
         const max_watershed_height_data = new Uint8Array(size)
-        watersheds.vertices.forEach((vertex, i) =>
+
+        let vertices = new Array(size).fill(null)
+        let get_heights_info_for_vertex = () => {
+            return {
+                ground_z: 20,
+                max_z: 255,
+            }
+        }
+
+        if (this.debug_object.model_watersheds)
         {
-            const heights_info = watersheds_graph.get_watershed_heights_info(vertex)
+            const watersheds = construct_watersheds(watershed_input_data, this.max_z_diff)
+            vertices = watersheds.vertices
+            const exits = [{
+                x: 0,
+                y: watersheds.input_height/2,
+                z: this.debug_object.exit_water_height,
+            }]
+            const watersheds_graph = calculate_watersheds_graph(watersheds, exits)
+
+
+            get_heights_info_for_vertex = watersheds_graph.get_watershed_heights_info
+        }
+
+        vertices.forEach((vertex, i) =>
+        {
+            const heights_info = get_heights_info_for_vertex(vertex)
             min_watershed_height_data[i] = heights_info.ground_z
             max_watershed_height_data[i] = heights_info.max_z
         })
@@ -151,8 +161,8 @@ export default class Water
             min_watershed_height_data,
             max_watershed_height_data,
             size: {
-                width: watersheds.input_width,
-                height: watersheds.input_height,
+                width: watershed_input_data.width,
+                height: watershed_input_data.height,
             }
         }
     }
@@ -190,7 +200,7 @@ export default class Water
     reset_height_map_texture_to_initial()
     {
         this.modified_watershed_input_data = null
-        this.set_height_map_texture(this.intial_height_data_args)
+        this.set_height_map_texture(this.initial_height_data_args)
     }
 
     alter_height_map_texture(modifier)
@@ -228,26 +238,37 @@ export default class Water
         // this.material = new THREE.MeshStandardMaterial({
         //     wireframe: true,
         // })
+    }
 
-        if (this.gui_debug_folder)
-        {
-            this.gui_debug_folder
-                .add(this.water_custom_uniforms.uHeightOffset, "value")
-                .min(-0.1).max(0.1).step(0.001).name("Height offset")
+    setup_debug_gui()
+    {
+        // this.debug_gui_folder.close()
 
-            this.gui_debug_folder
-                .add(this.water_custom_uniforms.uHeightMinMaxMix, "value")
-                .min(-0.15).max(0.5).step(0.01).name("Height min max mix")
+        this.debug_gui_folder
+            .add(this.debug_object, "model_watersheds")
+            .name("Model watersheds")
+            .onChange(() =>
+            {
+                this.initial_height_data_args = this.calc_height_data_args_from_input_data(this.initial_watershed_input_data)
+                this.set_height_map_texture(this.initial_height_data_args)
+            })
 
-            // this.gui_debug_folder
-            //     .add(this.debug_object, "exit_water_height")
-            //     .min(0).max(100).step(0.5).name("Exit water height")
-            //     .onChange(() =>
-            //     {
-            //         this.intial_height_data_args = this.calc_height_data_args_from_input_data(this.initial_watershed_input_data)
-            //         this.set_height_map_texture(this.intial_height_data_args)
-            //     })
-        }
+        this.gui_debug_height_offset_el = this.debug_gui_folder
+            .add(this.water_custom_uniforms.uHeightOffset, "value")
+            .min(-0.1).max(0.1).step(0.001).name("Height offset")
+
+        this.gui_debug_height_min_max_mix_el = this.debug_gui_folder
+            .add(this.water_custom_uniforms.uHeightMinMaxMix, "value")
+            .min(-0.15).max(0.5).step(0.01).name("Height min max mix")
+
+        // this.debug_gui_folder
+        //     .add(this.debug_object, "exit_water_height")
+        //     .min(0).max(100).step(0.5).name("Exit water height")
+        //     .onChange(() =>
+        //     {
+        //         this.initial_height_data_args = this.calc_height_data_args_from_input_data(this.initial_watershed_input_data)
+        //         this.set_height_map_texture(this.initial_height_data_args)
+        //     })
     }
 
     set_mesh()
