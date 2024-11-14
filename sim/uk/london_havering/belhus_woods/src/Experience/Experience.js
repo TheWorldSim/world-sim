@@ -9,6 +9,7 @@ import World from "./World/World.js"
 import Resources from "./Utils/Resources.js"
 import UserControls from "./Utils/UserControls.js"
 import { MESSAGES } from "./Utils/messages.js"
+import Versions from "./Utils/Versions.js"
 
 import sources, { define_shader_chunks } from "./sources.js"
 
@@ -43,6 +44,7 @@ export default class Experience
         this.camera.setup_listen_to_user_controls(this.user_controls)
         this.renderer = new Renderer()
         this.world = new World()
+        new Versions()
 
         // Resize event
         this.sizes.on(MESSAGES.Sizes.resize, () =>
