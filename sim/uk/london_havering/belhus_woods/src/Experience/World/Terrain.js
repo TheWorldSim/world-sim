@@ -21,7 +21,7 @@ export default class Terrain extends EventEmitter
         this.custom_uniforms = {
             uTextureMap:       { value: null },
             uTerrainHeightMap: { value: null },
-            uBumpScale:        { value: 3.5 },
+            uBumpScale:        { value: 5.0 },
             uTerrainColourMin:   { value: -0.05 },
             uTerrainColourRange: { value: 0.39 },
         }

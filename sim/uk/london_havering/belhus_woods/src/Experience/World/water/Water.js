@@ -251,7 +251,7 @@ export default class Water
 
         this.gui_debug_height_min_max_mix_el = this.debug_gui_folder
             .add(this.water_custom_uniforms.uHeightMinMaxMix, "value")
-            .min(-0.15).max(0.5).step(0.01).name("Height min max mix")
+            .min(-0.15).max(0.7).step(0.01).name("Height min max mix")
 
         // this.debug_gui_folder
         //     .add(this.debug_object, "exit_water_height")
