@@ -17,12 +17,12 @@ export default [
     {
         name: "dtm_texture_height_map",
         type: "texture",
-        path: "textures/terrain/dtm_v3.png"
+        path: "textures/terrain/dtm_v4.png"
     },
     {
-        name: "satellite_v2b_texture_colour",
+        name: "satellite_texture_colour",
         type: "texture",
-        path: "textures/terrain/satellite_v2b.jpg"
+        path: "textures/terrain/satellite_v3.jpg"
     },
     {
         name: "terrain_vertex_shader",

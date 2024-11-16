@@ -27,6 +27,7 @@ void main()
     if (strength < 0.01) discard; // Alpha test
 
     vec4 colourFromTexture = (texture2D(uTextureMap, vUv) - uTerrainColourMin) / uTerrainColourRange;
+    // vec4 colourFromTexture = (texture2D(uTextureMap, vUv) + 0.1) * 1.5;
     colourFromTexture.a = strength;
 
 	gl_FragColor = colourFromTexture;

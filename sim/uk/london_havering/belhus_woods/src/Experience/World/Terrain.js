@@ -22,8 +22,8 @@ export default class Terrain extends EventEmitter
             uTextureMap:       { value: null },
             uTerrainHeightMap: { value: null },
             uBumpScale:        { value: 3.5 },
-            uTerrainColourMin:   { value: -0.018 },
-            uTerrainColourRange: { value: 0.52 },
+            uTerrainColourMin:   { value: -0.05 },
+            uTerrainColourRange: { value: 0.39 },
         }
 
         this.size = { x: 100, z: 100 }
@@ -47,7 +47,7 @@ export default class Terrain extends EventEmitter
     {
         this.textures = {}
 
-        this.textures.colour = this.resources.items.satellite_v2b_texture_colour
+        this.textures.colour = this.resources.items.satellite_texture_colour
         this.textures.colour.colorSpace = THREE.SRGBColorSpace
         this.textures.bump = this.resources.items.dtm_texture_height_map
         this.textures.bump.wrapS = this.textures.bump.wrapT = THREE.RepeatWrapping
