@@ -1,13 +1,13 @@
 {
-  "name": "threejs-journey-exercise",
+  "name": "belhus_woods",
   "private": true,
-  "version": "0.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "install_dependencies": "cd src/watershed && pnpm run install_dependencies && cd - && pnpm install --production=false --frozen-lockfile",
     "build": "cd src/watershed && pnpm run build:javascript && cd - && vite build",
-    "test": "echo \"No tests specified yet\""
+    "test": "echo \"No tests specified yet\"",
+    "deploy": "aws s3 sync ./dist $S3_PATH/latest/ --delete && aws s3 sync ./dist $S3_PATH/v0.0.1/ --delete"
   },
   "devDependencies": {
     "vite": "5.3.3",
