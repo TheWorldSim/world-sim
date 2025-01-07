@@ -44,7 +44,7 @@ jobs:
       #     cache: pnpm
 
       - run: |
-          cd sim/uk/london_havering/belhus_woods
+          cd sims/uk/london_havering/belhus_woods
           pnpm run install_dependencies
 
       - name: Configure AWS credentials
@@ -61,7 +61,7 @@ jobs:
         run: echo Build
 
       - run: |
-          cd sim/uk/london_havering/belhus_woods
+          cd sims/uk/london_havering/belhus_woods
           pnpm run build
 
       - name: ___________________________ DEPLOY ___________________________
@@ -70,4 +70,4 @@ jobs:
       - name: Upload to s3
         run: |
           aws s3 cp website/index.html s3://public-simulations
-          aws s3 sync sim/uk/london_havering/belhus_woods/dist s3://public-simulations/sim/uk/london_havering/belhus_woods/ --delete
+          aws s3 sync sims/uk/london_havering/belhus_woods/dist s3://public-simulations/sims/uk/london_havering/belhus_woods/ --delete
