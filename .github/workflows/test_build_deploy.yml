@@ -9,7 +9,7 @@ on:
 
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}  # e.g. Test, Build, Deploy API Lambda application-refs/heads/main
+  group: ${{ github.workflow }}-${{ github.ref }}  # e.g. Test, Build, Deploy-refs/heads/main
   cancel-in-progress: false
 
 
@@ -18,7 +18,8 @@ env:
 
 
 jobs:
-  test_build_deploy_environments:
+  test_build_deploy_sims:
+    if: github.repository == 'TheWorldSim/website'
     runs-on: ubuntu-latest
 
     steps:
@@ -68,5 +69,5 @@ jobs:
 
       - name: Upload to s3
         run: |
-          aws s3 cp index.html s3://public-simulations
+          aws s3 cp website/index.html s3://public-simulations
           aws s3 sync sim/uk/london_havering/belhus_woods/dist s3://public-simulations/sim/uk/london_havering/belhus_woods/ --delete
