@@ -1,20 +1,21 @@
 {
   "name": "threejs-journey-exercise",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "install_dependencies": "cd src/watershed && pnpm run install_dependencies && cd - && pnpm install --production=false --frozen-lockfile",
-    "build": "cd src/watershed && pnpm run build:javascript && cd - && vite build"
+    "build": "cd src/watershed && pnpm run build:javascript && cd - && vite build",
+    "test": "echo \"No tests specified yet\""
   },
   "devDependencies": {
-    "vite": "^5.3.3",
-    "vite-plugin-glsl": "^1.3.0",
-    "vite-plugin-restart": "^0.4.1"
+    "vite": "5.3.3",
+    "vite-plugin-glsl": "1.3.0",
+    "vite-plugin-restart": "0.4.1"
   },
   "dependencies": {
-    "lil-gui": "^0.19.2",
-    "three": "^0.166.1"
+    "lil-gui": "0.19.2",
+    "three": "0.166.1"
   }
 }
