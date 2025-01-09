@@ -69,22 +69,22 @@ jobs:
 
       - name: Upload to s3
         run: |
-          aws s3 cp ./website/index.html s3://public-simulations
-          aws s3 sync ./website/assets s3://public-simulations/assets/ --delete
-          aws s3 sync ./website/fonts s3://public-simulations/fonts/ --delete
+          aws s3 cp ./website/index.html s3://theworldsim.org2
+          aws s3 sync ./website/assets s3://theworldsim.org2/assets/ --delete
+          aws s3 sync ./website/fonts s3://theworldsim.org2/fonts/ --delete
           # You can not use --delete here otherwise it will delete older versions of the sims
-          aws s3 sync ./website/sims s3://public-simulations/sims/
+          aws s3 sync ./website/sims s3://theworldsim.org2/sims/
 
           # Sim: Energy explorer
             # v0.0.1 was built locally and uploaded to s3 manually
-            # aws s3 sync ./the_world_sim/website_backup/sims/energy-explorer/latest s3://public-simulations/sims/energy-explorer/latest/
-            # aws s3 sync ./the_world_sim/website_backup/sims/energy-explorer/v0.0.1 s3://public-simulations/sims/energy-explorer/v0.0.1/
+            # aws s3 sync ./the_world_sim/website_backup/sims/energy-explorer/latest s3://theworldsim.org2/sims/energy-explorer/latest/
+            # aws s3 sync ./the_world_sim/website_backup/sims/energy-explorer/v0.0.1 s3://theworldsim.org2/sims/energy-explorer/v0.0.1/
 
           # Sim: Unnamed sim 1 (formerly Country-on-a-Stamp)
             # Prototype was built locally and uploaded to s3 manually
-            # aws s3 sync ./the_world_sim/website_backup/prototype/country-on-a-stamp s3://public-simulations/sims/unnamed1/latest/
+            # aws s3 sync ./the_world_sim/website_backup/prototype/country-on-a-stamp s3://theworldsim.org2/sims/unnamed1/latest/
 
           # Sim: Belhus Woods
           cd sims/uk/london_havering/belhus_woods
-          S3_PATH="s3://public-simulations/sims/uk/london_havering/belhus_woods" pnpm run deploy
+          S3_PATH="s3://theworldsim.org2/sims/uk/london_havering/belhus_woods" pnpm run deploy
           cd -
