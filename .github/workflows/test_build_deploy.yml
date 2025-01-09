@@ -67,6 +67,7 @@ jobs:
       - name: ___________________________ DEPLOY ___________________________
         run: echo Deploy
 
+      # As of 2025-01-09, the CloudFront distribution caching is disabled
       - name: Upload to s3
         run: |
           aws s3 cp ./website/index.html s3://theworldsim.org2

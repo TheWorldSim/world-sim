@@ -4974,3 +4974,9 @@ hr {
 {
   margin-top: 30px;
 }
+
+.work_in_progress
+{
+  /* color: red; */
+  font-size: 0.5em;
+}
