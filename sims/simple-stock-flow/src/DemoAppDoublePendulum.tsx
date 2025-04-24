@@ -477,12 +477,19 @@ function AppDoublePendulum (props: { selected_scenario: Scenario, set_selected_s
 
     return <>
         <div class="card">
-            This is an implementation of&nbsp;
+            This is an implementation of a Double Pendulum system{" "}
             <a
                 href="https://insightmaker.com/insight/A59msS5wYQFzl3GrXGm0z"
                 target="_blank"
             >
-                Double Pendulum
+                (InsightMaker)
+            </a>
+            {" "}
+            <a
+                href="https://datacurator.org/app/#wcomponents/e8a16326-566a-4886-9222-5cbf62147e18/&storage_location=32&subview_id=57721b40-5b26-4587-9cc3-614c6c366cae&view=knowledge&x=1038&y=-86&zoom=76"
+                target="_blank"
+            >
+                (DataCurator)
             </a>
             but I think this current implementation is not correct as when it
             is left to run it increases in speed (energy) instead of maintaining

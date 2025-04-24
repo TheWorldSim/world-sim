@@ -195,12 +195,19 @@ function AppAddOneToStockV4 (props: { model_stepper: ModelStepper, trigger_fetch
 
     return <>
         <div class="card">
-            This is an implementation of&nbsp;
+            This is an implementation of Simple Stock Actions v4{" "}
             <a
                 href="https://insightmaker.com/insight/6KLn6dwkVWUYRTdZStySyk"
                 target="_blank"
             >
-                Simple Stock Actions v4
+                (InsightMaker)
+            </a>
+            {" "}
+            <a
+                href="https://datacurator.org/app/#wcomponents/e8a16326-566a-4886-9222-5cbf62147e18/&storage_location=32&subview_id=57721b40-5b26-4587-9cc3-614c6c366cae&view=knowledge&x=1038&y=-86&zoom=76"
+                target="_blank"
+            >
+                (DataCurator)
             </a>
             <br />
             <button onClick={() => props.trigger_fetching_live_data()}>
