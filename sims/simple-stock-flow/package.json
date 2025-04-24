@@ -13,7 +13,7 @@
     "@types/chart.js": "2.9.41",
     "chart.js": "4.4.3",
     "preact": "10.19.6",
-    "simulation": "5.0.0"
+    "simulation": "6.0.0"
   },
   "devDependencies": {
     "@preact/preset-vite": "2.8.2",

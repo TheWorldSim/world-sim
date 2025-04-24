@@ -349,7 +349,7 @@ function make_wrapped_model (model_config: ModelConfigStrict, run_sim_config: { 
                 const animate = () => {
                     if (simulation_cancelled)
                     {
-                        reject("Stopping simulation as requested by clean up function")
+                        reject(`Stopping simulation as requested by clean up function in "animate" function`)
                         return
                     }
 
@@ -377,7 +377,7 @@ function make_wrapped_model (model_config: ModelConfigStrict, run_sim_config: { 
         {
             if (simulation_cancelled)
             {
-                throw new Error("Stopping simulation as requested by clean up function")
+                throw new Error(`Stopping simulation as requested by clean up function in "onPause" function`)
             }
 
             const step_results = extract_step_results(simulation, current_simulation_step, map_between_model_and_wcomponent_id)

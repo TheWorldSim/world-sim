@@ -479,11 +479,14 @@ function AppDoublePendulum (props: { selected_scenario: Scenario, set_selected_s
         <div class="card">
             This is an implementation of&nbsp;
             <a
-                href="https://insightmaker.com/insight/6KLn6dwkVWUYRTdZStySyk"
+                href="https://insightmaker.com/insight/A59msS5wYQFzl3GrXGm0z"
                 target="_blank"
             >
-                Simple Stock Actions v4
+                Double Pendulum
             </a>
+            but I think this current implementation is not correct as when it
+            is left to run it increases in speed (energy) instead of maintaining
+            a constant energy.
             <br />
             <div>
                 {/* <label htmlFor="options">Choose a scenario:</label> */}
@@ -503,14 +506,6 @@ function AppDoublePendulum (props: { selected_scenario: Scenario, set_selected_s
             <div>Pendulum 2: {pendulum_2_length} m, {pendulum_2_mass} kg</div>
             <div>Pendulum 1 angle: {as_number(pendulum_1_angle).toFixed(2)}</div>
             <div>Pendulum 2 angle: {as_number(pendulum_2_angle).toFixed(2)}</div>
-
-            {/* <button onClick={action__increase_stock_a}>
-                Increase stock A
-            </button>
-
-            <button onClick={action__move_a_to_b}>
-                Move A to B
-            </button> */}
         </div>
 
         <DoublePendulumCanvas
