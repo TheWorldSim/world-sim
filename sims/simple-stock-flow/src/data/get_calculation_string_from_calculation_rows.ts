@@ -1,6 +1,6 @@
 import { PlainCalculationObject } from "../data_curator/src/calculations/interfaces"
 import { normalise_calculation_ids } from "../data_curator/src/calculations/normalise_calculation_ids"
-import { get_double_at_mentioned_uuids_from_text } from "../data_curator/src/sharedf/rich_text/replace_normal_ids"
+import { get_double_at_mentioned_uuids_from_text } from "../data_curator/src/sharedf/rich_text/id_regexs"
 
 
 export function get_calculation_string_from_calculation_rows(calculations: PlainCalculationObject[] | undefined): string

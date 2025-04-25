@@ -1,5 +1,5 @@
 import { normalise_calculation_ids } from "../data_curator/src/calculations/normalise_calculation_ids"
-import { get_double_at_mentioned_uuids_from_text } from "../data_curator/src/sharedf/rich_text/replace_normal_ids"
+import { get_double_at_mentioned_uuids_from_text } from "../data_curator/src/sharedf/rich_text/id_regexs"
 import {
     wcomponent_is_action,
     wcomponent_is_causal_link,
