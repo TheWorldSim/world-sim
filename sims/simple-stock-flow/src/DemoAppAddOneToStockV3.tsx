@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from "preact/hooks"
+import { useEffect, useMemo, useState } from "preact/hooks"
 
-import { make_model_stepper, ModelStepper, ModelStepResult } from "./make_model_stepper"
+import { make_wrapped_model, WrappedModel, SimulationStepResult } from "./make_model_stepper"
 import { IDS_v3 } from "./data/get_data"
 import { supabase_get_wcomponents } from "./data_curator/src/state/sync/supabase/wcomponent"
 import { WComponentsById } from "./data_curator/src/wcomponent/interfaces/SpecialisedObjects"
@@ -18,26 +18,39 @@ const cached_data: GetItemsReturn<SimplifiedWComponentsValueById> = {
     value: {
         statev2: {
             "17edbf36-ad5b-4936-b3c5-7d803741c678": {
-                state: 5
+                title: "Stock A1",
+                state: 10,
             },
             "b644e33f-c00f-4a50-acc4-f158e4e11be5": {
-                state: 2
+                title: "Stock B1",
+                state: 2,
+                calculation: "max([b644e33f-c00f-4a50-acc4-f158e4e11be5], 0)",
             }
         },
         causal_link: {
             "a8ca022f-1f52-4f8f-b9b2-045f77c65eea": {
-                effect: "[2dc650ae-8458-47b6-be0e-6ad1cab3cd4d]"
+                title: "Flow from @@17edbf36-ad5b-4936-b3c5-7d803741c678 to @@b644e33f-c00f-4a50-acc4-f158e4e11be5",
+                effect: "[2dc650ae-8458-47b6-be0e-6ad1cab3cd4d]",
+                from_id: "17edbf36-ad5b-4936-b3c5-7d803741c678",
+                to_id: "b644e33f-c00f-4a50-acc4-f158e4e11be5",
             },
             "c31be0d8-6ce5-4db2-8b4b-1d13ed48a869": {
-                effect: "[8ecb8d21-4803-4028-9341-b7cd59b56cda]"
+                title: "Flow into @@17edbf36-ad5b-4936-b3c5-7d803741c678",
+                effect: "[8ecb8d21-4803-4028-9341-b7cd59b56cda]",
+                from_id: undefined,
+                to_id: "17edbf36-ad5b-4936-b3c5-7d803741c678",
             }
         },
         action: {
             "2dc650ae-8458-47b6-be0e-6ad1cab3cd4d": {
-                calculation: ""
+                title: "Move A1 to B1",
+                calculation: "",
+                linked_ids: undefined,
             },
             "8ecb8d21-4803-4028-9341-b7cd59b56cda": {
-                calculation: ""
+                title: "Increase stock A1",
+                calculation: "",
+                linked_ids: undefined,
             }
         }
     },
@@ -64,6 +77,7 @@ export function DemoAppAddOneToStockV3 () {
                 value: wcomponents_values_by_id,
                 error: wcomponents_response.error,
             }
+            // console .log(JSON.stringify(wcomponents_by_id_response.value,null,4))
             set_data(wcomponents_by_id_response)
         }
 
@@ -71,55 +85,62 @@ export function DemoAppAddOneToStockV3 () {
     }, [data])
 
 
-    const model_stepper: ModelStepper | undefined = useMemo(() =>
+    const model_stepper: WrappedModel | undefined = useMemo(() =>
     {
         if (data === undefined || data.error) return undefined
 
-        const wrapped_model = make_model_stepper({target_refresh_rate: TARGET_REFRESH_RATE})
+        let wrapped_model
 
-        const stock_a_value = data.value.statev2[IDS_v3.stock__state_a]
-        const stock_b_value = data.value.statev2[IDS_v3.stock__state_b]
+        if (5 > Math.random())
+        {
+            wrapped_model = make_wrapped_model({target_refresh_rate: TARGET_REFRESH_RATE, data})
+        }
+        else
+        {
+            wrapped_model = make_wrapped_model({target_refresh_rate: TARGET_REFRESH_RATE})
 
-        wrapped_model.add_stock({
-            wcomponent_id: IDS_v3.stock__state_a,
-            name: "Stock A",
-            initial: stock_a_value?.state || 100,
-        })
-        wrapped_model.add_stock({
-            wcomponent_id: IDS_v3.stock__state_b,
-            name: "Stock B",
-            initial: stock_b_value?.state || 10,
-        })
+            const stock_a_value = data.value.statev2[IDS_v3.stock__state_a]
+            const stock_b_value = data.value.statev2[IDS_v3.stock__state_b]
 
-        const action_component__increase_a = wrapped_model.add_variable({
-            wcomponent_id: IDS_v3.variable__action_increase_a,
-            name: IDS_v3.variable__action_increase_a,
-            value: 0,
-            is_action: true,
-        })
-        const action_component__move_a_to_b = wrapped_model.add_variable({
-            wcomponent_id: IDS_v3.variable__action_move_a_to_b,
-            name: IDS_v3.variable__action_move_a_to_b,
-            value: 0,
-            is_action: true,
-        })
+            wrapped_model.add_stock({
+                wcomponent_id: IDS_v3.stock__state_a,
+                title: "Stock A",
+                initial: stock_a_value?.state ?? 100,
+            })
+            wrapped_model.add_stock({
+                wcomponent_id: IDS_v3.stock__state_b,
+                title: "Stock B",
+                initial: stock_b_value?.state ?? 10,
+            })
 
-        wrapped_model.add_flow({
-            wcomponent_id: IDS_v3.flow__flow_into_a,
-            name: "Flow into A",
-            flow_rate: data.value.causal_link[IDS_v3.flow__flow_into_a]?.effect || "",
-            from_id: undefined,
-            to_id: IDS_v3.stock__state_a,
-            linked_ids: [IDS_v3.variable__action_increase_a],
-        })
-        wrapped_model.add_flow({
-            wcomponent_id: IDS_v3.flow__flow_a_to_b,
-            name: "Flow A to B",
-            flow_rate: data.value.causal_link[IDS_v3.flow__flow_a_to_b]?.effect || "",
-            from_id: IDS_v3.stock__state_a,
-            to_id: IDS_v3.stock__state_b,
-            linked_ids: [IDS_v3.variable__action_move_a_to_b],
-        })
+            const action_component__increase_a = wrapped_model.add_variable({
+                wcomponent_id: IDS_v3.variable__action_increase_a,
+                // name: IDS_v3.variable__action_increase_a,
+                value: 0,
+            })
+            const action_component__move_a_to_b = wrapped_model.add_variable({
+                wcomponent_id: IDS_v3.variable__action_move_a_to_b,
+                // name: IDS_v3.variable__action_move_a_to_b,
+                value: 0,
+            })
+
+            wrapped_model.add_flow({
+                wcomponent_id: IDS_v3.flow__flow_a_to_b,
+                title: "Flow A to B",
+                flow_rate: data.value.causal_link[IDS_v3.flow__flow_a_to_b]?.effect || "",
+                from_id: IDS_v3.stock__state_a,
+                to_id: IDS_v3.stock__state_b,
+                linked_ids: [IDS_v3.variable__action_move_a_to_b],
+            })
+            wrapped_model.add_flow({
+                wcomponent_id: IDS_v3.flow__flow_into_a,
+                title: "Flow into A",
+                flow_rate: data.value.causal_link[IDS_v3.flow__flow_into_a]?.effect || "",
+                from_id: undefined,
+                to_id: IDS_v3.stock__state_a,
+                linked_ids: [IDS_v3.variable__action_increase_a],
+            })
+        }
 
         return wrapped_model
     }, [data])
@@ -134,7 +155,7 @@ export function DemoAppAddOneToStockV3 () {
 }
 
 
-function AppAddOneToStockV3(props: { model_stepper: ModelStepper, trigger_fetching_live_data: () => void })
+function AppAddOneToStockV3(props: { model_stepper: WrappedModel, trigger_fetching_live_data: () => void })
 {
     const { model_stepper } = props
 
@@ -145,57 +166,26 @@ function AppAddOneToStockV3(props: { model_stepper: ModelStepper, trigger_fetchi
     const [current_time, set_current_time] = useState(model_stepper.get_current_time())
     const [stock_a, set_stock_a] = useState(model_stepper.get_latest_state_by_id(IDS_v3.stock__state_a))
     const [stock_b, set_stock_b] = useState(model_stepper.get_latest_state_by_id(IDS_v3.stock__state_b))
-    const past_actions_taken = useRef<{step: number, actions_taken: {[action_id: string]: number}}[]>([])
-    const actions_taken = useRef<{[action_id: string]: number}>({})
 
 
-    useEffect(() => model_stepper.run_simulation((result: ModelStepResult) =>
+    useEffect(() => model_stepper.run_simulation({
+        on_simulation_step_completed: (result: SimulationStepResult) =>
         {
             set_current_time(result.current_time)
             set_stock_a(result.values[IDS_v3.stock__state_a])
             set_stock_b(result.values[IDS_v3.stock__state_b])
 
-            const { set_value } = result
-            if (!set_value) return { reason_to_stop: "Error: no set_value" }
-
-            // Reset previously taken actions
-            const last_actions_taken = past_actions_taken.current[past_actions_taken.current.length - 1]
-            if (last_actions_taken && (last_actions_taken.step + 1) === result.current_step)
-            {
-                Object.keys(last_actions_taken.actions_taken).forEach(action_id =>
-                {
-                    const action = model_stepper.get_node_from_id(action_id, true)
-                    set_value(action, 0)
-                })
-            }
-
-            // Apply actions taken
-            const actions_taken_list = Object.entries(actions_taken.current)
-
-            actions_taken_list.forEach(([action_id, value]) =>
-            {
-                const action = model_stepper.get_node_from_id(action_id, true)
-                set_value(action, value)
-            })
-
-            if (actions_taken_list.length)
-            {
-                past_actions_taken.current.push({ step: result.current_step, actions_taken: actions_taken.current })
-                actions_taken.current = {}
-            }
-
             return undefined
-        }), [])
+        }
+    }), [])
 
 
-    const action__increase_stock_a = useMemo(model_stepper.make_apply_action(
-        actions_taken,
+    const action__increase_stock_a = useMemo(() => model_stepper.factory_trigger_action(
         IDS_v3.variable__action_increase_a,
         TARGET_REFRESH_RATE
     ), [TARGET_REFRESH_RATE])
 
-    const action__move_a_to_b = useMemo(model_stepper.make_apply_action(
-        actions_taken,
+    const action__move_a_to_b = useMemo(() => model_stepper.factory_trigger_action(
         IDS_v3.variable__action_move_a_to_b,
         TARGET_REFRESH_RATE
     ), [TARGET_REFRESH_RATE])

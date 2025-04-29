@@ -50,7 +50,10 @@ function App ()
 
 render(<App />, document.getElementById("app")!)
 
-;(window as any).run_tests = run_all_tests
+;(window as any).run_tests = () =>
+{
+    run_all_tests()
+}
 
 // import { DemoAppDoublePendulum } from "./DemoAppDoublePendulum.tsx"
 // render(<DemoAppDoublePendulum />, document.getElementById("app")!)

@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks"
 
-import { make_model_stepper, ModelStepper, ModelStepResult } from "./make_model_stepper"
+import { make_wrapped_model, WrappedModel, SimulationStepResult } from "./make_model_stepper"
 import { IDS_v4 } from "./data/get_data"
 import { GetItemsReturn } from "./data_curator/src/state/sync/supabase/get_items"
 import { get_wcomponents_values_by_id, SimplifiedWComponentsValueById } from "./data/get_wcomponents_values_by_id"
 import { get_supabase } from "./data_curator/src/supabase/get_supabase"
 import { supabase_get_wcomponents } from "./data_curator/src/state/sync/supabase/wcomponent"
 import { WComponentsById } from "./data_curator/src/wcomponent/interfaces/SpecialisedObjects"
+import { dedent } from "./utils/string"
 
 
 const TARGET_REFRESH_RATE = 30 // Hz
@@ -14,20 +15,42 @@ const supabase = get_supabase()
 const cached_data: GetItemsReturn<SimplifiedWComponentsValueById> = {
     value: {
         statev2: {
-            "3d77c2b9-e1cb-4b1b-9e22-66bc0b673f75": {
-                state: 5
+            "3d77c2b9-e1cb-4b1b-9e22-66bc0b673f75":
+            {
+                state: 5,
+                title: "Stock A",
             },
-            "e429827b-3b12-475b-bcd8-9afd6f4b9973": {
-                state: 2
+            "e429827b-3b12-475b-bcd8-9afd6f4b9973":
+            {
+                state: 2,
+                title: "Stock B",
             }
         },
         causal_link: {},
         action: {
-            "779e1a1b-b590-4a9f-b1a8-cfccb543b807": {
-                calculation: "[3d77c2b9-e1cb-4b1b-9e22-66bc0b673f75] <- [3d77c2b9-e1cb-4b1b-9e22-66bc0b673f75] + [779e1a1b-b590-4a9f-b1a8-cfccb543b807]"
+            "779e1a1b-b590-4a9f-b1a8-cfccb543b807":
+            {
+                title: "Increase stock A",
+                calculation: "[3d77c2b9-e1cb-4b1b-9e22-66bc0b673f75] <- [3d77c2b9-e1cb-4b1b-9e22-66bc0b673f75] + [779e1a1b-b590-4a9f-b1a8-cfccb543b807]",
+                linked_ids: [
+                    "3d77c2b9-e1cb-4b1b-9e22-66bc0b673f75",
+                    "779e1a1b-b590-4a9f-b1a8-cfccb543b807",
+                ],
             },
-            "8b65e686-2926-4f89-8919-79d450ac682f": {
-                calculation: "Stock_A2_available <- max([3d77c2b9-e1cb-4b1b-9e22-66bc0b673f75],0)\\nStock_A2_to_move <- min(Stock_A2_available,[8b65e686-2926-4f89-8919-79d450ac682f])\\n[e429827b-3b12-475b-bcd8-9afd6f4b9973] <- [e429827b-3b12-475b-bcd8-9afd6f4b9973] + Stock_A2_to_move\\n[3d77c2b9-e1cb-4b1b-9e22-66bc0b673f75] <- [3d77c2b9-e1cb-4b1b-9e22-66bc0b673f75] - Stock_A2_to_move"
+            "8b65e686-2926-4f89-8919-79d450ac682f":
+            {
+                title: "Move A to B",
+                calculation: dedent(`
+                stock_a_available <- max([3d77c2b9-e1cb-4b1b-9e22-66bc0b673f75],0)
+                stock_a_to_move <- min(stock_a_available,[8b65e686-2926-4f89-8919-79d450ac682f])
+                [e429827b-3b12-475b-bcd8-9afd6f4b9973] <- [e429827b-3b12-475b-bcd8-9afd6f4b9973] + stock_a_to_move
+                [3d77c2b9-e1cb-4b1b-9e22-66bc0b673f75] <- [3d77c2b9-e1cb-4b1b-9e22-66bc0b673f75] - stock_a_to_move
+                `),
+                linked_ids: [
+                    "3d77c2b9-e1cb-4b1b-9e22-66bc0b673f75",
+                    "8b65e686-2926-4f89-8919-79d450ac682f",
+                    "e429827b-3b12-475b-bcd8-9afd6f4b9973",
+                ],
             }
         }
     },
@@ -62,46 +85,40 @@ export function DemoAppAddOneToStockV4 () {
     }, [data])
 
 
-    const model_stepper: ModelStepper | undefined = useMemo(() =>
+    const model_stepper: WrappedModel | undefined = useMemo(() =>
     {
         if (data === undefined || data.error) return undefined
 
-        const wrapped_model = make_model_stepper({target_refresh_rate: TARGET_REFRESH_RATE})
+        const wrapped_model = make_wrapped_model({target_refresh_rate: TARGET_REFRESH_RATE})
 
         const stock_a_value = data.value.statev2[IDS_v4.stock__state_a]
         const stock_b_value = data.value.statev2[IDS_v4.stock__state_b]
 
-        const stock_a = wrapped_model.add_stock({
+        wrapped_model.add_stock({
             wcomponent_id: IDS_v4.stock__state_a,
-            name: IDS_v4.stock__state_a,
-            initial: stock_a_value?.state || 100,
+            initial: stock_a_value?.state ?? 100,
         })
-        const stock_b = wrapped_model.add_stock({
+        wrapped_model.add_stock({
             wcomponent_id: IDS_v4.stock__state_b,
-            name: IDS_v4.stock__state_b,
-            initial: stock_b_value?.state || 100,
+            initial: stock_b_value?.state ?? 100,
         })
 
         const action_component__increase_a = wrapped_model.add_variable({
             wcomponent_id: IDS_v4.action__action_increase_stock_a,
-            name: IDS_v4.action__action_increase_stock_a,
             value: 0,
-            is_action: true,
         })
         const action_component__move_a_to_b = wrapped_model.add_variable({
             wcomponent_id: IDS_v4.action__action_move_a_to_b,
-            name: IDS_v4.action__action_move_a_to_b,
             value: 0,
-            is_action: true,
         })
 
-        const action_increase_stock_a_value = data.value.action[IDS_v4.action__action_increase_stock_a]
-        const action_move_a_to_b_value = data.value.action[IDS_v4.action__action_move_a_to_b]
+        const action_increase_stock_a_value = data.value.action[IDS_v4.action__action_increase_stock_a]!
+        const action_move_a_to_b_value = data.value.action[IDS_v4.action__action_move_a_to_b]!
 
         wrapped_model.add_action({
             wcomponent_id: IDS_v4.action__action_increase_stock_a + "_action",
-            name: "Add 1 to A",
-            action: action_increase_stock_a_value?.calculation || "",
+            title: "Add 1 to A",
+            action: action_increase_stock_a_value.calculation,
             trigger_value: `[${action_component__increase_a.name}]`,
             linked_ids: [
                 IDS_v4.action__action_increase_stock_a,
@@ -110,8 +127,8 @@ export function DemoAppAddOneToStockV4 () {
         })
         wrapped_model.add_action({
             wcomponent_id: IDS_v4.action__action_move_a_to_b + "_action",
-            name: "Move A to B",
-            action: action_move_a_to_b_value?.calculation || "",
+            title: "Move A to B",
+            action: action_move_a_to_b_value.calculation,
             trigger_value: `[${action_component__move_a_to_b.name}]`,
             linked_ids: [
                 IDS_v4.action__action_move_a_to_b,
@@ -134,7 +151,7 @@ export function DemoAppAddOneToStockV4 () {
 }
 
 
-function AppAddOneToStockV4 (props: { model_stepper: ModelStepper, trigger_fetching_live_data: () => void })
+function AppAddOneToStockV4 (props: { model_stepper: WrappedModel, trigger_fetching_live_data: () => void })
 {
     const { model_stepper } = props
 
@@ -144,7 +161,8 @@ function AppAddOneToStockV4 (props: { model_stepper: ModelStepper, trigger_fetch
     const past_actions_taken = useRef<{step: number, actions_taken: {[action_id: string]: number}}[]>([])
     const actions_taken = useRef<{[action_id: string]: number}>({})
 
-    useEffect(() => model_stepper.run_simulation((result: ModelStepResult) =>
+    useEffect(() => model_stepper.run_simulation({
+        on_simulation_step_completed: (result: SimulationStepResult) =>
         {
             set_current_time(result.current_time)
             set_stock_a(result.values[IDS_v4.stock__state_a])
@@ -180,16 +198,15 @@ function AppAddOneToStockV4 (props: { model_stepper: ModelStepper, trigger_fetch
             }
 
             return undefined
-        }), [])
+        }
+    }), [])
 
 
-    const action__increase_stock_a = useMemo(model_stepper.make_apply_action(
-        actions_taken,
+    const action__increase_stock_a = useMemo(() => model_stepper.factory_trigger_action(
         IDS_v4.action__action_increase_stock_a,
     ), [])
 
-    const action__move_a_to_b = useMemo(model_stepper.make_apply_action(
-        actions_taken,
+    const action__move_a_to_b = useMemo(() => model_stepper.factory_trigger_action(
         IDS_v4.action__action_move_a_to_b,
     ), [])
 

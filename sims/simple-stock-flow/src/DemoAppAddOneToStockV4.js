@@ -64,17 +64,17 @@ model.Link(action_increase_a, actual_action_increase_a)
 async function onPause (simulation)
 {
     const current_time = simulation.time
-    console.log(`step completed: ?, current time: ${current_time}.  Stock A: ${simulation.results.value(stock_a, current_time)}.  Action: Increase Stock A: ${simulation.results.value(action_increase_a, current_time)}`)
+    console .log(`step completed: ?, current time: ${current_time}.  Stock A: ${simulation.results.value(stock_a, current_time)}.  Action: Increase Stock A: ${simulation.results.value(action_increase_a, current_time)}`)
 
     // if step is 3 then user clicks button to increase stock 5 times
     if (current_time === 3)
     {
-        console.log("  Increase Stock A by 5")
+        console .log("  Increase Stock A by 5")
         simulation.setValue(action_increase_a, 5)
     }
     else if (current_time === 4)
     {
-        console.log("  Reset Increase Stock A action to 0")
+        console .log("  Reset Increase Stock A action to 0")
         simulation.setValue(action_increase_a, 0)
     }
 }
