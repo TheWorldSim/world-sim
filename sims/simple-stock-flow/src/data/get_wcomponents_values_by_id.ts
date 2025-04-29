@@ -1,5 +1,5 @@
 import { normalise_calculation_ids } from "../data_curator/src/calculations/normalise_calculation_ids"
-import { get_double_at_mentioned_uuids_from_text } from "../data_curator/src/sharedf/rich_text/id_regexs"
+import { get_double_at_mentioned_uuids_from_text, get_uuids_from_text } from "../data_curator/src/sharedf/rich_text/id_regexs"
 import {
     wcomponent_is_action,
     wcomponent_is_causal_link,
@@ -12,15 +12,22 @@ import { get_calculation_string_from_calculation_rows } from "./get_calculation_
 
 interface SimplifiedWComponentStateV2
 {
+    title: string
     state: number | string
     calculation?: string
 }
 interface SimplifiedWComponentCausalLink
 {
+    title: string
     effect: string
+    from_id: string | undefined
+    to_id: string | undefined
 }
-interface SimplifiedWComponentAction {
+interface SimplifiedWComponentAction
+{
+    title: string
     calculation: string
+    linked_ids: string[] | undefined
     // trigger_type: "condition"
     // trigger_calculation: string
 }
@@ -44,23 +51,33 @@ export function get_wcomponents_values_by_id (composed_wcomponents_by_id: WCompo
 
     Object.entries(composed_wcomponents_by_id).forEach(([uuid, composed_wcomponent]) =>
     {
+        const { title } = composed_wcomponent
+
         if (wcomponent_is_causal_link(composed_wcomponent))
         {
             let effect = composed_wcomponent.effect_string || ""
             const effect_uuids = get_double_at_mentioned_uuids_from_text(effect)
             effect = normalise_calculation_ids(effect, effect_uuids)
 
-            value_by_id.causal_link[uuid] = { effect }
+            value_by_id.causal_link[uuid] = {
+                title,
+                effect,
+                from_id: composed_wcomponent.from_id || undefined,
+                to_id: composed_wcomponent.to_id || undefined,
+            }
             return
         }
 
         if (wcomponent_is_action(composed_wcomponent))
         {
             const calculation = get_calculation_string_from_calculation_rows(composed_wcomponent.calculations)
+            const linked_ids = Array.from(new Set(get_uuids_from_text(calculation)))
             // const trigger_calculation = wcomponent.trigger_calculations.join("\n") || ""
             // const trigger_type = "condition" //wcomponent.trigger_type
             value_by_id.action[uuid] = {
+                title,
                 calculation,
+                linked_ids,
                 // trigger_type,
                 // trigger_calculation,
             }
@@ -69,6 +86,7 @@ export function get_wcomponents_values_by_id (composed_wcomponents_by_id: WCompo
 
         if (!wcomponent_is_statev2(composed_wcomponent))
         {
+            console.warn(`Unsupported WComponent type: "${composed_wcomponent.type}" of id: "${composed_wcomponent.id}", title: "${composed_wcomponent.title}".  Supported types are: causal_link, action, or statev2.`)
             return
         }
 
@@ -91,6 +109,7 @@ export function get_wcomponents_values_by_id (composed_wcomponents_by_id: WCompo
         if (typeof value === "boolean") return
 
         const value_obj: SimplifiedWComponentStateV2 = {
+            title,
             state: value || "",
         }
         if (calculation) value_obj.calculation = calculation
