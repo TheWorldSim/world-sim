@@ -13,7 +13,7 @@ declare module "simulation" {
     interface ModelVariableConfig
     {
         name: string
-        value: number | string | "True" | "False"
+        value: number | string // | "True" | "False"
         units?: string
         note?: string
     }
@@ -21,7 +21,7 @@ declare module "simulation" {
     interface ModelStockConfig
     {
         name: string
-        initial?: number | string | "True" | "False"
+        initial?: number | string // | "True" | "False"
         units?: string
         note?: string
     }
@@ -54,18 +54,18 @@ declare module "simulation" {
     {
         constructor (config: ModelConfig)
 
-        Variable (config: ModelVariableConfig): SimulationComponent { }
-        Stock (config: ModelStockConfig): SimulationComponent { }
-        Flow (from_component: SimulationComponent | undefined, to_component: SimulationComponent | undefined, config: { name: string; note?: string, rate: string | number, nonNegative?: boolean = true }): SimulationComponent {}
-        Action (config: ModelActionConfig): SimulationComponent { }
+        Variable(config: ModelVariableConfig): SimulationComponent
+        Stock(config: ModelStockConfig): SimulationComponent
+        Flow(from_component: SimulationComponent | undefined, to_component: SimulationComponent | undefined, config: { name: string; note?: string, rate: string | number, nonNegative?: boolean }): SimulationComponent {}
+        Action(config: ModelActionConfig): SimulationComponent
 
-        simulate (): SimulationResult { }
-        async simulateAsync (config: { onPause: (simulation: OnPauseSimulationArg) => void }): SimulationResult { }
+        simulate(): SimulationResult
+        simulateAsync(config: { onPause: (simulation: OnPauseSimulationArg) => void }): Promise<SimulationResult>
 
-        Link (source_component: SimulationComponent, consuming_component: SimulationComponent) { }
+        Link(source_component: SimulationComponent, consuming_component: SimulationComponent)
 
-        findStocks (selector: (model_item: {_node: SimulationNode, model: {_graph: {}, settings: {}, p: ()=>{} } }) => void): SimulationComponent[] { }
-        getId (model_id: string): SimulationComponent | null { }
+        findStocks(selector: (model_item: {_node: SimulationNode, model: {_graph: object, settings: object, p: () => object } }) => void): SimulationComponent[]
+        getId(model_id: string): SimulationComponent | null
     }
 
     export interface SimulationError
@@ -89,18 +89,18 @@ declare module "simulation" {
         parent?: SimulationNode
         children: (SimulationNode | null)[]
         id: string
-        value: {}
-        _primitive: { model: {} }
+        value: object
+        _primitive: { model: object }
         source: null
         target: null
-        getAttribute (attribute_name: "Units"): string
-        getAttribute (attribute_name: ModelAttributeNames): any
+        getAttribute(attribute_name: "Units"): string
+        getAttribute(attribute_name: ModelAttributeNames): unknown
     }
 
     interface SimulationComponent
     {
         _node: SimulationNode
-        model: {}
+        model: object
         units?: string
     }
 
@@ -109,7 +109,7 @@ declare module "simulation" {
         _data: SimulationResult_data
         _nameIdMapping: {[index: string]: string} // maps id to Variable.name
         timeUnits: TimeUnits
-        value: (primitive: Primitive | SimulationComponent, time: number) => {}
+        value: (primitive: Primitive | SimulationComponent, time: number) => object
     }
 
     interface SimulationResult_data
@@ -117,14 +117,14 @@ declare module "simulation" {
         times: number[]
         data: {[id: string]: number}[]
         timeUnits: TimeUnits
-        children: {[id: string]: {data: {}, results: number[], dataMode: "float"}}
+        children: {[id: string]: {data: object, results: number[], dataMode: "float"}}
         error: null
         errorPrimitive: null
         stochastic: boolean
-        value: (primitive: Primitive) => {}
-        lastValue: () => {}
+        value(primitive: Primitive): object
+        lastValue(): object
         periods: number
-        resume: () => void
-        setValue: (primitive: Primitive, value: number) => void
+        resume(): void
+        setValue(primitive: Primitive, value: number): void
     }
 }
