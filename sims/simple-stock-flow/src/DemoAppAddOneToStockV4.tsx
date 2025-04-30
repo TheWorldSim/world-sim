@@ -12,7 +12,7 @@ import { dedent } from "./utils/string"
 
 const TARGET_REFRESH_RATE = 30 // Hz
 const supabase = get_supabase()
-const cached_data: GetItemsReturn<SimplifiedWComponentsValueById> = {
+const cached_model_data: GetItemsReturn<SimplifiedWComponentsValueById> = {
     value: {
         statev2: {
             "3d77c2b9-e1cb-4b1b-9e22-66bc0b673f75":
@@ -59,11 +59,11 @@ const cached_data: GetItemsReturn<SimplifiedWComponentsValueById> = {
 
 
 export function DemoAppAddOneToStockV4 () {
-    const [data, set_data] = useState<GetItemsReturn<SimplifiedWComponentsValueById> | undefined>(cached_data)
+    const [model_data, set_model_data] = useState<GetItemsReturn<SimplifiedWComponentsValueById> | undefined>(cached_model_data)
 
 
     useEffect(() => {
-        if (data) return
+        if (model_data) return
 
         const fetch_data = async () => {
             const ids = Object.values(IDS_v4)
@@ -78,137 +78,61 @@ export function DemoAppAddOneToStockV4 () {
                 value: wcomponents_values_by_id,
                 error: wcomponents_response.error,
             }
-            set_data(wcomponents_by_id_response)
+            console .log(JSON.stringify(wcomponents_by_id_response.value,null,4))
+            set_model_data(wcomponents_by_id_response)
         }
 
         fetch_data()
-    }, [data])
+    }, [model_data])
 
 
-    const model_stepper: WrappedModel | undefined = useMemo(() =>
+    const wrapped_model: WrappedModel | undefined = useMemo(() =>
     {
-        if (data === undefined || data.error) return undefined
+        if (model_data === undefined || model_data.error) return undefined
 
-        const wrapped_model = make_wrapped_model({target_refresh_rate: TARGET_REFRESH_RATE})
-
-        const stock_a_value = data.value.statev2[IDS_v4.stock__state_a]
-        const stock_b_value = data.value.statev2[IDS_v4.stock__state_b]
-
-        wrapped_model.add_stock({
-            wcomponent_id: IDS_v4.stock__state_a,
-            initial: stock_a_value?.state ?? 100,
-        })
-        wrapped_model.add_stock({
-            wcomponent_id: IDS_v4.stock__state_b,
-            initial: stock_b_value?.state ?? 100,
-        })
-
-        const action_component__increase_a = wrapped_model.add_variable({
-            wcomponent_id: IDS_v4.action__action_increase_stock_a,
-            value: 0,
-        })
-        const action_component__move_a_to_b = wrapped_model.add_variable({
-            wcomponent_id: IDS_v4.action__action_move_a_to_b,
-            value: 0,
-        })
-
-        const action_increase_stock_a_value = data.value.action[IDS_v4.action__action_increase_stock_a]!
-        const action_move_a_to_b_value = data.value.action[IDS_v4.action__action_move_a_to_b]!
-
-        wrapped_model.add_action({
-            wcomponent_id: IDS_v4.action__action_increase_stock_a + "_action",
-            title: "Add 1 to A",
-            action: action_increase_stock_a_value.calculation,
-            trigger_value: `[${action_component__increase_a.name}]`,
-            linked_ids: [
-                IDS_v4.action__action_increase_stock_a,
-                IDS_v4.stock__state_a,
-            ],
-        })
-        wrapped_model.add_action({
-            wcomponent_id: IDS_v4.action__action_move_a_to_b + "_action",
-            title: "Move A to B",
-            action: action_move_a_to_b_value.calculation,
-            trigger_value: `[${action_component__move_a_to_b.name}]`,
-            linked_ids: [
-                IDS_v4.action__action_move_a_to_b,
-                IDS_v4.stock__state_a,
-                IDS_v4.stock__state_b,
-            ],
-        })
-
-        return wrapped_model
-    }, [data])
+        return make_wrapped_model({target_refresh_rate: TARGET_REFRESH_RATE, data: model_data})
+    }, [model_data])
 
 
-    if (model_stepper) return <AppAddOneToStockV4
-        model_stepper={model_stepper}
-        trigger_fetching_live_data={() => set_data(undefined)}
+    if (wrapped_model) return <AppAddOneToStockV4
+        wrapped_model={wrapped_model}
+        trigger_fetching_live_data={() => set_model_data(undefined)}
     />
 
-    if (data?.error) return <div>Error: {data.error.message}</div>
+    if (model_data?.error) return <div>Error: {model_data.error.message}</div>
     return <div>Loading...</div>
 }
 
 
-function AppAddOneToStockV4 (props: { model_stepper: WrappedModel, trigger_fetching_live_data: () => void })
+function AppAddOneToStockV4 (props: { wrapped_model: WrappedModel, trigger_fetching_live_data: () => void })
 {
-    const { model_stepper } = props
+    const { wrapped_model } = props
 
-    const [current_time, set_current_time] = useState(model_stepper.get_current_time())
-    const [stock_a, set_stock_a] = useState(model_stepper.get_latest_state_by_id(IDS_v4.stock__state_a))
-    const [stock_b, set_stock_b] = useState(model_stepper.get_latest_state_by_id(IDS_v4.stock__state_b))
-    const past_actions_taken = useRef<{step: number, actions_taken: {[action_id: string]: number}}[]>([])
-    const actions_taken = useRef<{[action_id: string]: number}>({})
+    const [current_time, set_current_time] = useState(wrapped_model.get_current_time())
+    const [stock_a, set_stock_a] = useState(wrapped_model.get_latest_state_by_id(IDS_v4.stock__state_a))
+    const [stock_b, set_stock_b] = useState(wrapped_model.get_latest_state_by_id(IDS_v4.stock__state_b))
 
-    useEffect(() => model_stepper.run_simulation({
+    useEffect(() => wrapped_model.run_simulation({
         on_simulation_step_completed: (result: SimulationStepResult) =>
         {
             set_current_time(result.current_time)
             set_stock_a(result.values[IDS_v4.stock__state_a])
             set_stock_b(result.values[IDS_v4.stock__state_b])
 
-            const { set_value } = result
-            if (!set_value) return { reason_to_stop: "Error: no set_value" }
-
-            // Reset previously taken actions
-            const last_actions_taken = past_actions_taken.current[past_actions_taken.current.length - 1]
-            if (last_actions_taken && (last_actions_taken.step + 1) === result.current_step)
-            {
-                Object.keys(last_actions_taken.actions_taken).forEach(action_id =>
-                {
-                    const action = model_stepper.get_node_from_id(action_id, true)
-                    set_value(action, 0)
-                })
-            }
-
-            // Apply actions taken
-            const actions_taken_list = Object.entries(actions_taken.current)
-
-            actions_taken_list.forEach(([action_id, value]) =>
-            {
-                const action = model_stepper.get_node_from_id(action_id, true)
-                set_value(action, value)
-            })
-
-            if (actions_taken_list.length)
-            {
-                past_actions_taken.current.push({ step: result.current_step, actions_taken: actions_taken.current })
-                actions_taken.current = {}
-            }
-
             return undefined
         }
     }), [])
 
 
-    const action__increase_stock_a = useMemo(() => model_stepper.factory_trigger_action(
+    const action__increase_stock_a = useMemo(() => wrapped_model.factory_trigger_action(
         IDS_v4.action__action_increase_stock_a,
-    ), [])
+        TARGET_REFRESH_RATE,
+    ), [TARGET_REFRESH_RATE])
 
-    const action__move_a_to_b = useMemo(() => model_stepper.factory_trigger_action(
+    const action__move_a_to_b = useMemo(() => wrapped_model.factory_trigger_action(
         IDS_v4.action__action_move_a_to_b,
-    ), [])
+        TARGET_REFRESH_RATE,
+    ), [TARGET_REFRESH_RATE])
 
     return <>
         <div class="card">

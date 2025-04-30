@@ -14,17 +14,16 @@ import { get_supabase } from "./data_curator/src/supabase/get_supabase"
 
 const TARGET_REFRESH_RATE = 30 // Hz
 const supabase = get_supabase()
-const cached_data: GetItemsReturn<SimplifiedWComponentsValueById> = {
+const cached_model_data: GetItemsReturn<SimplifiedWComponentsValueById> = {
     value: {
         statev2: {
             "17edbf36-ad5b-4936-b3c5-7d803741c678": {
                 title: "Stock A1",
-                state: 10,
+                state: 5,
             },
             "b644e33f-c00f-4a50-acc4-f158e4e11be5": {
                 title: "Stock B1",
-                state: 2,
-                calculation: "max([b644e33f-c00f-4a50-acc4-f158e4e11be5], 0)",
+                state: 3,
             }
         },
         causal_link: {
@@ -59,12 +58,12 @@ const cached_data: GetItemsReturn<SimplifiedWComponentsValueById> = {
 
 
 export function DemoAppAddOneToStockV3 () {
-    const [data, set_data] = useState<GetItemsReturn<SimplifiedWComponentsValueById> | undefined>(cached_data)
+    const [model_data, set_model_data] = useState<GetItemsReturn<SimplifiedWComponentsValueById> | undefined>(cached_model_data)
 
     useEffect(() => {
-        if (data) return
+        if (model_data) return
 
-        const fetch_data = async () => {
+        const fetch_model_data = async () => {
             const ids = Object.values(IDS_v3)
             const wcomponents_response = await supabase_get_wcomponents({ supabase, base_id: undefined, all_bases: true, ids })
 
@@ -78,97 +77,44 @@ export function DemoAppAddOneToStockV3 () {
                 error: wcomponents_response.error,
             }
             // console .log(JSON.stringify(wcomponents_by_id_response.value,null,4))
-            set_data(wcomponents_by_id_response)
+            set_model_data(wcomponents_by_id_response)
         }
 
-        fetch_data()
-    }, [data])
+        fetch_model_data()
+    }, [model_data])
 
 
-    const model_stepper: WrappedModel | undefined = useMemo(() =>
+    const wrapped_model: WrappedModel | undefined = useMemo(() =>
     {
-        if (data === undefined || data.error) return undefined
+        if (model_data === undefined || model_data.error) return undefined
 
-        let wrapped_model
-
-        if (5 > Math.random())
-        {
-            wrapped_model = make_wrapped_model({target_refresh_rate: TARGET_REFRESH_RATE, data})
-        }
-        else
-        {
-            wrapped_model = make_wrapped_model({target_refresh_rate: TARGET_REFRESH_RATE})
-
-            const stock_a_value = data.value.statev2[IDS_v3.stock__state_a]
-            const stock_b_value = data.value.statev2[IDS_v3.stock__state_b]
-
-            wrapped_model.add_stock({
-                wcomponent_id: IDS_v3.stock__state_a,
-                title: "Stock A",
-                initial: stock_a_value?.state ?? 100,
-            })
-            wrapped_model.add_stock({
-                wcomponent_id: IDS_v3.stock__state_b,
-                title: "Stock B",
-                initial: stock_b_value?.state ?? 10,
-            })
-
-            const action_component__increase_a = wrapped_model.add_variable({
-                wcomponent_id: IDS_v3.variable__action_increase_a,
-                // name: IDS_v3.variable__action_increase_a,
-                value: 0,
-            })
-            const action_component__move_a_to_b = wrapped_model.add_variable({
-                wcomponent_id: IDS_v3.variable__action_move_a_to_b,
-                // name: IDS_v3.variable__action_move_a_to_b,
-                value: 0,
-            })
-
-            wrapped_model.add_flow({
-                wcomponent_id: IDS_v3.flow__flow_a_to_b,
-                title: "Flow A to B",
-                flow_rate: data.value.causal_link[IDS_v3.flow__flow_a_to_b]?.effect || "",
-                from_id: IDS_v3.stock__state_a,
-                to_id: IDS_v3.stock__state_b,
-                linked_ids: [IDS_v3.variable__action_move_a_to_b],
-            })
-            wrapped_model.add_flow({
-                wcomponent_id: IDS_v3.flow__flow_into_a,
-                title: "Flow into A",
-                flow_rate: data.value.causal_link[IDS_v3.flow__flow_into_a]?.effect || "",
-                from_id: undefined,
-                to_id: IDS_v3.stock__state_a,
-                linked_ids: [IDS_v3.variable__action_increase_a],
-            })
-        }
-
-        return wrapped_model
-    }, [data])
+        return make_wrapped_model({target_refresh_rate: TARGET_REFRESH_RATE, data: model_data})
+    }, [model_data])
 
 
-    if (model_stepper) return <AppAddOneToStockV3
-        model_stepper={model_stepper}
-        trigger_fetching_live_data={() => set_data(undefined)}
+    if (wrapped_model) return <AppAddOneToStockV3
+        wrapped_model={wrapped_model}
+        trigger_fetching_live_data={() => set_model_data(undefined)}
     />
-    if (data?.error) return <div>Error: {data.error.message}</div>
+    if (model_data?.error) return <div>Error: {model_data.error.message}</div>
     return <div>Loading...</div>
 }
 
 
-function AppAddOneToStockV3(props: { model_stepper: WrappedModel, trigger_fetching_live_data: () => void })
+function AppAddOneToStockV3(props: { wrapped_model: WrappedModel, trigger_fetching_live_data: () => void })
 {
-    const { model_stepper } = props
+    const { wrapped_model } = props
 
     // const created_at_date = "2024-05-28"
     // const created_at_time = "11:22:59"
     // http://localhost:5173/app/#wcomponents/17edbf36-ad5b-4936-b3c5-7d803741c678/&storage_location=1&subview_id=57721b40-5b26-4587-9cc3-614c6c366cae&view=knowledge&x=1218&y=-1538&z=0&zoom=68&sdate=2024-03-24&stime=22:42:19&cdate=2024-05-24&ctime=11:22:59
 
-    const [current_time, set_current_time] = useState(model_stepper.get_current_time())
-    const [stock_a, set_stock_a] = useState(model_stepper.get_latest_state_by_id(IDS_v3.stock__state_a))
-    const [stock_b, set_stock_b] = useState(model_stepper.get_latest_state_by_id(IDS_v3.stock__state_b))
+    const [current_time, set_current_time] = useState(wrapped_model.get_current_time())
+    const [stock_a, set_stock_a] = useState(wrapped_model.get_latest_state_by_id(IDS_v3.stock__state_a))
+    const [stock_b, set_stock_b] = useState(wrapped_model.get_latest_state_by_id(IDS_v3.stock__state_b))
 
 
-    useEffect(() => model_stepper.run_simulation({
+    useEffect(() => wrapped_model.run_simulation({
         on_simulation_step_completed: (result: SimulationStepResult) =>
         {
             set_current_time(result.current_time)
@@ -180,12 +126,12 @@ function AppAddOneToStockV3(props: { model_stepper: WrappedModel, trigger_fetchi
     }), [])
 
 
-    const action__increase_stock_a = useMemo(() => model_stepper.factory_trigger_action(
+    const action__increase_stock_a = useMemo(() => wrapped_model.factory_trigger_action(
         IDS_v3.variable__action_increase_a,
         TARGET_REFRESH_RATE
     ), [TARGET_REFRESH_RATE])
 
-    const action__move_a_to_b = useMemo(() => model_stepper.factory_trigger_action(
+    const action__move_a_to_b = useMemo(() => wrapped_model.factory_trigger_action(
         IDS_v3.variable__action_move_a_to_b,
         TARGET_REFRESH_RATE
     ), [TARGET_REFRESH_RATE])
