@@ -24,5 +24,5 @@ export const test_get_calculation_string_from_calculation_rows = describe.delay(
         value: "1 + [A]",
         id: -1,
     }])
-    test(result, "A <- 1 + 2\n1 + A", "Removes uuid if last name in the calculation.")
+    test(result, "A <- 1 + 2\n[10000000-0000-4000-a000-000000000000] <- 1 + A", "Does not remove uuid if last name in the calculation.  We leave the UUID so that simulationJS works correctly in assigning the value to the variable.  Previously this uuid was removed but not sure why.")
 })

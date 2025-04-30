@@ -60,7 +60,7 @@ export const test_get_wcomponents_values_by_id = describe.delay("get_wcomponents
         [wc3.id]: wc3,
     }
     let result = get_wcomponents_values_by_id(wcomponents_by_id)
-    test(result.statev2[wc1.id]?.calculation, "A <- 1 + 1\nA + 2", "Should remove the assignment when the last calculation assigns to the component id")
+    test(result.statev2[wc1.id]?.calculation, `A <- 1 + 1\n[${uuid1}] <- A + 2`, "Should not remove the assignment when the last calculation assigns to the component id")
     test(result.statev2[wc2.id]?.calculation, "A <- 1 + 1", "Should leave the assignment when the last calculation is assigning to something other than the component id")
     test(result.action[wc3.id]?.calculation, `${uuid2} <- [${uuid2}] + [${uuid3}]\n${uuid1} <- [${uuid2}] - [${uuid3}]`, "Should get correct calculation string for action")
     test(result.action[wc3.id]?.linked_ids, [uuid2, uuid3, uuid1], "Should get correct calculation string for action")
