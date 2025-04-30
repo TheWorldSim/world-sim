@@ -15,19 +15,20 @@ interface SimplifiedWComponentStateV2
     title: string
     state: number | string
     calculation?: string
+    linked_ids?: string[]
 }
 interface SimplifiedWComponentCausalLink
 {
     title: string
     effect: string
-    from_id: string | undefined
-    to_id: string | undefined
+    from_id?: string
+    to_id?: string
 }
 interface SimplifiedWComponentAction
 {
     title: string
     calculation: string
-    linked_ids: string[] | undefined
+    linked_ids?: string[]
     // trigger_type: "condition"
     // trigger_calculation: string
 }
@@ -70,7 +71,7 @@ export function get_wcomponents_values_by_id (composed_wcomponents_by_id: WCompo
 
         if (wcomponent_is_action(composed_wcomponent))
         {
-            const calculation = get_calculation_string_from_calculation_rows(composed_wcomponent.calculations)
+            const calculation = get_calculation_string_from_calculation_rows(composed_wcomponent.calculations, false)
             const linked_ids = Array.from(new Set(get_uuids_from_text(calculation)))
             // const trigger_calculation = wcomponent.trigger_calculations.join("\n") || ""
             // const trigger_type = "condition" //wcomponent.trigger_type
@@ -97,7 +98,7 @@ export function get_wcomponents_values_by_id (composed_wcomponents_by_id: WCompo
             sim_ms: now_ms,
         }).most_probable_VAP_set_values
 
-        const calculation: string | undefined = get_calculation_string_from_calculation_rows(composed_wcomponent.calculations)
+        const calculation = get_calculation_string_from_calculation_rows(composed_wcomponent.calculations, true)
 
         if (VAP_sets.length === 0 && !calculation) return
 
@@ -108,11 +109,13 @@ export function get_wcomponents_values_by_id (composed_wcomponents_by_id: WCompo
         // Note that currently the value of boolean's is a string of "True" or "False"
         if (typeof value === "boolean") return
 
+        const linked_ids = Array.from(new Set(get_uuids_from_text(calculation)))
         const value_obj: SimplifiedWComponentStateV2 = {
             title,
-            state: value || "",
+            state: value ?? "",
+            calculation,
+            linked_ids,
         }
-        if (calculation) value_obj.calculation = calculation
 
         value_by_id.statev2[uuid] = value_obj
     })

@@ -202,8 +202,8 @@ function _make_wrapped_model (model_config: ModelConfigStrict, run_sim_config: {
             initial,
             note: `${title || "no human readable name"}: ${wcomponent_id}`,
         })
-
         add_ids_to_map(stock._node.id, wcomponent_id)
+
         latest_model_results.values[stock._node.id] = initial
         latest_model_results.values[wcomponent_id] = initial
 
@@ -228,11 +228,11 @@ function _make_wrapped_model (model_config: ModelConfigStrict, run_sim_config: {
             value,
             note: `${title || "no human readable name"}: ${wcomponent_id}`,
         })
+        add_ids_to_map(variable._node.id, wcomponent_id)
 
         const nodes = linked_ids.map(id => get_node_from_id(id, true))
         nodes.forEach(node => model.Link(node, variable))
 
-        add_ids_to_map(variable._node.id, wcomponent_id)
         latest_model_results.values[variable._node.id] = value
         latest_model_results.values[wcomponent_id] = value
 
@@ -270,7 +270,6 @@ function _make_wrapped_model (model_config: ModelConfigStrict, run_sim_config: {
                 nonNegative: args.only_positive ?? true,
             }
         )
-
         add_ids_to_map(flow._node.id, wcomponent_id)
 
         const nodes = linked_ids.map(id => get_node_from_id(id, true))
@@ -299,11 +298,9 @@ function _make_wrapped_model (model_config: ModelConfigStrict, run_sim_config: {
             value: args.trigger_value,
             note: `${title || "no human readable name"}: ${wcomponent_id}`,
         })
-
         add_ids_to_map(action._node.id, wcomponent_id)
 
         const nodes = linked_ids.map(id => get_node_from_id(id, true))
-
         nodes.forEach(node => model.Link(node, action))
 
         // Add extra fields

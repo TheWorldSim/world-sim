@@ -5,7 +5,7 @@ import { get_double_at_mentioned_uuids_from_text } from "../data_curator/src/sha
 
 type VariableNameMap = {unsafe_name: string, safe_name: string}[]
 
-export function get_calculation_string_from_calculation_rows(calculations: PlainCalculationObject[] | undefined): string
+export function get_calculation_string_from_calculation_rows(calculations: PlainCalculationObject[] | undefined, last_assigned_uuid_removed: boolean): string
 {
     if (!calculations) return ""
 
@@ -21,14 +21,18 @@ export function get_calculation_string_from_calculation_rows(calculations: Plain
     let calculation_strs: string[] = []
     calculations.forEach((c, i) =>
     {
-        // Previously if the last calculation started with "@@" we would remove
-        // it.  It's not clear why we did this.  This has been removed for now.
-        // const is_last = i === calculations.length - 1
-        // if (is_last && c.name.startsWith("@@"))
-        // {
-        //     calculation_strs.push(replace_unsafe_names(c.value, variable_name_map))
-        //     return
-        // }
+        // If `last_assigned_uuid_removed` is true and the last calculation
+        // starts with "@@" we remove it.  This is removed for statev2
+        // which are transformed into simulationJS variables otherwise
+        // SimulationJS errors with "You cannot set the value of that primitive"
+        // when the calculation is run.  When it is an action we leave it so
+        // that the calculation is run correctly.
+        const is_last = i === calculations.length - 1
+        if (last_assigned_uuid_removed && is_last && c.name.startsWith("@@"))
+        {
+            calculation_strs.push(replace_unsafe_names(c.value, variable_name_map))
+            return
+        }
 
         calculation_strs.push(`${ensure_name_is_safe(c.name, variable_name_map)} <- ${replace_unsafe_names(c.value, variable_name_map)}`)
     })
