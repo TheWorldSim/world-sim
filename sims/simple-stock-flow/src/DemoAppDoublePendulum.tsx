@@ -10,6 +10,7 @@ import { wcomponent_has_VAP_sets, WComponentsById } from "./data_curator/src/wco
 import { get_composed_wcomponents_by_id } from "./data_curator/src/state/derived/get_composed_wcomponents_by_id"
 import { KnowledgeViewWComponentIdEntryMap } from "./data_curator/src/shared/interfaces/knowledge_view"
 import { get_created_at_ms } from "./data_curator/src/shared/utils_datetime/utils_datetime"
+import { dedent } from "./utils/string"
 
 
 const TARGET_REFRESH_RATE = 30 // Hz
@@ -71,64 +72,92 @@ const scenario_base: Scenario = {
     data: {
         value: {
             statev2: {
-                // [IDS__scenario_base.variable__g]: {
-                //     state: 9.81
-                // },
-
-                // [IDS__scenario_base.variable__pendulum_1_mass]: {
-                //     state: 1
-                // },
-                // [IDS__scenario_base.variable__pendulum_2_mass]: {
-                //     state: 1
-                // },
-                // [IDS__scenario_base.variable__pendulum_1_length]: {
-                //     state: 1.5
-                // },
-                // [IDS__scenario_base.variable__pendulum_2_length]: {
-                //     state: 1
-                // },
-                // [IDS__scenario_base.stock__pendulum_1_angle]: {
-                //     state: 1.5
-                // },
-                // [IDS__scenario_base.stock__pendulum_2_angle]: {
-                //     state: 1.5
-                // },
-
-                // [IDS__scenario_base.variable__pendulum_mass_ratio]: {
-                //     state: 0.5,
-                //     calculation: "[b30dda15-ef05-4c42-a392-7d515552d63b] / [297916db-1365-48ad-a8e1-44809a63a599]",
-                // },
-
-                // [IDS__scenario_base.stock__pendulum_1_angular_velocity]: {
-                //     state: 0
-                // },
-                // [IDS__scenario_base.variable__pendulum_1_angular_acceleration]: {
-                //     state: "",
-                //     calculation: "term1 <- -(([02d4a5f4-4abd-41a2-bb50-e68e358a3169]/[e34796cf-ab9e-47b8-9ea5-20cb00fb611d])*[86635a8b-f4f8-4489-8a02-b4f09c0a22ec])\nterm2 <- ((([02d4a5f4-4abd-41a2-bb50-e68e358a3169]*[56fcc4f1-29a9-4a97-b629-068b532ec19d])/[e34796cf-ab9e-47b8-9ea5-20cb00fb611d])*[892551e3-bb5b-4957-8104-6f49e578350a])\nterm1 + term2",
-                // },
-                // [IDS__scenario_base.stock__pendulum_2_angular_velocity]: {
-                //     state: 0,
-                // },
-                // [IDS__scenario_base.variable__pendulum_2_angular_acceleration]: {
-                //     state: "",
-                //     calculation: "term1 <- ([02d4a5f4-4abd-41a2-bb50-e68e358a3169]/[e34796cf-ab9e-47b8-9ea5-20cb00fb611d])*[86635a8b-f4f8-4489-8a02-b4f09c0a22ec]\nterm2a <- [02d4a5f4-4abd-41a2-bb50-e68e358a3169]/[b1448ce5-3015-4b78-ad34-24cbb0b85040]\nterm2b <- ([02d4a5f4-4abd-41a2-bb50-e68e358a3169] *[56fcc4f1-29a9-4a97-b629-068b532ec19d])/[b1448ce5-3015-4b78-ad34-24cbb0b85040]\nterm2c <- ([02d4a5f4-4abd-41a2-bb50-e68e358a3169]*[56fcc4f1-29a9-4a97-b629-068b532ec19d])/[e34796cf-ab9e-47b8-9ea5-20cb00fb611d]\nterm2 <- (term2a + term2b + term2c)*[892551e3-bb5b-4957-8104-6f49e578350a]\nterm1 - term2",
-                // },
+                "02d4a5f4-4abd-41a2-bb50-e68e358a3169": {
+                    "title": "g",
+                    "state": 9.81
+                },
+                "28c5c78a-3281-449c-b47b-6f094c15d337": {
+                    "title": "θ₁ Pendulum 1 angular velocity",
+                    "state": ""
+                },
+                "297916db-1365-48ad-a8e1-44809a63a599": {
+                    "title": "Pendulum 1 mass",
+                    "state": 1
+                },
+                "56fcc4f1-29a9-4a97-b629-068b532ec19d": {
+                    "title": "Pendulum mass ratio",
+                    "state": 0.5,
+                    "calculation": "[b30dda15-ef05-4c42-a392-7d515552d63b] / [297916db-1365-48ad-a8e1-44809a63a599]",
+                },
+                "83f8e273-0702-4bc1-8a84-83bc3c285e8d": {
+                    "title": "θ₂ Pendulum 2 angular acceleration",
+                    "state": "",
+                    "calculation": dedent(`
+                    term1 <- ([02d4a5f4-4abd-41a2-bb50-e68e358a3169]/[e34796cf-ab9e-47b8-9ea5-20cb00fb611d])*[86635a8b-f4f8-4489-8a02-b4f09c0a22ec]
+                    term2a <- [02d4a5f4-4abd-41a2-bb50-e68e358a3169]/[b1448ce5-3015-4b78-ad34-24cbb0b85040]
+                    term2b <- ([02d4a5f4-4abd-41a2-bb50-e68e358a3169] *[56fcc4f1-29a9-4a97-b629-068b532ec19d])/[b1448ce5-3015-4b78-ad34-24cbb0b85040]
+                    term2c <- ([02d4a5f4-4abd-41a2-bb50-e68e358a3169]*[56fcc4f1-29a9-4a97-b629-068b532ec19d])/[e34796cf-ab9e-47b8-9ea5-20cb00fb611d]
+                    term2 <- (term2a + term2b + term2c)*[892551e3-bb5b-4957-8104-6f49e578350a]
+                    term1 - term2
+                    `),
+                },
+                "8455647b-e016-476a-a6ae-a049deb8bdbb": {
+                    "title": "θ₂ Pendulum 2 angular velocity",
+                    "state": ""
+                },
+                "86635a8b-f4f8-4489-8a02-b4f09c0a22ec": {
+                    "title": "θ₁ Pendulum 1 angle",
+                    "state": 0.1
+                },
+                "892551e3-bb5b-4957-8104-6f49e578350a": {
+                    "title": "θ₂ Pendulum 2 angle",
+                    "state": 0.1
+                },
+                "b1448ce5-3015-4b78-ad34-24cbb0b85040": {
+                    "title": "Pendulum 2 length",
+                    "state": 0.5
+                },
+                "b264f09c-9a68-489d-b545-44176d1c866b": {
+                    "title": "θ₁ Pendulum 1 angular acceleration",
+                    "state": "",
+                    "calculation": dedent(`
+                    term1 <- -(([02d4a5f4-4abd-41a2-bb50-e68e358a3169]/[e34796cf-ab9e-47b8-9ea5-20cb00fb611d])*[86635a8b-f4f8-4489-8a02-b4f09c0a22ec])
+                    term2 <- ((([02d4a5f4-4abd-41a2-bb50-e68e358a3169]*[56fcc4f1-29a9-4a97-b629-068b532ec19d])/[e34796cf-ab9e-47b8-9ea5-20cb00fb611d])*[892551e3-bb5b-4957-8104-6f49e578350a])
+                    term1 + term2
+                    `),
+                },
+                "b30dda15-ef05-4c42-a392-7d515552d63b": {
+                    "title": "Pendulum 2 mass",
+                    "state": 0.5
+                },
+                "e34796cf-ab9e-47b8-9ea5-20cb00fb611d": {
+                    "title": "Pendulum 1 length",
+                    "state": 1
+                }
             },
             causal_link: {
-                // [IDS__scenario_base.flow__change_in_pendulum_2_angle]: {
-                //     effect: "[8455647b-e016-476a-a6ae-a049deb8bdbb]"
-                // },
-                // [IDS__scenario_base.flow__change_in_pendulum_2_angular_velocity]: {
-                //     effect: "[83f8e273-0702-4bc1-8a84-83bc3c285e8d]"
-                // },
-                // [IDS__scenario_base.flow__change_in_pendulum_1_angular_velocity]: {
-                //     effect: "[b264f09c-9a68-489d-b545-44176d1c866b]"
-                // },
-                // [IDS__scenario_base.flow__change_in_pendulum_1_angle]: {
-                //     effect: "[28c5c78a-3281-449c-b47b-6f094c15d337]"
-                // }
+                "562bf403-8c34-4f28-b059-3754e9f830ac": {
+                    "title": "Change in @@892551e3-bb5b-4957-8104-6f49e578350a",
+                    "effect": "[8455647b-e016-476a-a6ae-a049deb8bdbb]",
+                    "to_id": "892551e3-bb5b-4957-8104-6f49e578350a",
+                },
+                "95ea2714-7955-4e9f-be96-5ac1fcfe9e93": {
+                    "title": "Change in @@8455647b-e016-476a-a6ae-a049deb8bdbb",
+                    "effect": "[83f8e273-0702-4bc1-8a84-83bc3c285e8d]",
+                    "to_id": "8455647b-e016-476a-a6ae-a049deb8bdbb",
+                },
+                "d606c6f2-1774-4e5b-a4c6-2116c99e0e91": {
+                    "title": "Change in @@28c5c78a-3281-449c-b47b-6f094c15d337",
+                    "effect": "[b264f09c-9a68-489d-b545-44176d1c866b]",
+                    "to_id": "28c5c78a-3281-449c-b47b-6f094c15d337",
+                },
+                "f7daf461-16ad-4d4a-9b3f-e95247302681": {
+                    "title": "Change in @@86635a8b-f4f8-4489-8a02-b4f09c0a22ec",
+                    "effect": "[28c5c78a-3281-449c-b47b-6f094c15d337]",
+                    "to_id": "86635a8b-f4f8-4489-8a02-b4f09c0a22ec",
+                }
             },
-            action: {}
+            action: {},
         },
         error: undefined,
     },
@@ -213,6 +242,7 @@ export function DemoAppDoublePendulum () {
                 })
                 const wcomponents_values_by_id = get_wcomponents_values_by_id(composed_wcomponents_by_id)
 
+                // console .log(JSON.stringify(scenario,null,4))
                 scenario.data = {
                     value: wcomponents_values_by_id,
                     error: wcomponents_response.error,
@@ -294,7 +324,10 @@ export function DemoAppDoublePendulum () {
         const variable__pendulum_mass_ratio = wrapped_model.add_variable({
             wcomponent_id: IDS__scenario_base.variable__pendulum_mass_ratio,
             value: variable__pendulum_mass_ratio_value,
-            linked_ids: [IDS__scenario_base.variable__pendulum_1_mass, IDS__scenario_base.variable__pendulum_2_mass],
+            linked_ids: [
+                IDS__scenario_base.variable__pendulum_1_mass,
+                IDS__scenario_base.variable__pendulum_2_mass,
+            ],
         })
 
         const stock__pendulum_1_angular_velocity = wrapped_model.add_stock({
@@ -474,9 +507,20 @@ function AppDoublePendulum (props: { scenarios: Scenario[], selected_scenario: S
             >
                 (DataCurator)
             </a>
-            but I think this current implementation is not correct as when it
-            is left to run it increases in speed (energy) instead of maintaining
-            a constant energy.
+            but this current implementation is broken as:
+            <ol style={{ width: "50%", margin: "0 auto", textAlign: "left" }}>
+                <li>
+                    swapping from the "base scenario" to "scenario 2" shows that
+                    when the pendulum goes
+                    past the vertical position it does not start accelerating
+                    back down to the ground but instead it slows down and
+                    reverses direction.
+                </li>
+                <li>
+                    when it is left to run it increases in speed (energy)
+                    instead of maintaining a constant energy.
+                </li>
+            </ol>
             <br />
             <div>
                 {/* <label htmlFor="options">Choose a scenario:</label> */}

@@ -38,7 +38,6 @@ function fixture_model_data__single_stock__action_variable()
                 "c31be0d8-6ce5-4db2-8b4b-1d13ed48a869": {
                     title: "Flow into @@17edbf36-ad5b-4936-b3c5-7d803741c678",
                     effect: "[8ecb8d21-4803-4028-9341-b7cd59b56cda]",
-                    from_id: undefined,
                     to_id: "17edbf36-ad5b-4936-b3c5-7d803741c678",
                 }
             },
@@ -46,7 +45,6 @@ function fixture_model_data__single_stock__action_variable()
                 "8ecb8d21-4803-4028-9341-b7cd59b56cda": {
                     title: "Increase stock A by 1",
                     calculation: "",
-                    linked_ids: undefined,
                 }
             }
         },

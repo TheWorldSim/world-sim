@@ -78,7 +78,7 @@ export function DemoAppAddOneToStockV4 () {
                 value: wcomponents_values_by_id,
                 error: wcomponents_response.error,
             }
-            console .log(JSON.stringify(wcomponents_by_id_response.value,null,4))
+            // console .log(JSON.stringify(wcomponents_by_id_response.value,null,4))
             set_model_data(wcomponents_by_id_response)
         }
 

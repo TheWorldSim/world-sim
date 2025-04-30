@@ -11,6 +11,7 @@ export const test_get_wcomponents_values_by_id = describe.delay("get_wcomponents
     const uuid2 = uuid_v4_for_tests(2)
     const uuid3 = uuid_v4_for_tests(3)
     const uuid4 = uuid_v4_for_tests(4)
+    const uuid100 = uuid_v4_for_tests(100)
 
     const wc1: WComponentNodeStateV2 = {
         id: uuid1,
@@ -57,7 +58,7 @@ export const test_get_wcomponents_values_by_id = describe.delay("get_wcomponents
         type: "action",
         base_id: -1,
         created_at: new Date(),
-        title: "An action",
+        title: `An action effecting @@${uuid1} and @@${uuid2}, unknown @@${uuid100}`,
         description: "",
         calculations: [
             { id: 1, name: uuid2, value: `@@${uuid2} + @@${uuid4}` },
@@ -83,4 +84,5 @@ export const test_get_wcomponents_values_by_id = describe.delay("get_wcomponents
 
     test(result.action[wc4.id]?.calculation, `${uuid2} <- [${uuid2}] + [${uuid4}]\n${uuid1} <- [${uuid2}] - [${uuid4}]`, "Should leave the assignment when the last calculation is in an action and is assigning to a component id")
     test(result.action[wc4.id]?.linked_ids, [uuid2, uuid4, uuid1], "Should get correct list of linked ids for an action")
+    // test(result.action[wc4.id]?.title, `An action effecting State 1 and State 2, unknown @@${uuid100}`, "Should replace uuids in the title when known")
 })

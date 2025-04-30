@@ -36,7 +36,6 @@ const cached_model_data: GetItemsReturn<SimplifiedWComponentsValueById> = {
             "c31be0d8-6ce5-4db2-8b4b-1d13ed48a869": {
                 title: "Flow into @@17edbf36-ad5b-4936-b3c5-7d803741c678",
                 effect: "[8ecb8d21-4803-4028-9341-b7cd59b56cda]",
-                from_id: undefined,
                 to_id: "17edbf36-ad5b-4936-b3c5-7d803741c678",
             }
         },
@@ -44,12 +43,10 @@ const cached_model_data: GetItemsReturn<SimplifiedWComponentsValueById> = {
             "2dc650ae-8458-47b6-be0e-6ad1cab3cd4d": {
                 title: "Move A1 to B1",
                 calculation: "",
-                linked_ids: undefined,
             },
             "8ecb8d21-4803-4028-9341-b7cd59b56cda": {
                 title: "Increase stock A1",
                 calculation: "",
-                linked_ids: undefined,
             }
         }
     },
