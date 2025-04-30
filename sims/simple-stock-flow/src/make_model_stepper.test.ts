@@ -66,11 +66,11 @@ function fixture_model_data__single_stock__action_variable()
 
     function make_model_manually(wrapped_model: WrappedModel)
     {
-        const stock_a_value = data.value.statev2[IDs.stock__state_a]
+        const stock_a_value = data.value.statev2[IDs.stock__state_a]!
         wrapped_model.add_stock({
             wcomponent_id: IDs.stock__state_a,
-            title: "Stock A",
-            initial: stock_a_value?.state!,
+            title: stock_a_value.title,
+            initial: stock_a_value.state,
         })
 
         wrapped_model.add_variable({
@@ -254,7 +254,7 @@ const model_config: ModelConfig = {
 
 export const test_make_model_stepper = describe.delay("make_model_stepper", async () =>
 {
-    async function run_simulation(wrapped_model: WrappedModel)
+    async function run_simulation(wrapped_model: WrappedModel, change_in_value?: number)
     {
         const run_simulation = create_deferred_promise<{ step_results: SimulationStepResult[], simulation_result: ExtendedSimulationResult }>()
 
@@ -264,7 +264,7 @@ export const test_make_model_stepper = describe.delay("make_model_stepper", asyn
 
             if (step_results.length === 1)
             {
-                wrapped_model.factory_trigger_action(IDs.action__change_a)()
+                wrapped_model.factory_trigger_action(IDs.action__change_a)(change_in_value)
             }
 
             return undefined
@@ -280,14 +280,19 @@ export const test_make_model_stepper = describe.delay("make_model_stepper", asyn
     }
 
 
-    function assess_results(results: {
-        step_results: SimulationStepResult[];
-        simulation_result: ExtendedSimulationResult;
-    }, get_values: (step_result: SimulationStepResult) => {
-        stock_a: ModelValue | undefined;
-        action_change_a: ModelValue | undefined;
-        flow_into_a: ModelValue | undefined;
-    }, flow_should_be_present: boolean)
+    function assess_results(
+        results: {
+            step_results: SimulationStepResult[];
+            simulation_result: ExtendedSimulationResult;
+        },
+        get_values: (step_result: SimulationStepResult) => {
+            stock_a: ModelValue | undefined;
+            action_change_a: ModelValue | undefined;
+            flow_into_a: ModelValue | undefined;
+        },
+        flow_should_be_present: boolean,
+        expected_change_in_value: number = 1,
+    )
     {
         test(results.step_results.length, 2, "step_results count, note that we miss the initial state and the final step & state, hence being two less than the number of time steps in the simulation")
         test(results.simulation_result._data.times.length, 4, "number of simulation time steps")
@@ -305,9 +310,9 @@ export const test_make_model_stepper = describe.delay("make_model_stepper", asyn
         test(step_result.current_step, 2, "step result 2, current_step")
         test(step_result.current_time, 12, "step result 2, current_time")
         test(get_values(step_result), {
-            stock_a: 10 + (flow_should_be_present ? 1 : 0),
-            action_change_a: 1,
-            flow_into_a: flow_should_be_present ? 1 : undefined,
+            stock_a: 10 + (flow_should_be_present ? expected_change_in_value : 0),
+            action_change_a: expected_change_in_value,
+            flow_into_a: flow_should_be_present ? expected_change_in_value : undefined,
         }, "step result 2 values")
         test(results.step_results.length, 0, "should have assessed all step results")
 
@@ -315,7 +320,7 @@ export const test_make_model_stepper = describe.delay("make_model_stepper", asyn
         test(step_result.current_step, 3, "step result 3, current_step")
         test(step_result.current_time, 13, "step result 3, current_time")
         test(get_values(step_result), {
-            stock_a: 11,
+            stock_a: 10 + expected_change_in_value,
             action_change_a: 0,
             flow_into_a: flow_should_be_present ? 0 : undefined,
         }, "step result 3 values")
@@ -348,6 +353,18 @@ export const test_make_model_stepper = describe.delay("make_model_stepper", asyn
             const results = await run_simulation(wrapped_model)
             assess_results(results, get_values, true)
         })
+
+        await describe("make model automatically, increase by a different amount", async () =>
+        {
+            const wrapped_model = make_wrapped_model({
+                target_refresh_rate: 100,
+                data,
+            }, model_config)
+
+            const change_in_value = 5
+            const results = await run_simulation(wrapped_model, change_in_value)
+            assess_results(results, get_values, true, change_in_value)
+        })
     })
 
 
@@ -376,6 +393,18 @@ export const test_make_model_stepper = describe.delay("make_model_stepper", asyn
 
             const results = await run_simulation(wrapped_model)
             assess_results(results, get_values, false)
+        })
+
+        await describe("make model automatically, increase by a different amount", async () =>
+        {
+            const wrapped_model = make_wrapped_model({
+                target_refresh_rate: 100,
+                data,
+            }, model_config)
+
+            const change_in_value = 5
+            const results = await run_simulation(wrapped_model, change_in_value)
+            assess_results(results, get_values, false, change_in_value)
         })
     })
 
