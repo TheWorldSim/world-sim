@@ -16,6 +16,7 @@ interface SimplifiedWComponentStateV2
     state: number | string
     calculation?: string
     linked_ids?: string[]
+    simulationjs_variable?: boolean
 }
 interface SimplifiedWComponentCausalLink
 {
@@ -23,6 +24,7 @@ interface SimplifiedWComponentCausalLink
     effect: string
     from_id?: string
     to_id?: string
+    simulationjs_only_positive?: boolean
 }
 interface SimplifiedWComponentAction
 {
@@ -52,7 +54,7 @@ export function get_wcomponents_values_by_id (composed_wcomponents_by_id: WCompo
 
     Object.entries(composed_wcomponents_by_id).forEach(([uuid, composed_wcomponent]) =>
     {
-        const { title } = composed_wcomponent
+        const { title, description } = composed_wcomponent
 
         if (wcomponent_is_causal_link(composed_wcomponent))
         {
@@ -60,11 +62,14 @@ export function get_wcomponents_values_by_id (composed_wcomponents_by_id: WCompo
             const effect_uuids = get_double_at_mentioned_uuids_from_text(effect)
             effect = normalise_calculation_ids(effect, effect_uuids)
 
+            const simulationjs_only_positive = !description.includes("simulationjs:allow_negative")
+
             value_by_id.causal_link[uuid] = {
                 title,
                 effect,
                 from_id: composed_wcomponent.from_id || undefined,
                 to_id: composed_wcomponent.to_id || undefined,
+                simulationjs_only_positive,
             }
             return
         }
@@ -110,11 +115,13 @@ export function get_wcomponents_values_by_id (composed_wcomponents_by_id: WCompo
         if (typeof value === "boolean") return
 
         const linked_ids = Array.from(new Set(get_uuids_from_text(calculation)))
+        const simulationjs_variable = description.includes("simulationjs:variable")
         const value_obj: SimplifiedWComponentStateV2 = {
             title,
             state: value ?? "",
             calculation,
             linked_ids,
+            simulationjs_variable,
         }
 
         value_by_id.statev2[uuid] = value_obj

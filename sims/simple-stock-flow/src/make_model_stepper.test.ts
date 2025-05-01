@@ -249,6 +249,7 @@ const model_config: ModelConfig = {
     timeLength: 3,
     timePause: 1,
 }
+const model_config5 = {...model_config, timeLength: 5}
 
 export const test_make_model_stepper = describe.delay("make_model_stepper", async () =>
 {
@@ -498,8 +499,6 @@ export const test_make_model_stepper = describe.delay("make_model_stepper", asyn
     {
         const { data, get_values, make_model_manually } = fixture_model_data__two_stocks__action_calc()
 
-        const model_config5 = {...model_config, timeLength: 5}
-
         await describe("manually make model", async () =>
         {
             const wrapped_model = make_wrapped_model({
@@ -521,6 +520,145 @@ export const test_make_model_stepper = describe.delay("make_model_stepper", asyn
 
             const results = await run_two_stocks_simulation(wrapped_model)
             assess_results_for_two_stocks(results, get_values)
+        })
+    })
+
+
+    function fixture_model_data__state_as_stock_and_variable()
+    {
+        const dam_height = 3
+        const dam_area = 20
+        const dam_width = 10
+        const data: GetItemsReturn<SimplifiedWComponentsValueById> = {
+            value: {
+                statev2: {
+                    "20000000-0000-4000-a000-000000000000":
+                    {
+                        title: "Water height",
+                        state: "",
+                        calculation: `[10000000-0000-4000-a000-000000000000]/${dam_area}`,
+                        linked_ids: [
+                            "10000000-0000-4000-a000-000000000000",
+                        ],
+                        simulationjs_variable: true,
+                    },
+                    // This is placed after the variable to ensure that this is
+                    // created before the variable to avoid the error
+                    // "Error: Node not found for id: "10000000-0000-4000-a000-000000000000""
+                    "10000000-0000-4000-a000-000000000000":
+                    {
+                        title: "Water in dam",
+                        state: 100,
+                    },
+                },
+                causal_link: {
+                    "30000000-0000-4000-a000-000000000000":
+                    {
+                        title: "Flow out of dam over wall",
+                        effect: `MAX([20000000-0000-4000-a000-000000000000]-${dam_height},0)*${dam_width}`,
+                        from_id: "10000000-0000-4000-a000-000000000000",
+                    },
+                },
+                action: {},
+            },
+            error: undefined,
+        }
+
+        function get_values(step_result: SimulationStepResult)
+        {
+            return {
+                stock_water_in_dam: step_result.values["10000000-0000-4000-a000-000000000000"],
+                variable_water_height: step_result.values["20000000-0000-4000-a000-000000000000"],
+                flow_out_of_dam_over_wall: step_result.values["30000000-0000-4000-a000-000000000000"],
+            }
+        }
+
+        return { data, get_values }
+    }
+
+
+    async function run_state_as_stock_and_variable_model(wrapped_model: WrappedModel)
+    {
+        const run_simulation = create_deferred_promise<{ step_results: SimulationStepResult[], simulation_result: ExtendedSimulationResult }>()
+
+        const step_results: SimulationStepResult[] = []
+        const on_simulation_step_completed: OnSimulationStepCompletedFunction = step_result => {
+            step_results.push(step_result)
+            return undefined
+        }
+
+        wrapped_model.run_simulation({
+            on_simulation_step_completed,
+            on_simulation_completed: simulation_result => run_simulation.resolve({ step_results, simulation_result }),
+        })
+
+        const results = await run_simulation.promise
+        return results
+    }
+
+
+    await describe("state wcomponents as SimulationJS stocks and variables", async () =>
+    {
+        const { data, get_values } = fixture_model_data__state_as_stock_and_variable()
+
+        await describe("make model automatically", async () =>
+        {
+            const wrapped_model = make_wrapped_model({
+                target_refresh_rate: 100,
+                data,
+            }, model_config5)
+
+            const results = await run_state_as_stock_and_variable_model(wrapped_model)
+
+            test(results.step_results.length, 4, "step_results count, note that we miss the initial state and the final step & state, hence being two less than the number of time steps in the simulation")
+            test(results.simulation_result._data.times.length, 6, "number of simulation time steps")
+
+            let step_result: SimulationStepResult = results.step_results.shift()!
+            test(step_result.current_step, 1, "step result 1, current_step")
+            test(step_result.current_time, 11, "step result 1, current_time")
+            test(get_values(step_result), {
+                stock_water_in_dam: 80,
+                variable_water_height: 4,
+                flow_out_of_dam_over_wall: 10,
+            }, "step result 1 values")
+
+            step_result = results.step_results.shift()!
+            test(step_result.current_step, 2, "step result 2, current_step")
+            test(step_result.current_time, 12, "step result 2, current_time")
+            test(get_values(step_result), {
+                stock_water_in_dam: 70,
+                variable_water_height: 3.5,
+                flow_out_of_dam_over_wall: 5,
+            }, "step result 2 values")
+
+            step_result = results.step_results.shift()!
+            test(step_result.current_step, 3, "step result 3, current_step")
+            test(step_result.current_time, 13, "step result 3, current_time")
+            test(get_values(step_result), {
+                stock_water_in_dam: 65,
+                variable_water_height: 3.25,
+                flow_out_of_dam_over_wall: 2.5,
+            }, "step result 3 values")
+
+            step_result = results.step_results.shift()!
+            test(step_result.current_step, 4, "step result 4, current_step")
+            test(step_result.current_time, 14, "step result 4, current_time")
+            test(get_values(step_result), {
+                stock_water_in_dam: 62.5,
+                variable_water_height: 3.125,
+                flow_out_of_dam_over_wall: 1.25,
+            }, "step result 4 values")
+
+            test(results.step_results.length, 0, "should have assessed all step results")
+
+            step_result = results.simulation_result
+            test(step_result.current_step, 5, "step result 5, current_step")
+            test(step_result.current_time, 15, "step result 5, current_time")
+            test(get_values(step_result), {
+                stock_water_in_dam: 61.25,
+                variable_water_height: 3.0625,
+                flow_out_of_dam_over_wall: 0.625,
+            }, "step result 5 values")
         })
     })
 })

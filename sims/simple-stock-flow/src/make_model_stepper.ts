@@ -229,9 +229,7 @@ function _make_wrapped_model (model_config: ModelConfigStrict, run_sim_config: {
             note: `${title || "no human readable name"}: ${wcomponent_id}`,
         })
         add_ids_to_map(variable._node.id, wcomponent_id)
-
-        const nodes = linked_ids.map(id => get_node_from_id(id, true))
-        nodes.forEach(node => model.Link(node, variable))
+        register_links(variable, linked_ids)
 
         latest_model_results.values[variable._node.id] = value
         latest_model_results.values[wcomponent_id] = value
@@ -271,9 +269,7 @@ function _make_wrapped_model (model_config: ModelConfigStrict, run_sim_config: {
             }
         )
         add_ids_to_map(flow._node.id, wcomponent_id)
-
-        const nodes = linked_ids.map(id => get_node_from_id(id, true))
-        nodes.forEach(node => model.Link(node, flow))
+        register_links(flow, linked_ids)
 
         // Add extra fields
         const flow_extra: SimulationComponentExtra = {
@@ -299,9 +295,7 @@ function _make_wrapped_model (model_config: ModelConfigStrict, run_sim_config: {
             note: `${title || "no human readable name"}: ${wcomponent_id}`,
         })
         add_ids_to_map(action._node.id, wcomponent_id)
-
-        const nodes = linked_ids.map(id => get_node_from_id(id, true))
-        nodes.forEach(node => model.Link(node, action))
+        register_links(action, linked_ids)
 
         // Add extra fields
         const action_extra: SimulationComponentExtra = {
@@ -312,6 +306,32 @@ function _make_wrapped_model (model_config: ModelConfigStrict, run_sim_config: {
         console.debug(`added action ${action_extra.name} with id: ${action_extra._node.id}`)
 
         return action_extra
+    }
+
+    const links_to_add: {node: SimulationComponent, linked_ids: string[]}[] = []
+    function register_links (node: SimulationComponent, linked_ids: string[])
+    {
+        links_to_add.push({ node, linked_ids })
+    }
+
+    /**
+     * Call this function after all the components have been added to the model.
+     * It will add the links between the components.
+     * This is done in a separate function to avoid adding links while the
+     * components are being added, which can cause issues with the order of
+     * execution if a link is being attempted to be added for a component which
+     * has yet to be added to the model.
+     * If you do not call this function explicitly, it will be called when the
+     * model is first simulated with `run_simulation`.
+     */
+    function add_links ()
+    {
+        links_to_add.forEach(({ node, linked_ids }) =>
+        {
+            const nodes = linked_ids.map(id => get_node_from_id(id, true))
+            nodes.forEach(linked_node => model.Link(linked_node, node))
+        })
+        links_to_add.length = 0
     }
 
 
@@ -397,6 +417,7 @@ function _make_wrapped_model (model_config: ModelConfigStrict, run_sim_config: {
     {
         if (simulation_cancelled) throw new Error("Can not yet restart a cancelled simulation")
         if (model_simulation_started) throw new Error("Can not start an already started simulation")
+        add_links()
 
         console .log(`Starting simulation running at ${target_refresh_rate} Hz`)
         model_simulation_started = true
@@ -494,6 +515,7 @@ function _make_wrapped_model (model_config: ModelConfigStrict, run_sim_config: {
         add_variable,
         add_flow,
         add_action,
+        add_links,
 
         // extract_step_result,
         // get_ids_map: () => map_between_model_and_wcomponent_id,
@@ -539,17 +561,30 @@ function add_model_components (wrapped_model: WrappedModel, data?: GetItemsRetur
 {
     if (!data) return
 
-    const stocks = data.value.statev2
+    const statev2 = data.value.statev2
     const actions = data.value.action
     const flows = data.value.causal_link
 
-    Object.entries(stocks).forEach(([id, stock]) =>
+    Object.entries(statev2).forEach(([id, statev2]) =>
     {
-        wrapped_model.add_stock({
-            wcomponent_id: id,
-            title: stock.title,
-            initial: stock.state,
-        })
+        if (statev2.simulationjs_variable)
+        {
+            const value = statev2.state === 0 ? 0 : (statev2.state || statev2.calculation || "")
+            wrapped_model.add_variable({
+                wcomponent_id: id,
+                title: statev2.title,
+                value,
+                linked_ids: statev2.linked_ids,
+            })
+        }
+        else
+        {
+            wrapped_model.add_stock({
+                wcomponent_id: id,
+                title: statev2.title,
+                initial: statev2.state,
+            })
+        }
     })
 
     Object.entries(actions).forEach(([id, action]) =>
@@ -591,6 +626,10 @@ function add_model_components (wrapped_model: WrappedModel, data?: GetItemsRetur
             from_id: flow.from_id,
             to_id: flow.to_id,
             linked_ids,
+            only_positive: flow.simulationjs_only_positive,
         })
     })
+
+    // Call this now so that any error is surfaced as soon as possible
+    wrapped_model.add_links()
 }

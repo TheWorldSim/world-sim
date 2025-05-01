@@ -74,20 +74,27 @@ const scenario_base: Scenario = {
             statev2: {
                 "02d4a5f4-4abd-41a2-bb50-e68e358a3169": {
                     "title": "g",
-                    "state": 9.81
+                    "state": 9.81,
+                    "simulationjs_variable": true,
                 },
                 "28c5c78a-3281-449c-b47b-6f094c15d337": {
                     "title": "θ₁ Pendulum 1 angular velocity",
-                    "state": ""
+                    "state": "",
                 },
                 "297916db-1365-48ad-a8e1-44809a63a599": {
                     "title": "Pendulum 1 mass",
-                    "state": 1
+                    "state": 1,
+                    "simulationjs_variable": true,
                 },
                 "56fcc4f1-29a9-4a97-b629-068b532ec19d": {
                     "title": "Pendulum mass ratio",
                     "state": 0.5,
                     "calculation": "[b30dda15-ef05-4c42-a392-7d515552d63b] / [297916db-1365-48ad-a8e1-44809a63a599]",
+                    "linked_ids": [
+                        "b30dda15-ef05-4c42-a392-7d515552d63b",
+                        "297916db-1365-48ad-a8e1-44809a63a599",
+                    ],
+                    "simulationjs_variable": true,
                 },
                 "83f8e273-0702-4bc1-8a84-83bc3c285e8d": {
                     "title": "θ₂ Pendulum 2 angular acceleration",
@@ -100,22 +107,32 @@ const scenario_base: Scenario = {
                     term2 <- (term2a + term2b + term2c)*[892551e3-bb5b-4957-8104-6f49e578350a]
                     term1 - term2
                     `),
+                    "linked_ids": [
+                        "02d4a5f4-4abd-41a2-bb50-e68e358a3169",
+                        "e34796cf-ab9e-47b8-9ea5-20cb00fb611d",
+                        "86635a8b-f4f8-4489-8a02-b4f09c0a22ec",
+                        "b1448ce5-3015-4b78-ad34-24cbb0b85040",
+                        "56fcc4f1-29a9-4a97-b629-068b532ec19d",
+                        "892551e3-bb5b-4957-8104-6f49e578350a",
+                    ],
+                    "simulationjs_variable": true,
                 },
                 "8455647b-e016-476a-a6ae-a049deb8bdbb": {
                     "title": "θ₂ Pendulum 2 angular velocity",
-                    "state": ""
+                    "state": "",
                 },
                 "86635a8b-f4f8-4489-8a02-b4f09c0a22ec": {
                     "title": "θ₁ Pendulum 1 angle",
-                    "state": 0.1
+                    "state": 0.1,
                 },
                 "892551e3-bb5b-4957-8104-6f49e578350a": {
                     "title": "θ₂ Pendulum 2 angle",
-                    "state": 0.1
+                    "state": 0.1,
                 },
                 "b1448ce5-3015-4b78-ad34-24cbb0b85040": {
                     "title": "Pendulum 2 length",
-                    "state": 0.5
+                    "state": 0.5,
+                    "simulationjs_variable": true,
                 },
                 "b264f09c-9a68-489d-b545-44176d1c866b": {
                     "title": "θ₁ Pendulum 1 angular acceleration",
@@ -125,14 +142,24 @@ const scenario_base: Scenario = {
                     term2 <- ((([02d4a5f4-4abd-41a2-bb50-e68e358a3169]*[56fcc4f1-29a9-4a97-b629-068b532ec19d])/[e34796cf-ab9e-47b8-9ea5-20cb00fb611d])*[892551e3-bb5b-4957-8104-6f49e578350a])
                     term1 + term2
                     `),
+                    "linked_ids": [
+                        "02d4a5f4-4abd-41a2-bb50-e68e358a3169",
+                        "e34796cf-ab9e-47b8-9ea5-20cb00fb611d",
+                        "86635a8b-f4f8-4489-8a02-b4f09c0a22ec",
+                        "56fcc4f1-29a9-4a97-b629-068b532ec19d",
+                        "892551e3-bb5b-4957-8104-6f49e578350a",
+                    ],
+                    "simulationjs_variable": true,
                 },
                 "b30dda15-ef05-4c42-a392-7d515552d63b": {
                     "title": "Pendulum 2 mass",
-                    "state": 0.5
+                    "state": 0.5,
+                    "simulationjs_variable": true,
                 },
                 "e34796cf-ab9e-47b8-9ea5-20cb00fb611d": {
                     "title": "Pendulum 1 length",
-                    "state": 1
+                    "state": 1,
+                    "simulationjs_variable": true,
                 }
             },
             causal_link: {
@@ -140,21 +167,25 @@ const scenario_base: Scenario = {
                     "title": "Change in @@892551e3-bb5b-4957-8104-6f49e578350a",
                     "effect": "[8455647b-e016-476a-a6ae-a049deb8bdbb]",
                     "to_id": "892551e3-bb5b-4957-8104-6f49e578350a",
+                    "simulationjs_only_positive": false,
                 },
                 "95ea2714-7955-4e9f-be96-5ac1fcfe9e93": {
                     "title": "Change in @@8455647b-e016-476a-a6ae-a049deb8bdbb",
                     "effect": "[83f8e273-0702-4bc1-8a84-83bc3c285e8d]",
                     "to_id": "8455647b-e016-476a-a6ae-a049deb8bdbb",
+                    "simulationjs_only_positive": false,
                 },
                 "d606c6f2-1774-4e5b-a4c6-2116c99e0e91": {
                     "title": "Change in @@28c5c78a-3281-449c-b47b-6f094c15d337",
                     "effect": "[b264f09c-9a68-489d-b545-44176d1c866b]",
                     "to_id": "28c5c78a-3281-449c-b47b-6f094c15d337",
+                    "simulationjs_only_positive": false,
                 },
                 "f7daf461-16ad-4d4a-9b3f-e95247302681": {
                     "title": "Change in @@86635a8b-f4f8-4489-8a02-b4f09c0a22ec",
                     "effect": "[28c5c78a-3281-449c-b47b-6f094c15d337]",
                     "to_id": "86635a8b-f4f8-4489-8a02-b4f09c0a22ec",
+                    "simulationjs_only_positive": false,
                 }
             },
             action: {},
@@ -263,137 +294,13 @@ export function DemoAppDoublePendulum () {
     {
         if (selected_scenario === undefined || selected_scenario.data.error) return undefined
 
-        const scenario_data = selected_scenario.data
-
-
-        const variable__g_value = scenario_data.value.statev2[IDS__scenario_base.variable__g]!.state
-        const variable__pendulum_1_mass_value = scenario_data.value.statev2[IDS__scenario_base.variable__pendulum_1_mass]!.state
-        const variable__pendulum_2_mass_value = scenario_data.value.statev2[IDS__scenario_base.variable__pendulum_2_mass]!.state
-        const variable__pendulum_1_length_value = scenario_data.value.statev2[IDS__scenario_base.variable__pendulum_1_length]!.state
-        const variable__pendulum_2_length_value = scenario_data.value.statev2[IDS__scenario_base.variable__pendulum_2_length]!.state
-        const stock__pendulum_1_angle_value = scenario_data.value.statev2[IDS__scenario_base.stock__pendulum_1_angle]!.state
-        const stock__pendulum_2_angle_value = scenario_data.value.statev2[IDS__scenario_base.stock__pendulum_2_angle]!.state
-        const variable__pendulum_mass_ratio_value = scenario_data.value.statev2[IDS__scenario_base.variable__pendulum_mass_ratio]!.calculation!
-        const stock__pendulum_1_angular_velocity_value = scenario_data.value.statev2[IDS__scenario_base.stock__pendulum_1_angular_velocity]!.state
-        const stock__pendulum_2_angular_velocity_value = scenario_data.value.statev2[IDS__scenario_base.stock__pendulum_2_angular_velocity]!.state
-        const variable__pendulum_1_angular_acceleration_value = scenario_data.value.statev2[IDS__scenario_base.variable__pendulum_1_angular_acceleration]!.calculation!
-        const variable__pendulum_2_angular_acceleration_value = scenario_data.value.statev2[IDS__scenario_base.variable__pendulum_2_angular_acceleration]!.calculation!
-
-        const flow__change_in_pendulum_1_angle_value = scenario_data.value.causal_link[IDS__scenario_base.flow__change_in_pendulum_1_angle]!.effect
-        const flow__change_in_pendulum_1_angular_velocity_value = scenario_data.value.causal_link[IDS__scenario_base.flow__change_in_pendulum_1_angular_velocity]!.effect
-        const flow__change_in_pendulum_2_angle_value = scenario_data.value.causal_link[IDS__scenario_base.flow__change_in_pendulum_2_angle]!.effect
-        const flow__change_in_pendulum_2_angular_velocity_value = scenario_data.value.causal_link[IDS__scenario_base.flow__change_in_pendulum_2_angular_velocity]!.effect
-
-
         const wrapped_model = make_wrapped_model(
-            { target_refresh_rate: TARGET_REFRESH_RATE },
+            {
+                target_refresh_rate: TARGET_REFRESH_RATE,
+                data: selected_scenario.data
+            },
             { algorithm: "RK4" },
         )
-
-        const variable__g = wrapped_model.add_variable({
-            wcomponent_id: IDS__scenario_base.variable__g,
-            value: variable__g_value,
-        })
-
-        const variable__pendulum_1_mass = wrapped_model.add_variable({
-            wcomponent_id: IDS__scenario_base.variable__pendulum_1_mass,
-            value: variable__pendulum_1_mass_value,
-        })
-        const variable__pendulum_2_mass = wrapped_model.add_variable({
-            wcomponent_id: IDS__scenario_base.variable__pendulum_2_mass,
-            value: variable__pendulum_2_mass_value,
-        })
-        const variable__pendulum_1_length = wrapped_model.add_variable({
-            wcomponent_id: IDS__scenario_base.variable__pendulum_1_length,
-            value: variable__pendulum_1_length_value,
-        })
-        const variable__pendulum_2_length = wrapped_model.add_variable({
-            wcomponent_id: IDS__scenario_base.variable__pendulum_2_length,
-            value: variable__pendulum_2_length_value,
-        })
-
-        const stock__pendulum_1_angle = wrapped_model.add_stock({
-            wcomponent_id: IDS__scenario_base.stock__pendulum_1_angle,
-            initial: stock__pendulum_1_angle_value,
-        })
-        const stock__pendulum_2_angle = wrapped_model.add_stock({
-            wcomponent_id: IDS__scenario_base.stock__pendulum_2_angle,
-            initial: stock__pendulum_2_angle_value,
-        })
-
-        const variable__pendulum_mass_ratio = wrapped_model.add_variable({
-            wcomponent_id: IDS__scenario_base.variable__pendulum_mass_ratio,
-            value: variable__pendulum_mass_ratio_value,
-            linked_ids: [
-                IDS__scenario_base.variable__pendulum_1_mass,
-                IDS__scenario_base.variable__pendulum_2_mass,
-            ],
-        })
-
-        const stock__pendulum_1_angular_velocity = wrapped_model.add_stock({
-            wcomponent_id: IDS__scenario_base.stock__pendulum_1_angular_velocity,
-            initial: stock__pendulum_1_angular_velocity_value,
-        })
-        const stock__pendulum_2_angular_velocity = wrapped_model.add_stock({
-            wcomponent_id: IDS__scenario_base.stock__pendulum_2_angular_velocity,
-            initial: stock__pendulum_2_angular_velocity_value,
-        })
-        const variable__pendulum_1_angular_acceleration = wrapped_model.add_variable({
-            wcomponent_id: IDS__scenario_base.variable__pendulum_1_angular_acceleration,
-            value: variable__pendulum_1_angular_acceleration_value,
-            linked_ids: [
-                IDS__scenario_base.variable__g,
-                IDS__scenario_base.variable__pendulum_1_length,
-                IDS__scenario_base.stock__pendulum_1_angle,
-                IDS__scenario_base.variable__pendulum_mass_ratio,
-                IDS__scenario_base.stock__pendulum_2_angle,
-            ],
-        })
-        const variable__pendulum_2_angular_acceleration = wrapped_model.add_variable({
-            wcomponent_id: IDS__scenario_base.variable__pendulum_2_angular_acceleration,
-            value: variable__pendulum_2_angular_acceleration_value,
-            linked_ids: [
-                IDS__scenario_base.variable__g,
-                IDS__scenario_base.variable__pendulum_1_length,
-                IDS__scenario_base.stock__pendulum_1_angle,
-                IDS__scenario_base.variable__pendulum_mass_ratio,
-                IDS__scenario_base.stock__pendulum_2_angle,
-                IDS__scenario_base.variable__pendulum_2_length,
-            ],
-        })
-
-        const flow__change_in_pendulum_1_angle = wrapped_model.add_flow({
-            wcomponent_id: IDS__scenario_base.flow__change_in_pendulum_1_angle,
-            flow_rate: flow__change_in_pendulum_1_angle_value,
-            only_positive: false,
-            from_id: undefined,
-            to_id: IDS__scenario_base.stock__pendulum_1_angle,
-            linked_ids: [IDS__scenario_base.stock__pendulum_1_angular_velocity],
-        })
-        const flow__change_in_pendulum_1_angular_velocity = wrapped_model.add_flow({
-            wcomponent_id: IDS__scenario_base.flow__change_in_pendulum_1_angular_velocity,
-            flow_rate: flow__change_in_pendulum_1_angular_velocity_value,
-            only_positive: false,
-            from_id: undefined,
-            to_id: IDS__scenario_base.stock__pendulum_1_angular_velocity,
-            linked_ids: [IDS__scenario_base.variable__pendulum_1_angular_acceleration],
-        })
-        const flow__change_in_pendulum_2_angle = wrapped_model.add_flow({
-            wcomponent_id: IDS__scenario_base.flow__change_in_pendulum_2_angle,
-            flow_rate: flow__change_in_pendulum_2_angle_value,
-            only_positive: false,
-            from_id: undefined,
-            to_id: IDS__scenario_base.stock__pendulum_2_angle,
-            linked_ids: [IDS__scenario_base.stock__pendulum_2_angular_velocity],
-        })
-        const flow__change_in_pendulum_2_angular_velocity = wrapped_model.add_flow({
-            wcomponent_id: IDS__scenario_base.flow__change_in_pendulum_2_angular_velocity,
-            flow_rate: flow__change_in_pendulum_2_angular_velocity_value,
-            only_positive: false,
-            from_id: undefined,
-            to_id: IDS__scenario_base.stock__pendulum_2_angular_velocity,
-            linked_ids: [IDS__scenario_base.variable__pendulum_2_angular_acceleration],
-        })
 
         return wrapped_model
     }, [last_data_refresh_datetime_ms, selected_scenario])
