@@ -100,6 +100,7 @@ function fixture_model_data__single_stock__action_calc()
                 "17edbf36-ad5b-4936-b3c5-7d803741c678": {
                     title: "Stock A",
                     state: 10,
+                    simulationjs_stock: true,
                 },
             },
             causal_link: {},
@@ -169,10 +170,12 @@ function fixture_model_data__two_stocks__action_calc()
                 "17edbf36-ad5b-4936-b3c5-7d803741c678": {
                     title: "Stock A",
                     state: 10,
+                    simulationjs_stock: true,
                 },
                 "e429827b-3b12-475b-bcd8-9afd6f4b9973": {
                     title: "Stock B",
                     state: 0,
+                    simulationjs_stock: true,
                 },
             },
             causal_link: {},
@@ -540,7 +543,6 @@ export const test_make_wrapped_model = describe.delay("make_model_stepper", asyn
                         linked_ids: [
                             "10000000-0000-4000-a000-000000000000",
                         ],
-                        simulationjs_variable: true,
                     },
                     // This is placed after the variable to ensure that this is
                     // created before the variable to avoid the error

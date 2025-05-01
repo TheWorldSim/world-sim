@@ -19,11 +19,13 @@ const cached_model_data: GetItemsReturn<SimplifiedWComponentsValueById> = {
             {
                 state: 5,
                 title: "Stock A",
+                simulationjs_stock: true,
             },
             "e429827b-3b12-475b-bcd8-9afd6f4b9973":
             {
                 state: 2,
                 title: "Stock B",
+                simulationjs_stock: true,
             }
         },
         causal_link: {},

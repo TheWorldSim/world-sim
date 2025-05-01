@@ -75,7 +75,6 @@ const scenario_base: Scenario = {
                 "02d4a5f4-4abd-41a2-bb50-e68e358a3169": {
                     "title": "g",
                     "state": 9.81,
-                    "simulationjs_variable": true,
                 },
                 "28c5c78a-3281-449c-b47b-6f094c15d337": {
                     "title": "θ₁ Pendulum 1 angular velocity",
@@ -84,7 +83,6 @@ const scenario_base: Scenario = {
                 "297916db-1365-48ad-a8e1-44809a63a599": {
                     "title": "Pendulum 1 mass",
                     "state": 1,
-                    "simulationjs_variable": true,
                 },
                 "56fcc4f1-29a9-4a97-b629-068b532ec19d": {
                     "title": "Pendulum mass ratio",
@@ -94,7 +92,6 @@ const scenario_base: Scenario = {
                         "b30dda15-ef05-4c42-a392-7d515552d63b",
                         "297916db-1365-48ad-a8e1-44809a63a599",
                     ],
-                    "simulationjs_variable": true,
                 },
                 "83f8e273-0702-4bc1-8a84-83bc3c285e8d": {
                     "title": "θ₂ Pendulum 2 angular acceleration",
@@ -115,7 +112,6 @@ const scenario_base: Scenario = {
                         "56fcc4f1-29a9-4a97-b629-068b532ec19d",
                         "892551e3-bb5b-4957-8104-6f49e578350a",
                     ],
-                    "simulationjs_variable": true,
                 },
                 "8455647b-e016-476a-a6ae-a049deb8bdbb": {
                     "title": "θ₂ Pendulum 2 angular velocity",
@@ -132,7 +128,6 @@ const scenario_base: Scenario = {
                 "b1448ce5-3015-4b78-ad34-24cbb0b85040": {
                     "title": "Pendulum 2 length",
                     "state": 0.5,
-                    "simulationjs_variable": true,
                 },
                 "b264f09c-9a68-489d-b545-44176d1c866b": {
                     "title": "θ₁ Pendulum 1 angular acceleration",
@@ -149,17 +144,14 @@ const scenario_base: Scenario = {
                         "56fcc4f1-29a9-4a97-b629-068b532ec19d",
                         "892551e3-bb5b-4957-8104-6f49e578350a",
                     ],
-                    "simulationjs_variable": true,
                 },
                 "b30dda15-ef05-4c42-a392-7d515552d63b": {
                     "title": "Pendulum 2 mass",
                     "state": 0.5,
-                    "simulationjs_variable": true,
                 },
                 "e34796cf-ab9e-47b8-9ea5-20cb00fb611d": {
                     "title": "Pendulum 1 length",
                     "state": 1,
-                    "simulationjs_variable": true,
                 }
             },
             causal_link: {

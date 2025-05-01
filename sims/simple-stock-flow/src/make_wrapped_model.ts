@@ -565,9 +565,25 @@ function add_model_components (wrapped_model: WrappedModel, data?: GetItemsRetur
     const actions = data.value.action
     const flows = data.value.causal_link
 
+    const flow_connected_ids = new Set<string>()
+    Object.values(flows).forEach(flow =>
+    {
+        flow_connected_ids.add(flow.from_id || "")
+        flow_connected_ids.add(flow.to_id || "")
+    })
+    flow_connected_ids.delete("")
+
     Object.entries(statev2).forEach(([id, statev2]) =>
     {
-        if (statev2.simulationjs_variable)
+        if (statev2.simulationjs_stock || flow_connected_ids.has(id))
+        {
+            wrapped_model.add_stock({
+                wcomponent_id: id,
+                title: statev2.title,
+                initial: statev2.state,
+            })
+        }
+        else
         {
             const value = statev2.state === 0 ? 0 : (statev2.state || statev2.calculation || "")
             wrapped_model.add_variable({
@@ -575,14 +591,6 @@ function add_model_components (wrapped_model: WrappedModel, data?: GetItemsRetur
                 title: statev2.title,
                 value,
                 linked_ids: statev2.linked_ids,
-            })
-        }
-        else
-        {
-            wrapped_model.add_stock({
-                wcomponent_id: id,
-                title: statev2.title,
-                initial: statev2.state,
             })
         }
     })

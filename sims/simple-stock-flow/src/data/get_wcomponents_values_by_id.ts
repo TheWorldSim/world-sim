@@ -16,7 +16,7 @@ interface SimplifiedWComponentStateV2
     state: number | string
     calculation?: string
     linked_ids?: string[]
-    simulationjs_variable?: boolean
+    simulationjs_stock?: boolean
 }
 interface SimplifiedWComponentCausalLink
 {
@@ -115,13 +115,13 @@ export function get_wcomponents_values_by_id (composed_wcomponents_by_id: WCompo
         if (typeof value === "boolean") return
 
         const linked_ids = Array.from(new Set(get_uuids_from_text(calculation)))
-        const simulationjs_variable = description.includes("simulationjs:variable")
+        const simulationjs_stock = description.includes("simulationjs:stock")
         const value_obj: SimplifiedWComponentStateV2 = {
             title,
             state: value ?? "",
             calculation,
             linked_ids,
-            simulationjs_variable,
+            simulationjs_stock,
         }
 
         value_by_id.statev2[uuid] = value_obj
