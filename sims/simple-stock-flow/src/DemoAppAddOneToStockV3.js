@@ -1,7 +1,5 @@
 import { Model } from "simulation"
 
-// import { ModelConfigStrict, SimulationStepResult, ModelValues } from "./make_model_stepper3"
-
 
 if (!Array.prototype.last) {
     Object.defineProperty(Array.prototype, "last", {

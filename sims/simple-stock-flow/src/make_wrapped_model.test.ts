@@ -9,7 +9,7 @@ import {
     ExtendedSimulationResult,
     WrappedModel,
     ModelValue,
-} from "./make_model_stepper"
+} from "./make_wrapped_model"
 import { create_deferred_promise } from "./utils/promise"
 import { dedent } from "./utils/string"
 
@@ -251,7 +251,7 @@ const model_config: ModelConfig = {
 }
 const model_config5 = {...model_config, timeLength: 5}
 
-export const test_make_model_stepper = describe.delay("make_model_stepper", async () =>
+export const test_make_wrapped_model = describe.delay("make_model_stepper", async () =>
 {
     async function run_simulation(wrapped_model: WrappedModel, change_in_value?: number)
     {

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks"
 
-import { make_wrapped_model, WrappedModel, SimulationStepResult } from "./make_model_stepper"
+import { make_wrapped_model, WrappedModel, SimulationStepResult } from "./make_wrapped_model"
 import { IDS_v4 } from "./data/get_data"
 import { GetItemsReturn } from "./data_curator/src/state/sync/supabase/get_items"
 import { get_wcomponents_values_by_id, SimplifiedWComponentsValueById } from "./data/get_wcomponents_values_by_id"

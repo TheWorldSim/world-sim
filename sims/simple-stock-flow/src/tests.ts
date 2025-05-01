@@ -2,7 +2,7 @@ import { test_get_calculation_string_from_calculation_rows } from "./data/get_ca
 import { test_get_wcomponents_values_by_id } from "./data/get_wcomponents_values_by_id.test"
 import { tests_stats } from "./data_curator/src/shared/utils/test"
 import { test_id_regexs } from "./data_curator/src/sharedf/rich_text/id_regexs.test"
-import { test_make_model_stepper } from "./make_model_stepper.test"
+import { test_make_wrapped_model } from "./make_wrapped_model.test"
 
 
 export async function run_all_tests()
@@ -13,7 +13,7 @@ export async function run_all_tests()
     test_get_calculation_string_from_calculation_rows()
     test_get_wcomponents_values_by_id()
 
-    ;await ((await test_make_model_stepper)())
+    ;await ((await test_make_wrapped_model)())
 
     tests_stats.print()
 }

@@ -1,7 +1,7 @@
 import { ChangeEvent } from "preact/compat"
 import { useEffect, useMemo, useRef, useState } from "preact/hooks"
 
-import { make_wrapped_model, WrappedModel, SimulationStepResult } from "./make_model_stepper"
+import { make_wrapped_model, WrappedModel, SimulationStepResult } from "./make_wrapped_model"
 import { GetItemsReturn } from "./data_curator/src/state/sync/supabase/get_items"
 import { get_wcomponents_values_by_id, SimplifiedWComponentsValueById } from "./data/get_wcomponents_values_by_id"
 import { get_supabase } from "./data_curator/src/supabase/get_supabase"
@@ -290,7 +290,7 @@ export function DemoAppDoublePendulum () {
     }, [data_needs_refresh])
 
 
-    const model_stepper: WrappedModel | undefined = useMemo(() =>
+    const wrapped_model: WrappedModel | undefined = useMemo(() =>
     {
         if (selected_scenario === undefined || selected_scenario.data.error) return undefined
 
@@ -308,36 +308,35 @@ export function DemoAppDoublePendulum () {
 
     if (!selected_scenario) return <div>Error: selected_scenario is undefined</div>
     if (selected_scenario.data.error) return <div>Error: {selected_scenario.data.error.message}</div>
-    if (!model_stepper) return <div>Error: model_stepper is undefined</div>
+    if (!wrapped_model) return <div>Error: wrapped_model is undefined</div>
 
     return <AppDoublePendulum
         scenarios={scenarios}
         selected_scenario={selected_scenario}
         set_selected_scenario_id={set_selected_scenario_id}
-        model_stepper={model_stepper}
+        wrapped_model={wrapped_model}
         trigger_fetching_live_data={() => set_data_needs_refresh(true)}
     />
 }
 
 
-function AppDoublePendulum (props: { scenarios: Scenario[], selected_scenario: Scenario, set_selected_scenario_id: (scenario_id: ScenarioId) => void, model_stepper: WrappedModel, trigger_fetching_live_data: () => void })
+function AppDoublePendulum (props: { scenarios: Scenario[], selected_scenario: Scenario, set_selected_scenario_id: (scenario_id: ScenarioId) => void, wrapped_model: WrappedModel, trigger_fetching_live_data: () => void })
 {
-    const { model_stepper } = props
+    const { wrapped_model } = props
 
-    const [current_time, set_current_time] = useState(model_stepper.get_current_time())
-    const [pendulum_1_angle, set_pendulum_1_angle] = useState(model_stepper.get_latest_state_by_id(IDS__scenario_base.stock__pendulum_1_angle))
-    const [pendulum_2_angle, set_pendulum_2_angle] = useState(model_stepper.get_latest_state_by_id(IDS__scenario_base.stock__pendulum_2_angle))
-    const pendulum_1_length = model_stepper.get_latest_state_by_id(IDS__scenario_base.variable__pendulum_1_length)
-    const pendulum_2_length = model_stepper.get_latest_state_by_id(IDS__scenario_base.variable__pendulum_2_length)
-    const pendulum_1_mass = model_stepper.get_latest_state_by_id(IDS__scenario_base.variable__pendulum_1_mass)
-    const pendulum_2_mass = model_stepper.get_latest_state_by_id(IDS__scenario_base.variable__pendulum_2_mass)
+    const [current_time, set_current_time] = useState(wrapped_model.get_current_time())
+    const [pendulum_1_angle, set_pendulum_1_angle] = useState(wrapped_model.get_latest_state_by_id(IDS__scenario_base.stock__pendulum_1_angle))
+    const [pendulum_2_angle, set_pendulum_2_angle] = useState(wrapped_model.get_latest_state_by_id(IDS__scenario_base.stock__pendulum_2_angle))
+    const pendulum_1_length = wrapped_model.get_latest_state_by_id(IDS__scenario_base.variable__pendulum_1_length)
+    const pendulum_2_length = wrapped_model.get_latest_state_by_id(IDS__scenario_base.variable__pendulum_2_length)
+    const pendulum_1_mass = wrapped_model.get_latest_state_by_id(IDS__scenario_base.variable__pendulum_1_mass)
+    const pendulum_2_mass = wrapped_model.get_latest_state_by_id(IDS__scenario_base.variable__pendulum_2_mass)
 
-    // const [stock_b, set_stock_b] = useState(model_stepper.get_latest_state_by_id(IDS_v4.stock__state_b))
     const past_actions_taken = useRef<{step: number, actions_taken: {[action_id: string]: number}}[]>([])
     const actions_taken = useRef<{[action_id: string]: number}>({})
 
 
-    useEffect(() => model_stepper.run_simulation({
+    useEffect(() => wrapped_model.run_simulation({
         on_simulation_step_completed: (result: SimulationStepResult) =>
         {
             set_current_time(result.current_time)
@@ -353,7 +352,7 @@ function AppDoublePendulum (props: { scenarios: Scenario[], selected_scenario: S
             {
                 Object.keys(last_actions_taken.actions_taken).forEach(action_id =>
                 {
-                    const action = model_stepper.get_node_from_id(action_id, true)
+                    const action = wrapped_model.get_node_from_id(action_id, true)
                     set_value(action, 0)
                 })
             }
@@ -363,7 +362,7 @@ function AppDoublePendulum (props: { scenarios: Scenario[], selected_scenario: S
 
             actions_taken_list.forEach(([action_id, value]) =>
             {
-                const action = model_stepper.get_node_from_id(action_id, true)
+                const action = wrapped_model.get_node_from_id(action_id, true)
                 set_value(action, value)
             })
 
@@ -375,18 +374,8 @@ function AppDoublePendulum (props: { scenarios: Scenario[], selected_scenario: S
 
             return undefined
         }
-    }), [model_stepper])
+    }), [wrapped_model])
 
-
-    // const action__increase_stock_a = useMemo(() => model_stepper.make_apply_action(
-    //     actions_taken,
-    //     IDS_v4.action__action_increase_stock_a,
-    // ), [])
-
-    // const action__move_a_to_b = useMemo(() => model_stepper.make_apply_action(
-    //     actions_taken,
-    //     IDS_v4.action__action_move_a_to_b,
-    // ), [])
 
     const handle_scenario_change = (event: ChangeEvent<HTMLSelectElement>) => {
         const target = event.target as HTMLSelectElement | null
