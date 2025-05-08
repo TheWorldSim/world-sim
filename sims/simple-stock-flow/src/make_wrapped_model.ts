@@ -87,12 +87,11 @@ export interface AddActionArgs
 
 
 export function make_wrapped_model (
-    args: { target_refresh_rate: number, data?: GetItemsReturn<SimplifiedWComponentsValueById> },
+    args: { target_refresh_rate?: number, data?: GetItemsReturn<SimplifiedWComponentsValueById> },
     model_config: ModelConfig = {},
 ): WrappedModel
 {
-    const { target_refresh_rate, data } = args
-    const time_start = 2020
+    const { target_refresh_rate = 30, data } = args
 
     const simulation_time_step = 1 / target_refresh_rate
     const time_units = "Seconds"
@@ -100,7 +99,7 @@ export function make_wrapped_model (
     const time_length = Math.round(1e5 / target_refresh_rate)
 
     const all_model_config: ModelConfigStrict = {
-        timeStart: time_start,
+        timeStart: 0,
         timeStep: simulation_time_step,
         timeLength: time_length,
         timeUnits: time_units,
@@ -116,7 +115,7 @@ export function make_wrapped_model (
 }
 
 
-interface ModelConfigStrict
+interface ModelConfigStrict extends ModelConfig
 {
     timeStart: number
     timeStep: number
@@ -136,7 +135,7 @@ export type WrappedModel = ReturnType<typeof _make_wrapped_model>
 function _make_wrapped_model (model_config: ModelConfigStrict, run_sim_config: { target_refresh_rate: number })
 {
     const model = new Model(model_config)
-    const target_refresh_rate = run_sim_config.target_refresh_rate
+    const { target_refresh_rate } = run_sim_config
 
     let model_simulation_started = false
     let simulation_cancelled = false

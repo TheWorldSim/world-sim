@@ -335,9 +335,7 @@ export const test_make_wrapped_model = describe.delay("make_model_stepper", asyn
 
         await describe("manually make model", async () =>
         {
-            const wrapped_model = make_wrapped_model({
-                target_refresh_rate: 100,
-            }, model_config)
+            const wrapped_model = make_wrapped_model({}, model_config)
 
             make_model_manually(wrapped_model)
 
@@ -347,10 +345,7 @@ export const test_make_wrapped_model = describe.delay("make_model_stepper", asyn
 
         await describe("make model automatically", async () =>
         {
-            const wrapped_model = make_wrapped_model({
-                target_refresh_rate: 100,
-                data,
-            }, model_config)
+            const wrapped_model = make_wrapped_model({ data }, model_config)
 
             const results = await run_simulation(wrapped_model)
             assess_results(results, get_values, true)
@@ -358,10 +353,7 @@ export const test_make_wrapped_model = describe.delay("make_model_stepper", asyn
 
         await describe("make model automatically, increase by a different amount", async () =>
         {
-            const wrapped_model = make_wrapped_model({
-                target_refresh_rate: 100,
-                data,
-            }, model_config)
+            const wrapped_model = make_wrapped_model({ data }, model_config)
 
             const change_in_value = 5
             const results = await run_simulation(wrapped_model, change_in_value)
@@ -376,9 +368,7 @@ export const test_make_wrapped_model = describe.delay("make_model_stepper", asyn
 
         await describe("manually make model", async () =>
         {
-            const wrapped_model = make_wrapped_model({
-                target_refresh_rate: 100,
-            }, model_config)
+            const wrapped_model = make_wrapped_model({}, model_config)
 
             make_model_manually(wrapped_model)
 
@@ -388,10 +378,7 @@ export const test_make_wrapped_model = describe.delay("make_model_stepper", asyn
 
         await describe("make model automatically", async () =>
         {
-            const wrapped_model = make_wrapped_model({
-                target_refresh_rate: 100,
-                data,
-            }, model_config)
+            const wrapped_model = make_wrapped_model({ data }, model_config)
 
             const results = await run_simulation(wrapped_model)
             assess_results(results, get_values, false)
@@ -399,10 +386,7 @@ export const test_make_wrapped_model = describe.delay("make_model_stepper", asyn
 
         await describe("make model automatically, increase by a different amount", async () =>
         {
-            const wrapped_model = make_wrapped_model({
-                target_refresh_rate: 100,
-                data,
-            }, model_config)
+            const wrapped_model = make_wrapped_model({ data }, model_config)
 
             const change_in_value = 5
             const results = await run_simulation(wrapped_model, change_in_value)
@@ -504,9 +488,7 @@ export const test_make_wrapped_model = describe.delay("make_model_stepper", asyn
 
         await describe("manually make model", async () =>
         {
-            const wrapped_model = make_wrapped_model({
-                target_refresh_rate: 100,
-            }, model_config5)
+            const wrapped_model = make_wrapped_model({}, model_config5)
 
             make_model_manually(wrapped_model)
 
@@ -516,10 +498,7 @@ export const test_make_wrapped_model = describe.delay("make_model_stepper", asyn
 
         await describe("make model automatically", async () =>
         {
-            const wrapped_model = make_wrapped_model({
-                target_refresh_rate: 100,
-                data,
-            }, model_config5)
+            const wrapped_model = make_wrapped_model({ data }, model_config5)
 
             const results = await run_two_stocks_simulation(wrapped_model)
             assess_results_for_two_stocks(results, get_values)
@@ -605,10 +584,7 @@ export const test_make_wrapped_model = describe.delay("make_model_stepper", asyn
 
         await describe("make model automatically", async () =>
         {
-            const wrapped_model = make_wrapped_model({
-                target_refresh_rate: 100,
-                data,
-            }, model_config5)
+            const wrapped_model = make_wrapped_model({ data }, model_config5)
 
             const results = await run_state_as_stock_and_variable_model(wrapped_model)
 

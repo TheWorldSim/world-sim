@@ -10,7 +10,6 @@ import { WComponentsById } from "./data_curator/src/wcomponent/interfaces/Specia
 import { dedent } from "./utils/string"
 
 
-const TARGET_REFRESH_RATE = 30 // Hz
 const supabase = get_supabase()
 const cached_model_data: GetItemsReturn<SimplifiedWComponentsValueById> = {
     value: {
@@ -92,7 +91,7 @@ export function DemoAppAddOneToStockV4 () {
     {
         if (model_data === undefined || model_data.error) return undefined
 
-        return make_wrapped_model({target_refresh_rate: TARGET_REFRESH_RATE, data: model_data})
+        return make_wrapped_model({ data: model_data })
     }, [model_data])
 
 
@@ -111,14 +110,22 @@ function AppAddOneToStockV4 (props: { wrapped_model: WrappedModel, trigger_fetch
     const { wrapped_model } = props
 
     const [current_time, set_current_time] = useState(wrapped_model.get_current_time())
-    const [stock_a, set_stock_a] = useState(wrapped_model.get_latest_state_by_id(IDS_v4.stock__state_a))
+    const initial_stock_a = wrapped_model.get_latest_state_by_id(IDS_v4.stock__state_a)
+    const [stock_a, set_stock_a] = useState(initial_stock_a)
     const [stock_b, set_stock_b] = useState(wrapped_model.get_latest_state_by_id(IDS_v4.stock__state_b))
+    const stock_a_history = useRef<number[]>(typeof initial_stock_a === "number" ? [initial_stock_a] : [])
 
     useEffect(() => wrapped_model.run_simulation({
         on_simulation_step_completed: (result: SimulationStepResult) =>
         {
             set_current_time(result.current_time)
-            set_stock_a(result.values[IDS_v4.stock__state_a])
+            const new_stock_a = result.values[IDS_v4.stock__state_a]
+            set_stock_a(new_stock_a)
+            const last_stock_a = stock_a_history.current[stock_a_history.current.length - 1]
+            if (new_stock_a !== last_stock_a && typeof new_stock_a === "number")
+            {
+                stock_a_history.current.push(new_stock_a)
+            }
             set_stock_b(result.values[IDS_v4.stock__state_b])
 
             return undefined
@@ -127,14 +134,12 @@ function AppAddOneToStockV4 (props: { wrapped_model: WrappedModel, trigger_fetch
 
 
     const action__increase_stock_a = useMemo(() => wrapped_model.factory_trigger_action(
-        IDS_v4.action__action_increase_stock_a,
-        TARGET_REFRESH_RATE,
-    ), [TARGET_REFRESH_RATE])
+        IDS_v4.action__action_increase_stock_a
+    ), [])
 
     const action__move_a_to_b = useMemo(() => wrapped_model.factory_trigger_action(
-        IDS_v4.action__action_move_a_to_b,
-        TARGET_REFRESH_RATE,
-    ), [TARGET_REFRESH_RATE])
+        IDS_v4.action__action_move_a_to_b
+    ), [])
 
     return <>
         <div class="card">
@@ -170,6 +175,11 @@ function AppAddOneToStockV4 (props: { wrapped_model: WrappedModel, trigger_fetch
             <button onClick={action__move_a_to_b}>
                 Move A to B
             </button>
+
+            <div>
+                Stock A history is:<br/>
+                {stock_a_history.current.map(v => <>{v}<br/></>)}
+            </div>
         </div>
     </>
 }

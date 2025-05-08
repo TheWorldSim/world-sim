@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "preact/hooks"
+import { useEffect, useMemo, useRef, useState } from "preact/hooks"
 
 import { make_wrapped_model, WrappedModel, SimulationStepResult } from "./make_wrapped_model"
 import { IDS_v3 } from "./data/get_data"
@@ -107,15 +107,23 @@ function AppAddOneToStockV3(props: { wrapped_model: WrappedModel, trigger_fetchi
     // http://localhost:5173/app/#wcomponents/17edbf36-ad5b-4936-b3c5-7d803741c678/&storage_location=1&subview_id=57721b40-5b26-4587-9cc3-614c6c366cae&view=knowledge&x=1218&y=-1538&z=0&zoom=68&sdate=2024-03-24&stime=22:42:19&cdate=2024-05-24&ctime=11:22:59
 
     const [current_time, set_current_time] = useState(wrapped_model.get_current_time())
-    const [stock_a, set_stock_a] = useState(wrapped_model.get_latest_state_by_id(IDS_v3.stock__state_a))
+    const initial_stock_a = wrapped_model.get_latest_state_by_id(IDS_v3.stock__state_a)
+    const [stock_a, set_stock_a] = useState(initial_stock_a)
     const [stock_b, set_stock_b] = useState(wrapped_model.get_latest_state_by_id(IDS_v3.stock__state_b))
+    const stock_a_history = useRef<number[]>(typeof initial_stock_a === "number" ? [initial_stock_a] : [])
 
 
     useEffect(() => wrapped_model.run_simulation({
         on_simulation_step_completed: (result: SimulationStepResult) =>
         {
             set_current_time(result.current_time)
-            set_stock_a(result.values[IDS_v3.stock__state_a])
+            const new_stock_a = result.values[IDS_v3.stock__state_a]
+            set_stock_a(new_stock_a)
+            const last_stock_a = stock_a_history.current[stock_a_history.current.length - 1]
+            if (new_stock_a !== last_stock_a && typeof new_stock_a === "number")
+            {
+                stock_a_history.current.push(new_stock_a)
+            }
             set_stock_b(result.values[IDS_v3.stock__state_b])
 
             return undefined
@@ -150,15 +158,21 @@ function AppAddOneToStockV3(props: { wrapped_model: WrappedModel, trigger_fetchi
                 (DataCurator)
             </a>
             <br />
+            <br />
+            It demonstrates that you can refresh the model data from DataCurator (here we've intentionally set up some cached model data which has a slightly different initial value for stocks A & B of 5 & 3 versus 10 & 2 on DataCurator)
+            <br />
             <button onClick={() => props.trigger_fetching_live_data()}>
                 Refresh data from DataCurator
             </button>
+            <br />
+            <br />
+            The code demonstrates that to use an action with stocks and flows via using a SimulationJS variable, then we have to control the number of simulation steps per unit time (see `TARGET_REFRESH_RATE` in the code) and then use that value for the action size.  And also when using the stocks and flows that SimulationJS will introduce a small floating point error into the values.  See V4 of this model that uses SimulationJS actions (instead of variables acting as actions) which do not have this issue.
         </div>
 
         <div class="card">
             <div>Current time is {current_time.toFixed(1)}</div>
-            <div>Stock A is {round_to_5_dp(stock_a)}</div>
-            <div>Stock B is {round_to_5_dp(stock_b)}</div>
+            <div>Stock A is {round_to_5_dp(stock_a)} (but actually is {stock_a})</div>
+            <div>Stock B is {round_to_5_dp(stock_b)} (but actually is {stock_b})</div>
 
             <button onClick={action__increase_stock_a}>
                 Increase stock A
@@ -167,6 +181,11 @@ function AppAddOneToStockV3(props: { wrapped_model: WrappedModel, trigger_fetchi
             <button onClick={action__move_a_to_b}>
                 Move A to B
             </button>
+
+            <div>
+                Stock A history is:<br/>
+                {stock_a_history.current.map(v => <>{v}<br/></>)}
+            </div>
         </div>
     </>
 }

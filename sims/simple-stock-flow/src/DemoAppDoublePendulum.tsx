@@ -13,7 +13,6 @@ import { get_created_at_ms } from "./data_curator/src/shared/utils_datetime/util
 import { dedent } from "./utils/string"
 
 
-const TARGET_REFRESH_RATE = 30 // Hz
 const supabase = get_supabase()
 
 
@@ -287,10 +286,7 @@ export function DemoAppDoublePendulum () {
         if (selected_scenario === undefined || selected_scenario.data.error) return undefined
 
         const wrapped_model = make_wrapped_model(
-            {
-                target_refresh_rate: TARGET_REFRESH_RATE,
-                data: selected_scenario.data
-            },
+            { data: selected_scenario.data },
             { algorithm: "RK4" },
         )
 
