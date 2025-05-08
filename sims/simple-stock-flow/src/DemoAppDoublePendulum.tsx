@@ -324,9 +324,6 @@ function AppDoublePendulum (props: { scenarios: Scenario[], selected_scenario: S
     const pendulum_1_mass = wrapped_model.get_latest_state_by_id(IDS__scenario_base.variable__pendulum_1_mass)
     const pendulum_2_mass = wrapped_model.get_latest_state_by_id(IDS__scenario_base.variable__pendulum_2_mass)
 
-    const past_actions_taken = useRef<{step: number, actions_taken: {[action_id: string]: number}}[]>([])
-    const actions_taken = useRef<{[action_id: string]: number}>({})
-
 
     useEffect(() => wrapped_model.run_simulation({
         on_simulation_step_completed: (result: SimulationStepResult) =>
@@ -334,35 +331,6 @@ function AppDoublePendulum (props: { scenarios: Scenario[], selected_scenario: S
             set_current_time(result.current_time)
             set_pendulum_1_angle(result.values[IDS__scenario_base.stock__pendulum_1_angle])
             set_pendulum_2_angle(result.values[IDS__scenario_base.stock__pendulum_2_angle])
-
-            const { set_value } = result
-            if (!set_value) return { reason_to_stop: "Error: no set_value" }
-
-            // Reset previously taken actions
-            const last_actions_taken = past_actions_taken.current[past_actions_taken.current.length - 1]
-            if (last_actions_taken && (last_actions_taken.step + 1) === result.current_step)
-            {
-                Object.keys(last_actions_taken.actions_taken).forEach(action_id =>
-                {
-                    const action = wrapped_model.get_node_from_id(action_id, true)
-                    set_value(action, 0)
-                })
-            }
-
-            // Apply actions taken
-            const actions_taken_list = Object.entries(actions_taken.current)
-
-            actions_taken_list.forEach(([action_id, value]) =>
-            {
-                const action = wrapped_model.get_node_from_id(action_id, true)
-                set_value(action, value)
-            })
-
-            if (actions_taken_list.length)
-            {
-                past_actions_taken.current.push({ step: result.current_step, actions_taken: actions_taken.current })
-                actions_taken.current = {}
-            }
 
             return undefined
         }
