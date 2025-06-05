@@ -1,0 +1,47 @@
+name: Request simulation be published
+description: Request a simulation be published onto TheWorldSim website
+title: "[Request a Simulation to be published]: *name of the simulation*"
+labels: ["simulation request: publish"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Please read ["Making a simulation → The simulation I'm offering is ready for publishing"](https://theworldsim.org/help/making_a_simulation/#ready_publish_sim)**
+
+  - type: input
+    id: knowledge_view_id
+    attributes:
+      label: The Knowledge View ID
+      description: Enter the Knowledge View ID for your simulation.
+      placeholder: "57721b40-5b26-4587-9cc3-614c6c366cae # Example ID"
+    validations:
+      required: true
+
+  - type: input
+    id: github_repo
+    attributes:
+      label: GitHub repo link
+      description: The link to the GitHub repo with the simulation code
+      placeholder: "https://github.com/my_user/my_sim # Example link"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: "I can confirm:"
+      options:
+        - label: "The knowledge view is in a knowledge base that I own and have made public (not private).  [See here for more info on how to make a knowledge base public - TODO: write this page](https://theworldsim.org/help/knowledge_base/#public_private)"
+          required: true
+        - label: "I have made/published a version of that knowledge view and all its components (TODO: implement this feature)"
+          required: true
+        - label: I have read the ["Making a simulation → The simulation I'm offering is ready for publishing"](https://theworldsim.org/help/making_a_simulation/#ready_publish_sim)
+          required: true
+        - label: The simulation code meets all the requirements in ["Making a simulation → Constraints on building a simulation"](https://theworldsim.org/help/making_a_simulation/#constraints_on_building_sim)
+          required: true
+        - label: "I have read the terms and conditions of use and this simulation submission does not violate them. [See here for the terms and conditions of use - TODO: write this page](https://theworldsim.org/help/terms_and_conditions_of_use)"
+          required: true
+        - label: "There is no age restricted (adult) content in this simulation, or there is age restricted (adult) content and the simulation's knowledge view component has been correctly tagged with \"adult content\" (TODO: document how to do this)"
+          required: true
+assignees:
+  - AJamesPhillips
