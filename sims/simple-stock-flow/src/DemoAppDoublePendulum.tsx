@@ -190,19 +190,6 @@ export function DemoAppDoublePendulum () {
     const {scenarios, scenarios_by_id} = useMemo(() =>
     {
         const scenario_2_data: GetItemsReturn<SimplifiedWComponentsValueById> = JSON.parse(JSON.stringify(scenario_base.data))
-        scenario_2_data.value.statev2[IDS__scenario_base.stock__pendulum_1_angle]!.state = 0.54
-        scenario_2_data.value.statev2[IDS__scenario_base.stock__pendulum_2_angle]!.state = 2.14
-        scenario_2_data.value.statev2[IDS__scenario_base.variable__pendulum_1_mass]!.state = 20
-        scenario_2_data.value.statev2[IDS__scenario_base.variable__pendulum_1_length]!.state = 0.5
-        scenario_2_data.value.statev2[IDS__scenario_base.variable__pendulum_2_mass]!.state = 2
-        scenario_2_data.value.statev2[IDS__scenario_base.variable__pendulum_2_length]!.state = 1
-        // Draws blue entirely separate from red
-        scenario_2_data.value.statev2[IDS__scenario_base.stock__pendulum_1_angle]!.state = 0.54
-        scenario_2_data.value.statev2[IDS__scenario_base.stock__pendulum_2_angle]!.state = 2.14
-        scenario_2_data.value.statev2[IDS__scenario_base.variable__pendulum_1_mass]!.state = 20
-        scenario_2_data.value.statev2[IDS__scenario_base.variable__pendulum_1_length]!.state = 0.5
-        scenario_2_data.value.statev2[IDS__scenario_base.variable__pendulum_2_mass]!.state = 2
-        scenario_2_data.value.statev2[IDS__scenario_base.variable__pendulum_2_length]!.state = 1
         // Blue forms a tube like structure around red
         scenario_2_data.value.statev2[IDS__scenario_base.stock__pendulum_1_angle]!.state = 0.54
         scenario_2_data.value.statev2[IDS__scenario_base.stock__pendulum_2_angle]!.state = 3.14
@@ -210,6 +197,23 @@ export function DemoAppDoublePendulum () {
         scenario_2_data.value.statev2[IDS__scenario_base.variable__pendulum_1_length]!.state = 1
         scenario_2_data.value.statev2[IDS__scenario_base.variable__pendulum_2_mass]!.state = 2
         scenario_2_data.value.statev2[IDS__scenario_base.variable__pendulum_2_length]!.state = 1
+
+        // // Draws blue entirely separate from red
+        // scenario_2_data.value.statev2[IDS__scenario_base.stock__pendulum_1_angle]!.state = 0.54
+        // scenario_2_data.value.statev2[IDS__scenario_base.stock__pendulum_2_angle]!.state = 2.14
+        // scenario_2_data.value.statev2[IDS__scenario_base.variable__pendulum_1_mass]!.state = 20
+        // scenario_2_data.value.statev2[IDS__scenario_base.variable__pendulum_1_length]!.state = 0.5
+        // scenario_2_data.value.statev2[IDS__scenario_base.variable__pendulum_2_mass]!.state = 2
+        // scenario_2_data.value.statev2[IDS__scenario_base.variable__pendulum_2_length]!.state = 1
+
+        // // Effectively acts as a single pendulum system
+        // scenario_2_data.value.statev2[IDS__scenario_base.stock__pendulum_1_angle]!.state = 0.54
+        // scenario_2_data.value.statev2[IDS__scenario_base.stock__pendulum_2_angle]!.state = 2.14
+        // scenario_2_data.value.statev2[IDS__scenario_base.variable__pendulum_1_mass]!.state = 20
+        // scenario_2_data.value.statev2[IDS__scenario_base.variable__pendulum_1_length]!.state = 1
+        // scenario_2_data.value.statev2[IDS__scenario_base.variable__pendulum_2_mass]!.state = 0.01
+        // scenario_2_data.value.statev2[IDS__scenario_base.variable__pendulum_2_length]!.state = 0.01
+
         const scenario_2: Scenario = {
             id: ScenarioId.scenario_2,
             title: "Scenario 2",
@@ -444,6 +448,8 @@ function AppDoublePendulum (props: AppDoublePendulumProps)
             pendulum_2_angle={as_number(pendulum_2_angle)}
             pendulum_1_length={as_number(pendulum_1_length)}
             pendulum_2_length={as_number(pendulum_2_length)}
+            pendulum_1_mass={as_number(pendulum_1_mass)}
+            pendulum_2_mass={as_number(pendulum_2_mass)}
         />
     </>
 }
@@ -463,6 +469,8 @@ interface DoublePendulumCanvasProps
     pendulum_2_angle: number
     pendulum_1_length: number
     pendulum_2_length: number
+    pendulum_1_mass: number
+    pendulum_2_mass: number
 }
 function DoublePendulumCanvas(props: DoublePendulumCanvasProps)
 {
@@ -476,14 +484,14 @@ function DoublePendulumCanvas(props: DoublePendulumCanvasProps)
             id="canvas1"
             width="800"
             height="400"
-            style={{ border: "1px solid lightgrey", position: "absolute", left: 0, top: 0, zIndex: 1 }}
+            style={{ border: "1px solid lightgrey", position: "absolute", left: 0, top: 0, zIndex: 2 }}
             ref={canvas => canvas_ref_1.current = canvas}
         />
         <canvas
             id="canvas2"
             width="800"
             height="400"
-            style={{ border: "1px solid transparent", position: "absolute", left: 0, top: 0, zIndex: 2, pointerEvents: "none" }}
+            style={{ border: "1px solid transparent", position: "absolute", left: 0, top: 0, zIndex: 1, pointerEvents: "none" }}
             ref={canvas => canvas_ref_2.current = canvas}
         />
     </div>
@@ -531,11 +539,26 @@ function draw (canvas_1: HTMLCanvasElement, canvas_2: HTMLCanvasElement, props: 
         ctx_1.lineTo(x2, y2)
         ctx_1.stroke()
 
+        // Draw the pendulum masses
+        const scale_mass = 10
+        ctx_1.fillStyle = "black"
+        ctx_1.beginPath()
+        ctx_1.arc(x1, y1, (props.pendulum_1_mass * scale_mass) ** 0.5, 0, Math.PI * 2)
+        ctx_1.fill()
+        ctx_1.fillStyle = "black"
+        ctx_1.beginPath()
+        ctx_1.arc(x2, y2, (props.pendulum_2_mass * scale_mass) ** 0.5, 0, Math.PI * 2)
+        ctx_1.fill()
+
         if (props.scenario_data_changed)
         {
             console.log("Scenario data changed, clearing canvas 2")
             ctx_2.clearRect(0, 0, width, height)
         }
+
+        // // Slightly fade out content of the second canvas every time we draw
+        // ctx_2.fillStyle = "rgba(255, 255, 255, 0.002)"
+        // ctx_2.fillRect(0, 0, width, height)
 
         // Draw a small opaque circle at the end of each pendulum
         ctx_2.fillStyle = "rgba(255, 0, 0, 0.1)"
