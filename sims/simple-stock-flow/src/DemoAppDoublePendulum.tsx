@@ -190,8 +190,26 @@ export function DemoAppDoublePendulum () {
     const {scenarios, scenarios_by_id} = useMemo(() =>
     {
         const scenario_2_data: GetItemsReturn<SimplifiedWComponentsValueById> = JSON.parse(JSON.stringify(scenario_base.data))
-        scenario_2_data.value.statev2[IDS__scenario_base.stock__pendulum_1_angle]!.state = 3.14
+        scenario_2_data.value.statev2[IDS__scenario_base.stock__pendulum_1_angle]!.state = 0.54
+        scenario_2_data.value.statev2[IDS__scenario_base.stock__pendulum_2_angle]!.state = 2.14
+        scenario_2_data.value.statev2[IDS__scenario_base.variable__pendulum_1_mass]!.state = 20
+        scenario_2_data.value.statev2[IDS__scenario_base.variable__pendulum_1_length]!.state = 0.5
+        scenario_2_data.value.statev2[IDS__scenario_base.variable__pendulum_2_mass]!.state = 2
+        scenario_2_data.value.statev2[IDS__scenario_base.variable__pendulum_2_length]!.state = 1
+        // Draws blue entirely separate from red
+        scenario_2_data.value.statev2[IDS__scenario_base.stock__pendulum_1_angle]!.state = 0.54
+        scenario_2_data.value.statev2[IDS__scenario_base.stock__pendulum_2_angle]!.state = 2.14
+        scenario_2_data.value.statev2[IDS__scenario_base.variable__pendulum_1_mass]!.state = 20
+        scenario_2_data.value.statev2[IDS__scenario_base.variable__pendulum_1_length]!.state = 0.5
+        scenario_2_data.value.statev2[IDS__scenario_base.variable__pendulum_2_mass]!.state = 2
+        scenario_2_data.value.statev2[IDS__scenario_base.variable__pendulum_2_length]!.state = 1
+        // Blue forms a tube like structure around red
+        scenario_2_data.value.statev2[IDS__scenario_base.stock__pendulum_1_angle]!.state = 0.54
         scenario_2_data.value.statev2[IDS__scenario_base.stock__pendulum_2_angle]!.state = 3.14
+        scenario_2_data.value.statev2[IDS__scenario_base.variable__pendulum_1_mass]!.state = 20
+        scenario_2_data.value.statev2[IDS__scenario_base.variable__pendulum_1_length]!.state = 1
+        scenario_2_data.value.statev2[IDS__scenario_base.variable__pendulum_2_mass]!.state = 2
+        scenario_2_data.value.statev2[IDS__scenario_base.variable__pendulum_2_length]!.state = 1
         const scenario_2: Scenario = {
             id: ScenarioId.scenario_2,
             title: "Scenario 2",
@@ -209,14 +227,28 @@ export function DemoAppDoublePendulum () {
         return {scenarios, scenarios_by_id}
     }, [])
 
+    const [scenario_data_changed, set_scenario_data_changed] = useState(false)
+
     const [selected_scenario_id, set_selected_scenario_id] = useState<ScenarioId>(scenario_base.id)
     const [data_needs_refresh, set_data_needs_refresh] = useState(false)
     const [last_data_refresh_datetime_ms, set_last_data_refresh_datetime_ms] = useState(new Date().getTime())
     const selected_scenario = scenarios_by_id[selected_scenario_id]
 
+    // Reset scenario_data_changed to false after the first new render
+    useEffect(() => {
+        set_scenario_data_changed(false)
+    }, [scenario_data_changed])
+
+    // Set scenario_data_changed to true whenever selected_scenario_id changes
+    useEffect(() => {
+        set_scenario_data_changed(true)
+    }, [selected_scenario_id])
 
     useEffect(() => {
         if (!data_needs_refresh) return
+        // Set scenario_data_changed to true whenever the data changes,
+        // i.e. from a refresh from DataCurator
+        set_scenario_data_changed(true)
 
         let cancel_data_fetch = false
 
@@ -298,7 +330,10 @@ export function DemoAppDoublePendulum () {
     if (selected_scenario.data.error) return <div>Error: {selected_scenario.data.error.message}</div>
     if (!wrapped_model) return <div>Error: wrapped_model is undefined</div>
 
+    console.log("scenario_data_changed", scenario_data_changed)
+
     return <AppDoublePendulum
+        scenario_data_changed={scenario_data_changed}
         scenarios={scenarios}
         selected_scenario={selected_scenario}
         set_selected_scenario_id={set_selected_scenario_id}
@@ -308,7 +343,16 @@ export function DemoAppDoublePendulum () {
 }
 
 
-function AppDoublePendulum (props: { scenarios: Scenario[], selected_scenario: Scenario, set_selected_scenario_id: (scenario_id: ScenarioId) => void, wrapped_model: WrappedModel, trigger_fetching_live_data: () => void })
+interface AppDoublePendulumProps
+{
+    scenario_data_changed: boolean
+    scenarios: Scenario[]
+    selected_scenario: Scenario
+    set_selected_scenario_id: (scenario_id: ScenarioId) => void
+    wrapped_model: WrappedModel
+    trigger_fetching_live_data: () => void
+}
+function AppDoublePendulum (props: AppDoublePendulumProps)
 {
     const { wrapped_model } = props
 
@@ -395,6 +439,7 @@ function AppDoublePendulum (props: { scenarios: Scenario[], selected_scenario: S
         </div>
 
         <DoublePendulumCanvas
+            scenario_data_changed={props.scenario_data_changed}
             pendulum_1_angle={as_number(pendulum_1_angle)}
             pendulum_2_angle={as_number(pendulum_2_angle)}
             pendulum_1_length={as_number(pendulum_1_length)}
@@ -411,27 +456,46 @@ function as_number (value: string | number | undefined): number
 }
 
 
-function DoublePendulumCanvas(props: { pendulum_1_angle: number, pendulum_2_angle: number, pendulum_1_length: number, pendulum_2_length: number })
+interface DoublePendulumCanvasProps
 {
-    const canvas_ref = useRef<HTMLCanvasElement | null>(null)
+    scenario_data_changed: boolean
+    pendulum_1_angle: number
+    pendulum_2_angle: number
+    pendulum_1_length: number
+    pendulum_2_length: number
+}
+function DoublePendulumCanvas(props: DoublePendulumCanvasProps)
+{
+    const canvas_ref_1 = useRef<HTMLCanvasElement | null>(null)
+    const canvas_ref_2 = useRef<HTMLCanvasElement | null>(null)
 
-    if (canvas_ref.current) draw(canvas_ref.current, props)
+    if (canvas_ref_1.current && canvas_ref_2.current) draw(canvas_ref_1.current, canvas_ref_2.current, props)
 
-    return <canvas
-        id="canvas"
-        width="800"
-        height="400"
-        style={{ border: "1px solid lightgrey" }}
-        ref={canvas => canvas_ref.current = canvas}
-    />
+    return <div style={{ position: "relative", width: 800, height: 400 }}>
+        <canvas
+            id="canvas1"
+            width="800"
+            height="400"
+            style={{ border: "1px solid lightgrey", position: "absolute", left: 0, top: 0, zIndex: 1 }}
+            ref={canvas => canvas_ref_1.current = canvas}
+        />
+        <canvas
+            id="canvas2"
+            width="800"
+            height="400"
+            style={{ border: "1px solid transparent", position: "absolute", left: 0, top: 0, zIndex: 2, pointerEvents: "none" }}
+            ref={canvas => canvas_ref_2.current = canvas}
+        />
+    </div>
 }
 
 
-function draw (canvas: HTMLCanvasElement, props: { pendulum_1_angle: number, pendulum_2_angle: number, pendulum_1_length: number, pendulum_2_length: number })
+function draw (canvas_1: HTMLCanvasElement, canvas_2: HTMLCanvasElement, props: DoublePendulumCanvasProps)
 {
-    const ctx = canvas.getContext("2d")!
-    const width = canvas.width
-    const height = canvas.height
+    const ctx_1 = canvas_1.getContext("2d")!
+    const ctx_2 = canvas_2.getContext("2d")!
+    const width = canvas_1.width
+    const height = canvas_1.height
 
     const l1 = props.pendulum_1_length * 70
     const l2 = props.pendulum_2_length * 70
@@ -451,18 +515,38 @@ function draw (canvas: HTMLCanvasElement, props: { pendulum_1_angle: number, pen
 
     function draw ()
     {
-        const x1 = l1 * Math.sin(theta1)
-        const y1 = l1 * Math.cos(theta1)
+        const center_x = width / 2
+        const center_y = height / 2
+
+        const x1 = center_x + (l1 * Math.sin(theta1))
+        const y1 = center_y + (l1 * Math.cos(theta1))
 
         const x2 = x1 + l2 * Math.sin(theta2)
         const y2 = y1 + l2 * Math.cos(theta2)
 
-        ctx.clearRect(0, 0, width, height)
-        ctx.beginPath()
-        ctx.moveTo(width / 2, height / 2)
-        ctx.lineTo(x1 + width / 2, y1 + height / 2)
-        ctx.lineTo(x2 + width / 2, y2 + height / 2)
-        ctx.stroke()
+        ctx_1.clearRect(0, 0, width, height)
+        ctx_1.beginPath()
+        ctx_1.moveTo(center_x, center_y)
+        ctx_1.lineTo(x1, y1)
+        ctx_1.lineTo(x2, y2)
+        ctx_1.stroke()
+
+        if (props.scenario_data_changed)
+        {
+            console.log("Scenario data changed, clearing canvas 2")
+            ctx_2.clearRect(0, 0, width, height)
+        }
+
+        // Draw a small opaque circle at the end of each pendulum
+        ctx_2.fillStyle = "rgba(255, 0, 0, 0.1)"
+        ctx_2.beginPath()
+        ctx_2.arc(x1, y1, 5, 0, Math.PI * 2)
+        ctx_2.fill()
+
+        ctx_2.fillStyle = "rgba(0, 0, 255, 0.1)"
+        ctx_2.beginPath()
+        ctx_2.arc(x2, y2, 5, 0, Math.PI * 2)
+        ctx_2.fill()
 
         // const energy = calculate_energy_in_system()
         // // Write energy to screen

@@ -212,7 +212,7 @@ function _make_wrapped_model (model_config: ModelConfigStrict, run_sim_config: {
             name: wcomponent_id,
         }
 
-        console.debug(`added stock ${stock_extra.name} with id: ${stock_extra._node.id} initial: ${initial}`)
+        // console.debug(`added stock ${stock_extra.name} with id: ${stock_extra._node.id} initial: ${initial}`)
 
         return stock_extra
     }
@@ -244,7 +244,7 @@ function _make_wrapped_model (model_config: ModelConfigStrict, run_sim_config: {
             name: wcomponent_id,
         }
 
-        console.debug(`added variable ${variable_extra.name} with id: ${variable_extra._node.id} value: ${value}`)
+        // console.debug(`added variable ${variable_extra.name} with id: ${variable_extra._node.id} value: ${value}`)
 
         return variable_extra
     }
@@ -276,7 +276,7 @@ function _make_wrapped_model (model_config: ModelConfigStrict, run_sim_config: {
             name: wcomponent_id,
         }
 
-        console.debug(`added flow ${flow_extra.name} with id: ${flow_extra._node.id}`)
+        // console.debug(`added flow ${flow_extra.name} with id: ${flow_extra._node.id}`)
 
         return flow_extra
     }
@@ -302,7 +302,7 @@ function _make_wrapped_model (model_config: ModelConfigStrict, run_sim_config: {
             name: wcomponent_id,
         }
 
-        console.debug(`added action ${action_extra.name} with id: ${action_extra._node.id}`)
+        // console.debug(`added action ${action_extra.name} with id: ${action_extra._node.id}`)
 
         return action_extra
     }
